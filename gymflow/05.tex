@@ -1,0 +1,554 @@
+\section{Metodología Aplicada}
+
+Para el desarrollo del proyecto GymFlow se adopta la metodología ágil \textbf{SCRUM}. Esta metodología permite organizar el trabajo en ciclos cortos, priorizar funcionalidades y evaluar avances parciales de forma constante. En el contexto del proyecto, SCRUM resulta adecuado porque facilita ajustar el alcance del producto conforme se validan la interfaz, la navegación, la lógica de rutinas y la integración con Firebase.
+
+El trabajo del equipo se estructura en un \textbf{sprint 0 de planificación} y \textbf{tres sprints de desarrollo funcional}. A partir del \textbf{14 de abril de 2026} cada sprint funcional tiene una duración fija de \textbf{14 días calendario}. El \textbf{sprint 0} comenzó el \textbf{martes 7 de abril de 2026}, una semana antes del inicio del sprint 1, con el objetivo de dejar lista la base técnica, organizativa y documental del proyecto.
+
+\subsection{Ciclo de vida del proyecto}
+
+El desarrollo del sistema se organiza en un ciclo de vida iterativo compuesto por las siguientes fases:
+
+\begin{itemize}
+\item \textbf{Planificación:} definición del problema, alcance, objetivos, backlog inicial y organización del equipo.
+\item \textbf{Análisis:} identificación de requerimientos funcionales y no funcionales, así como del contexto de uso de la aplicación.
+\item \textbf{Diseño:} elaboración de la arquitectura, diagramas, mockups y estructura conceptual de datos.
+\item \textbf{Implementación:} desarrollo de la aplicación móvil con React Native, Expo y servicios de Firebase.
+\item \textbf{Pruebas:} validación de funcionalidades, revisión de errores y evaluación básica de la experiencia de usuario.
+\item \textbf{Despliegue:} preparación de la aplicación para demostración, entrega académica y futuras publicaciones.
+\end{itemize}
+
+\subsection{Aplicación de SCRUM en el proyecto}
+
+La aplicación de SCRUM en GymFlow se orienta a mantener un ritmo de trabajo incremental, con revisión continua del backlog y entregables verificables al cierre de cada sprint. Para ello, el proyecto adopta los siguientes elementos metodológicos:
+
+\begin{itemize}
+\item \textbf{Product Backlog:} lista priorizada de historias de usuario, tareas técnicas y mejoras del sistema.
+\item \textbf{Sprint Backlog:} conjunto de historias y tareas comprometidas para cada sprint de 14 días.
+\item \textbf{Incremento:} resultado funcional o verificable entregado al finalizar cada sprint.
+\item \textbf{Definition of Done (DoD):} criterio mínimo para considerar una historia como terminada.
+\item \textbf{Refinamiento del backlog:} revisión periódica de historias para aclarar alcance, dependencias y criterios de aceptación.
+\end{itemize}
+
+\subsection{Eventos SCRUM}
+
+Para sostener la dinámica de trabajo, el equipo considera los siguientes eventos dentro de cada sprint:
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{3.2cm} L{3.2cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Evento} & \gymth{Frecuencia} & \gymth{Propósito} \\
+\midrule
+Sprint Planning & Inicio de cada sprint & Seleccionar historias prioritarias, dividirlas en tareas y definir el objetivo del sprint. \\
+Daily Scrum & Diario & Revisar avances, bloqueos y siguientes acciones del equipo. \\
+Backlog Refinement & Al menos una vez por sprint & Aclarar historias de usuario, ajustar prioridades y preparar trabajo futuro. \\
+Sprint Review & Fin de cada sprint & Presentar el incremento logrado y validar el resultado frente a los objetivos del sprint. \\
+Sprint Retrospective & Fin de cada sprint & Identificar mejoras del proceso de trabajo, coordinación y calidad técnica del equipo. \\
+\bottomrule
+\end{tabularx}
+\caption{Eventos SCRUM aplicados al proyecto GymFlow}
+\end{table}
+
+\subsection{Product Backlog}
+
+El \textit{Product Backlog} de GymFlow reúne las funcionalidades priorizadas del sistema y organiza el trabajo funcional que será desarrollado entre los sprints 1, 2 y 3. Este backlog se construye a partir del problema central del proyecto: permitir que el usuario continúe su entrenamiento cuando una máquina o ejercicio no está disponible.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{2.1cm} L{2cm} L{1.8cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Historia} & \gymth{Sprint} & \gymth{Prioridad} & \gymth{Resultado esperado} \\
+\midrule
+HU-01 & Sprint 1 & Alta & Registro de nuevos usuarios en la aplicación. \\
+HU-02 & Sprint 1 & Alta & Inicio de sesión seguro con credenciales del usuario. \\
+HU-03 & Sprint 1 & Media & Acceso a una pantalla principal clara y funcional. \\
+HU-04 & Sprint 2 & Alta & Consulta de grupos musculares disponibles. \\
+HU-05 & Sprint 2 & Alta & Visualización de ejercicios asociados a cada músculo. \\
+HU-06 & Sprint 2 & Alta & Consulta de variantes para continuidad del entrenamiento. \\
+HU-07 & Sprint 3 & Alta & Creación de rutinas personalizadas. \\
+HU-08 & Sprint 3 & Alta & Guardado persistente de rutinas del usuario. \\
+HU-09 & Sprint 3 & Media & Gestión y consulta de rutinas guardadas. \\
+HU-10 & Sprint 3 & Media & Acceso a rutinas prediseñadas. \\
+\bottomrule
+\end{tabularx}
+\caption{Product Backlog del proyecto GymFlow}
+\end{table}
+
+\subsection{Sprint Backlog}
+
+El \textit{Sprint Backlog} se define al inicio de cada sprint y contiene las historias comprometidas por el equipo, junto con las tareas técnicas y de validación necesarias para alcanzar el objetivo del sprint.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{2cm} L{2.4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Sprint} & \gymth{Historias incluidas} & \gymth{Alcance del sprint} \\
+\midrule
+Sprint 1 & HU-01, HU-02, HU-03 & Implementar autenticación, acceso al sistema y navegación inicial. \\
+Sprint 2 & HU-04, HU-05, HU-06 & Resolver la consulta de músculos, ejercicios y variantes como núcleo funcional de GymFlow. \\
+Sprint 3 & HU-07, HU-08, HU-09, HU-10 & Desarrollar la creación, almacenamiento, consulta y reutilización de rutinas. \\
+\bottomrule
+\end{tabularx}
+\caption{Sprint Backlog resumido del proyecto GymFlow}
+\end{table}
+
+\subsection{Tecnologías utilizadas}
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.92\textwidth}{L{4.2cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Componente} & \gymth{Tecnología utilizada} \\
+\midrule
+Frontend & React Native con Expo Router \\
+Servicios backend & Firebase \\
+Autenticación & Firebase Authentication \\
+Base de datos principal & Cloud Firestore \\
+Persistencia complementaria & Realtime Database \\
+Almacenamiento de archivos & Firebase Storage \\
+\bottomrule
+\end{tabularx}
+\caption{Tecnologías utilizadas en el sistema GymFlow}
+\end{table}
+
+\subsection{Herramientas de Gestión}
+
+Para la organización del proyecto se utilizan herramientas que permiten planificar el trabajo, coordinar tareas y documentar decisiones del equipo.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.95\textwidth}{L{3.5cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Herramienta} & \gymth{Uso dentro del proyecto} \\
+\midrule
+GitHub & Control de versiones del código fuente, respaldo del repositorio y seguimiento de cambios del proyecto. \\
+Notion & Organización de tareas, planificación de sprints, priorización del backlog y seguimiento del avance. \\
+Excalidraw & Elaboración de diagramas, esquemas de arquitectura y apoyo visual para el diseño del sistema. \\
+WhatsApp y Discord & Comunicación y coordinación entre los integrantes del equipo durante el desarrollo. \\
+\bottomrule
+\end{tabularx}
+\caption{Herramientas de gestión utilizadas en el proyecto}
+\end{table}
+
+\section{Seguimiento y Desarrollo Grupal}
+
+\subsection{Roles y Responsabilidades}
+
+El equipo de desarrollo está conformado por cuatro integrantes que trabajan de manera colaborativa en la construcción del sistema.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.92\textwidth}{Y L{4.2cm}}
+\toprule
+\gymtableheaderrow
+\gymth{Integrante} & \gymth{Rol} \\
+\midrule
+Mita Zeballos Cristian Juan & Scrum Master \\
+Chamaca Jimenez Cristhian & Desarrollador Full Stack \\
+Montaño Frías Andres & Desarrollador Full Stack \\
+Zeballos Valencia Reynaldo & Desarrollador Full Stack \\
+\bottomrule
+\end{tabularx}
+\caption{Roles del equipo de desarrollo}
+\end{table}
+
+En la dinámica de trabajo, el \textbf{Scrum Master} coordina ceremonias, da seguimiento a impedimentos y promueve el cumplimiento del proceso. Los \textbf{desarrolladores Full Stack} participan en análisis, diseño, implementación, pruebas y documentación, compartiendo responsabilidad sobre el incremento entregado en cada sprint.
+
+\subsection{Control de Versiones}
+
+El control de versiones del proyecto se realiza mediante \textbf{Git} y \textbf{GitHub}. Este mecanismo permite registrar cambios del código fuente, mantener historial del proyecto, coordinar trabajo colaborativo y evitar conflictos al integrar avances de distintos integrantes.
+
+\subsection{Reporte de Avances}
+
+El seguimiento del avance se realiza por sprint y por semana mediante el backlog del proyecto, la documentación del informe y el tablero de trabajo del equipo. Cada incremento se revisa con base en los objetivos del sprint, las historias comprometidas y la evidencia de avance generada durante el desarrollo.
+
+\subsection{Comunicación}
+
+La comunicación y coordinación del equipo se apoyan en \textbf{WhatsApp}, \textbf{Discord} y reuniones de seguimiento. Estas herramientas permiten resolver bloqueos, coordinar actividades, revisar avances y mantener actualizado el estado del trabajo grupal.
+
+\subsection{Criterios de trabajo del sprint}
+
+Para mantener consistencia metodológica, cada sprint se gestiona con los siguientes criterios:
+
+\begin{itemize}
+\item Toda historia de usuario debe incluir descripción clara, valor para el usuario y criterios de aceptación verificables.
+\item Las historias priorizadas deben poder completarse dentro del sprint asignado.
+\item Cada incremento debe quedar integrado en el repositorio y validado funcionalmente.
+\item Las decisiones de diseño y cambios relevantes deben quedar documentados en el informe o en las herramientas de gestión del proyecto.
+\item Los bloqueos detectados durante el sprint deben registrarse y tratarse en las reuniones de seguimiento.
+\end{itemize}
+
+\subsection{Definición de terminado}
+
+Una historia de usuario se considera terminada cuando cumple simultáneamente con las siguientes condiciones:
+
+\begin{itemize}
+\item La funcionalidad fue implementada o documentada de acuerdo con el alcance definido.
+\item Los criterios de aceptación fueron revisados y validados por el equipo.
+\item El código o entregable correspondiente quedó integrado en la base del proyecto sin errores críticos conocidos.
+\item La interfaz o flujo asociado mantiene coherencia con el diseño general de GymFlow.
+\item La evidencia del avance quedó reflejada en el backlog, el repositorio o el informe del proyecto.
+\end{itemize}
+
+\subsection{Planificación del Trabajo}
+
+La planificación del proyecto se divide en un sprint de planificación y tres sprints de construcción funcional. Cada sprint tiene un objetivo principal, un rango de fechas definido y un conjunto de entregables alineados con los requerimientos del sistema.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{2.1cm} L{3.3cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Sprint} & \gymth{Fechas} & \gymth{Objetivo principal} \\
+\midrule
+Sprint 0 & 7 de abril de 2026 al 13 de abril de 2026 & Planificar el proyecto: definir backlog inicial, consolidar arquitectura, organizar mockups, configurar el repositorio y dejar lista la base técnica para el desarrollo. \\
+Sprint 1 & 14 de abril de 2026 al 27 de abril de 2026 & Implementar el acceso de usuarios y dejar operativa la estructura base de navegación de la aplicación. \\
+Sprint 2 & 28 de abril de 2026 al 11 de mayo de 2026 & Desarrollar la consulta de grupos musculares, ejercicios y variantes para resolver el problema principal del proyecto. \\
+Sprint 3 & 12 de mayo de 2026 al 25 de mayo de 2026 & Construir la gestión de rutinas personalizadas y la disponibilidad de rutinas prediseñadas para el usuario. \\
+\bottomrule
+\end{tabularx}
+\caption{Planificación de sprints del proyecto GymFlow}
+\end{table}
+
+\subsection{Historias de usuario por sprint}
+
+Las historias de usuario del proyecto se numeran de forma continua para mantener trazabilidad única dentro del \textit{product backlog}. El sprint 0 no contempla historias funcionales, ya que corresponde exclusivamente a planificación. La distribución de las historias de usuario por sprint es la siguiente:
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{2.1cm} L{2.4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Sprint} & \gymth{Historias} & \gymth{Enfoque del sprint} \\
+\midrule
+Sprint 0 & No aplica & Planificación general, organización técnica, documental y metodológica del proyecto. \\
+Sprint 1 & HU-01 a HU-03 & Registro, inicio de sesión y acceso a la pantalla principal del sistema. \\
+Sprint 2 & HU-04 a HU-06 & Consulta de músculos, ejercicios y variantes para mantener la continuidad del entrenamiento. \\
+Sprint 3 & HU-07 a HU-10 & Creación, almacenamiento, consulta y reutilización de rutinas personalizadas o prediseñadas. \\
+\bottomrule
+\end{tabularx}
+\caption{Distribución continua de historias de usuario por sprint}
+\end{table}
+
+Esta organización permite que el proyecto avance de forma incremental, partiendo de una base técnica clara en el sprint 0 y cerrando el cronograma previsto el \textbf{25 de mayo de 2026} con una versión funcional centrada en autenticación, consulta de ejercicios, variantes y gestión de rutinas.
+
+\subsection{Planificación operativa externa}
+
+La planificación operativa detallada por sprint y por semana se gestiona fuera del informe en un tablero de trabajo tipo Notion. Este tablero complementa la metodología descrita en el documento y permite registrar, para cada integrante, las actividades asignadas y el producto esperado por semana.
+
+\subsection{Especificación de historias de usuario}
+
+Con el fin de formalizar el backlog del proyecto, cada historia de usuario se documenta de manera individual con su identificador continuo, título descriptivo, sprint asignado, prioridad, descripción, tareas y criterios de aceptación. El sprint 0 no incluye historias de usuario, ya que corresponde únicamente a planificación del proyecto.
+
+\subsubsection{HU-01 Registro de usuarios}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-01 \\
+Titulo & Registro de usuarios \\
+Sprint & Sprint 1 \\
+Estado & Planificado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 3 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario nuevo, quiero registrarme mediante un formulario de creación de cuenta para comenzar a utilizar GymFlow. \\
+Tareas & \storyitems{\item Diseñar la pantalla de registro.\item Definir los campos obligatorios del formulario.\item Integrar el registro con Firebase Authentication.\item Mostrar mensajes de exito o error al usuario.} \\
+Criterios de aceptacion & \storyitems{\item El sistema debe permitir ingresar los datos minimos para crear una cuenta.\item Debe informarse al usuario si el registro fue exitoso o si ocurrio un error.\item La cuenta registrada debe quedar lista para autenticarse.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-01}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{layouts/stitch/registro-usuario.png}
+\caption{Mockup asociado a la historia de usuario HU-01.}
+\label{fig:hu01-mockup}
+\end{figure}
+
+\subsubsection{HU-02 Inicio de sesion}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-02 \\
+Titulo & Inicio de sesion \\
+Sprint & Sprint 1 \\
+Estado & Planificado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 3 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario registrado, quiero iniciar sesion de forma segura con mi correo y contraseña para acceder a mi informacion personal. \\
+Tareas & \storyitems{\item Diseñar la pantalla de inicio de sesion.\item Integrar autenticacion con correo y contraseña.\item Validar credenciales y manejo de errores.\item Redirigir al usuario autenticado al flujo principal.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder iniciar sesion con credenciales validas.\item El sistema debe impedir el acceso con credenciales incorrectas.\item Tras autenticarse, el usuario debe acceder al flujo principal.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-02}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{layouts/stitch/bienvenida-login.png}
+\caption{Mockup asociado a la historia de usuario HU-02.}
+\label{fig:hu02-mockup}
+\end{figure}
+
+\subsubsection{HU-03 Acceso a pantalla principal}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-03 \\
+Titulo & Acceso a pantalla principal \\
+Sprint & Sprint 1 \\
+Estado & Planificado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 2 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero ingresar a una pantalla principal clara despues del acceso para navegar rapidamente hacia las funciones de entrenamiento. \\
+Tareas & \storyitems{\item Diseñar la pantalla principal.\item Organizar accesos a los modulos clave.\item Conectar la navegacion inicial con login y registro.\item Validar coherencia con los mockups definidos.} \\
+Criterios de aceptacion & \storyitems{\item La pantalla posterior al acceso debe mostrar las opciones principales.\item La navegacion inicial debe ser clara y consistente con el diseño.\item El usuario debe poder avanzar hacia la consulta de musculos o rutinas sin pasos innecesarios.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-03}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{layouts/stitch/dashboard-principal.png}
+\caption{Mockup asociado a la historia de usuario HU-03.}
+\label{fig:hu03-mockup}
+\end{figure}
+
+\subsubsection{HU-04 Consulta de grupos musculares}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-04 \\
+Titulo & Consulta de grupos musculares \\
+Sprint & Sprint 2 \\
+Estado & Planificado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 3 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero visualizar los principales grupos musculares para seleccionar con rapidez la zona que deseo entrenar. \\
+Tareas & \storyitems{\item Preparar el catalogo base de grupos musculares.\item Diseñar la pantalla de listado de musculos.\item Conectar la consulta con la fuente de datos.\item Validar claridad de la informacion presentada.} \\
+Criterios de aceptacion & \storyitems{\item La aplicacion debe mostrar una lista de grupos musculares disponibles.\item Cada grupo muscular debe poder seleccionarse desde la interfaz.\item La informacion mostrada debe ser comprensible para usuarios principiantes e intermedios.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-04}
+\end{table}
+
+\subsubsection{HU-05 Consulta de ejercicios por musculo}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-05 \\
+Titulo & Consulta de ejercicios por musculo \\
+Sprint & Sprint 2 \\
+Estado & Planificado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 3 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero consultar los ejercicios asociados a un musculo especifico para organizar mejor mi sesion de entrenamiento. \\
+Tareas & \storyitems{\item Asociar ejercicios a cada grupo muscular.\item Diseñar la vista de ejercicios por musculo.\item Cargar datos segun la seleccion del usuario.\item Verificar correspondencia entre musculo y ejercicios.} \\
+Criterios de aceptacion & \storyitems{\item Al seleccionar un musculo, el sistema debe mostrar sus ejercicios asociados.\item La lista de ejercicios debe corresponder al grupo muscular elegido.\item El usuario debe poder continuar desde esa lista hacia la consulta de variantes.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-05}
+\end{table}
+
+\subsubsection{HU-06 Consulta de variantes}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-06 \\
+Titulo & Consulta de variantes \\
+Sprint & Sprint 2 \\
+Estado & Planificado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 4 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero ver variantes o ejercicios alternativos cuando una maquina este ocupada para mantener la continuidad de mi rutina. \\
+Tareas & \storyitems{\item Definir variantes por ejercicio.\item Diseñar la pantalla de alternativas.\item Conectar el flujo desde ejercicios hacia variantes.\item Validar que las alternativas correspondan al mismo trabajo muscular.} \\
+Criterios de aceptacion & \storyitems{\item Al seleccionar un ejercicio, el sistema debe mostrar alternativas funcionales para el mismo musculo.\item Las variantes deben presentarse de forma clara y util.\item El flujo debe responder al problema principal de continuidad de la rutina.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-06}
+\end{table}
+
+\subsubsection{HU-07 Creacion de rutinas personalizadas}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-07 \\
+Titulo & Creacion de rutinas personalizadas \\
+Sprint & Sprint 3 \\
+Estado & Planificado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 5 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero crear rutinas de entrenamiento personalizadas seleccionando musculos y ejercicios para adaptar la aplicacion a mis objetivos. \\
+Tareas & \storyitems{\item Diseñar el flujo de creacion de rutina.\item Permitir seleccionar ejercicios.\item Permitir asignar nombre o referencia a la rutina.\item Validar usabilidad del proceso de creacion.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder seleccionar ejercicios para componer una rutina propia.\item La rutina debe permitir identificarse mediante un nombre o referencia.\item El flujo de creacion debe ser entendible y consistente con el diseño de la aplicacion.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-07}
+\end{table}
+
+\subsubsection{HU-08 Guardado de rutinas}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-08 \\
+Titulo & Guardado de rutinas \\
+Sprint & Sprint 3 \\
+Estado & Planificado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 3 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero guardar mis rutinas para utilizarlas posteriormente sin tener que configurarlas nuevamente. \\
+Tareas & \storyitems{\item Definir la estructura de almacenamiento de rutinas.\item Persistir rutinas por usuario.\item Confirmar guardado exitoso.\item Verificar recuperacion posterior de la informacion.} \\
+Criterios de aceptacion & \storyitems{\item El sistema debe almacenar la rutina creada por el usuario.\item La rutina guardada debe permanecer asociada a la cuenta correspondiente.\item El usuario debe poder reutilizar esa rutina en un acceso posterior.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-08}
+\end{table}
+
+\subsubsection{HU-09 Gestion de rutinas guardadas}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-09 \\
+Titulo & Gestion de rutinas guardadas \\
+Sprint & Sprint 3 \\
+Estado & Planificado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 3 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero consultar y gestionar mis rutinas guardadas para editar, reutilizar o reorganizar mi planificacion de entrenamiento. \\
+Tareas & \storyitems{\item Diseñar la pantalla de listado de rutinas.\item Mostrar detalle de cada rutina guardada.\item Permitir revision y reorganizacion de la informacion.\item Mantener trazabilidad de cambios por usuario.} \\
+Criterios de aceptacion & \storyitems{\item El sistema debe mostrar la lista de rutinas guardadas por el usuario.\item El usuario debe poder consultar los detalles de cada rutina almacenada.\item La gestion de rutinas debe permitir al menos revisar y reorganizar la informacion guardada.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-09}
+\end{table}
+
+\subsubsection{HU-10 Rutinas prediseñadas}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-10 \\
+Titulo & Rutinas prediseñadas \\
+Sprint & Sprint 3 \\
+Estado & Planificado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 2 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 14 de abril de 2026 \\
+Descripcion & Como usuario, quiero acceder a rutinas prediseñadas para disponer de una guia rapida cuando no tenga una rutina propia definida. \\
+Tareas & \storyitems{\item Definir un conjunto base de rutinas prediseñadas.\item Diseñar la vista de consulta de rutinas sugeridas.\item Relacionar las rutinas con musculos y ejercicios definidos.\item Permitir su seleccion como apoyo para el entrenamiento.} \\
+Criterios de aceptacion & \storyitems{\item La aplicacion debe ofrecer un conjunto basico de rutinas prediseñadas.\item El usuario debe poder visualizarlas y seleccionarlas como apoyo.\item Las rutinas prediseñadas deben ser coherentes con los grupos musculares y ejercicios definidos en el sistema.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-10}
+\end{table}
+

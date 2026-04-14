@@ -1,0 +1,156 @@
+\section{Análisis del Proyecto}
+
+\subsection{Objetivo general}
+
+Desarrollar una aplicación móvil denominada \textbf{GymFlow} que permita a los usuarios seleccionar los músculos que desean entrenar y visualizar diferentes ejercicios y variantes para optimizar sus rutinas de entrenamiento dentro del gimnasio.
+
+\subsection{Objetivos específicos}
+
+\begin{itemize}
+    \item Implementar un sistema de registro e inicio de sesión para los usuarios de la aplicación.
+    \item Mostrar los principales grupos musculares que pueden ser entrenados dentro del gimnasio.
+    \item Proporcionar ejercicios asociados a cada grupo muscular.
+    \item Sugerir variantes de ejercicios que permitan entrenar el mismo músculo cuando una máquina se encuentre ocupada.
+    \item Permitir la creación de rutinas de entrenamiento personalizadas.
+    \item Permitir guardar y consultar rutinas de entrenamiento creadas por el usuario.
+    \item Ofrecer rutinas prediseñadas para facilitar el entrenamiento de los usuarios.
+    \item Implementar un módulo de administración que permita gestionar ejercicios, músculos y rutinas prediseñadas.
+    \item Registrar el historial de entrenamientos realizados por el usuario.
+\end{itemize}
+
+\subsection{Problemas identificados}
+
+\subsubsection{Situación problemática}
+
+Dentro del entorno del gimnasio, los usuarios suelen seguir rutinas organizadas por grupos musculares y ejercicios específicos. Estas rutinas, en muchos casos, han sido planificadas previamente con un orden determinado, un número de series y repeticiones, y el uso de máquinas o implementos concretos. Sin embargo, en la práctica, la sesión de entrenamiento no siempre puede desarrollarse tal como fue diseñada.
+
+Uno de los escenarios más frecuentes ocurre cuando el usuario llega a una máquina o equipo determinado y descubre que este se encuentra ocupado. Esta situación es común en horarios de mayor concurrencia, donde varios usuarios coinciden en el uso de los mismos recursos. A partir de ello, la rutina deja de depender únicamente de la planificación personal y pasa a estar condicionada por la disponibilidad real del entorno.
+
+\subsubsection{Problema principal}
+
+El problema principal identificado es la dificultad que tienen los usuarios para continuar su rutina de entrenamiento de manera ordenada y eficiente cuando una máquina o equipo específico no se encuentra disponible.
+
+Esta dificultad no solo representa una molestia momentánea, sino que afecta directamente la continuidad de la sesión. Cuando el usuario no puede ejecutar el ejercicio previsto, debe decidir entre esperar, cambiar el orden de su rutina o sustituir el ejercicio por otro. En ausencia de una guía clara, esta decisión suele tomarse de manera improvisada, lo cual reduce la calidad del entrenamiento y altera la lógica originalmente planificada.
+
+\subsubsection{Factores asociados al problema}
+
+El problema descrito está relacionado con diversos factores propios del entorno y del usuario. En primer lugar, la alta concurrencia en determinados horarios provoca que muchas máquinas y estaciones de trabajo permanezcan ocupadas durante varios minutos. Este factor es propio del funcionamiento normal de los gimnasios y afecta especialmente a los usuarios que dependen de equipos concretos para completar su rutina.
+
+En segundo lugar, existe una dependencia considerable respecto a ejercicios específicos. Aunque varios músculos pueden trabajarse mediante distintas variantes, muchos usuarios estructuran su sesión alrededor de una secuencia fija de ejercicios, sin contemplar desde el inicio posibles alternativas.
+
+En tercer lugar, muchos asistentes al gimnasio no cuentan con el conocimiento suficiente sobre variantes o ejercicios equivalentes. Esta limitación es más notoria en usuarios principiantes, quienes todavía no dominan la relación entre grupo muscular, ejercicio principal y posibles sustituciones. Como resultado, ante un imprevisto, no disponen de criterios claros para adaptar su entrenamiento.
+
+Finalmente, también se observa la ausencia de una herramienta móvil centrada específicamente en esta problemática. Si bien existen aplicaciones de fitness, no todas responden a la necesidad inmediata de consultar músculos, ejercicios y variantes en función de la disponibilidad de equipos dentro del gimnasio.
+
+\subsubsection{Manifestaciones del problema}
+
+A partir del problema principal, se identifican varias situaciones concretas que afectan al usuario durante su sesión de entrenamiento.
+
+Una de ellas es la pérdida de tiempo provocada por la espera de máquinas ocupadas. En lugar de mantener un ritmo constante de trabajo, el usuario interrumpe su actividad y reduce el tiempo efectivo de entrenamiento.
+
+Otra manifestación importante es la modificación improvisada de la rutina. Cuando no existe una referencia clara sobre alternativas, el usuario puede elegir ejercicios sin suficiente criterio técnico, alterando el enfoque muscular originalmente previsto.
+
+También se presenta el desconocimiento de variantes funcionales. Muchos usuarios saben ejecutar un ejercicio específico, pero no necesariamente conocen otras opciones que permitan trabajar el mismo músculo mediante un movimiento similar o con otro tipo de implemento.
+
+Asimismo, algunos ejercicios son omitidos por completo, lo que ocasiona sesiones incompletas o desequilibradas. Esto ocurre cuando el usuario prefiere continuar con otras partes de la rutina antes que buscar una sustitución adecuada.
+
+\subsubsection{Consecuencias para el usuario y el entrenamiento}
+
+Las consecuencias de esta problemática se reflejan tanto en la experiencia del usuario como en la calidad del entrenamiento realizado. En primer lugar, se produce una interrupción de la continuidad de la rutina, ya que el usuario debe detenerse para resolver una dificultad no prevista en su planificación.
+
+En segundo lugar, disminuye el aprovechamiento del tiempo dentro del gimnasio. La espera, la reorganización improvisada y la indecisión reducen el tiempo realmente dedicado al trabajo muscular.
+
+En tercer lugar, la efectividad de la rutina puede verse afectada. Una mala sustitución o la omisión de ejercicios puede disminuir el estímulo sobre el grupo muscular objetivo, afectando metas como hipertrofia, fuerza, resistencia o acondicionamiento físico general.
+
+Además, esta situación genera desorganización en la sesión y puede producir frustración, especialmente en usuarios principiantes, quienes suelen depender más de una estructura clara para entrenar con seguridad y confianza.
+
+\subsubsection{Necesidad identificada}
+
+Frente a la problemática descrita, se identifica la necesidad de contar con una herramienta móvil que permita al usuario consultar de manera rápida y organizada qué músculo desea entrenar, qué ejercicios se asocian a dicho músculo y qué variantes o alternativas puede realizar cuando una máquina específica se encuentra ocupada.
+
+Esta necesidad da origen al desarrollo de \textbf{GymFlow}, una aplicación orientada a facilitar la continuidad del entrenamiento dentro del gimnasio. Su finalidad es reducir tiempos muertos, disminuir la improvisación, mejorar la organización de la rutina y ofrecer apoyo práctico a usuarios de distintos niveles de experiencia.
+
+En consecuencia, la propuesta del sistema surge como respuesta directa a una situación real del entorno de gimnasio: la necesidad de adaptar el entrenamiento en función de la disponibilidad de equipos sin perder el enfoque del trabajo muscular planificado.
+
+\subsection{Contexto}
+
+\subsubsection{Entorno de aplicación}
+
+El proyecto \textbf{GymFlow} se desarrolla en el contexto del entrenamiento físico realizado dentro de gimnasios. Este entorno se caracteriza por disponer de una variedad de recursos destinados al trabajo muscular, entre ellos máquinas guiadas, poleas, bancos, barras, discos, mancuernas y otros implementos complementarios. A diferencia del entrenamiento realizado en casa, el gimnasio ofrece un espacio especializado donde el usuario puede ejecutar rutinas más amplias y variadas, aunque dichas rutinas dependen de la disponibilidad de equipos compartidos.
+
+Dentro de este entorno, el usuario organiza su sesión de acuerdo con un objetivo físico determinado, como aumento de masa muscular, mejora de la fuerza, resistencia o acondicionamiento general. Para ello, selecciona grupos musculares específicos y realiza ejercicios concretos que forman parte de una rutina previamente planificada. En consecuencia, el gimnasio no solo constituye un espacio físico para ejercitarse, sino también un entorno dinámico en el que la planificación y la ejecución del entrenamiento deben adaptarse constantemente a condiciones reales de uso.
+
+\subsubsection{Usuarios involucrados}
+
+El público objetivo de la aplicación está conformado por personas que asisten al gimnasio, independientemente de su nivel de experiencia. Esto incluye a usuarios principiantes, que suelen requerir mayor orientación para identificar qué músculos desean trabajar, qué ejercicios corresponden a cada uno y qué variantes existen; así como a usuarios intermedios o avanzados, quienes ya poseen cierta experiencia, pero aun así necesitan reorganizar su entrenamiento cuando no pueden acceder a determinados equipos.
+
+Desde esta perspectiva, \textbf{GymFlow} no está pensado únicamente para un perfil especializado, sino para una población diversa de usuarios que comparten una necesidad común: contar con apoyo rápido y claro durante la sesión de entrenamiento. Por esta razón, la aplicación debe presentar la información de forma comprensible, ordenada y útil tanto para quienes recién comienzan como para quienes ya tienen hábitos consolidados de entrenamiento.
+
+\subsubsection{Dinámica del entrenamiento en el gimnasio}
+
+Una característica importante del entorno de gimnasio es su naturaleza compartida. Los equipos no son de uso exclusivo, sino que son utilizados simultáneamente por varios usuarios a lo largo del día. Esta situación se hace más evidente en horarios de alta concurrencia, cuando determinadas máquinas o estaciones de trabajo permanecen ocupadas por largos periodos.
+
+Debido a esta dinámica, la ejecución de una rutina no depende únicamente de la planificación personal del usuario, sino también de factores externos, como la disponibilidad momentánea de equipos. Esto convierte al gimnasio en un entorno cambiante, donde muchas veces es necesario tomar decisiones rápidas para mantener la continuidad del entrenamiento. En este sentido, el usuario no solo necesita conocer ejercicios, sino también disponer de alternativas viables para adaptar su rutina sin perder de vista el grupo muscular que desea trabajar.
+
+\subsubsection{Contexto tecnológico de la solución}
+
+En la actualidad, el uso de dispositivos móviles forma parte de la vida cotidiana de la mayoría de las personas. Dentro del gimnasio, el teléfono móvil suele acompañar al usuario durante toda la sesión, ya sea para escuchar música, controlar tiempos de descanso, revisar notas o registrar avances. Esta realidad hace que una aplicación móvil represente una solución natural, accesible y práctica para brindar apoyo inmediato durante el entrenamiento.
+
+Bajo este contexto, \textbf{GymFlow} se plantea como una aplicación móvil orientada específicamente al uso dentro del gimnasio. Su propósito es ofrecer al usuario acceso rápido a información sobre grupos musculares, ejercicios, variantes, rutinas personalizadas, rutinas prediseñadas e historial de entrenamientos. De esta manera, el sistema no se limita a mostrar contenido estático, sino que se integra al desarrollo real de la sesión y funciona como una herramienta de apoyo para la toma de decisiones.
+
+\subsubsection{Alcance del proyecto dentro del contexto}
+
+Considerando el entorno descrito, el proyecto busca responder a una necesidad concreta del entrenamiento en gimnasio: facilitar la consulta organizada de ejercicios según músculos y ofrecer variantes útiles cuando las condiciones del entorno impiden ejecutar una rutina tal como fue planificada. Por ello, el sistema estará orientado a dispositivos móviles con sistema operativo Android e incluirá funcionalidades relacionadas con autenticación de usuarios, consulta de ejercicios, creación de rutinas, almacenamiento de información y gestión básica de entrenamientos.
+
+En síntesis, el contexto de \textbf{GymFlow} está definido por la interacción entre un entorno físico compartido, una población diversa de usuarios y una necesidad creciente de apoyo digital inmediato durante la sesión de ejercicio. Esta combinación justifica el desarrollo de una herramienta móvil especializada en mejorar la organización y continuidad del entrenamiento dentro del gimnasio.
+\subsection{Requerimientos funcionales}
+
+El sistema deberá permitir las siguientes funcionalidades:
+
+\begin{itemize}
+    \item El sistema deberá permitir el registro de nuevos usuarios mediante un formulario de creación de cuenta.
+    
+    \item El sistema deberá permitir a los usuarios registrados iniciar sesión en la aplicación mediante un mecanismo de autenticación segura.
+    
+    \item El sistema deberá mostrar los principales grupos musculares que pueden ser entrenados dentro del gimnasio.
+    
+    \item El sistema deberá permitir la consulta de ejercicios asociados a cada grupo muscular seleccionado por el usuario.
+    
+    \item El sistema deberá mostrar variantes o ejercicios alternativos que permitan trabajar un mismo grupo muscular cuando un equipo específico no esté disponible.
+    
+    \item El sistema deberá permitir a los usuarios crear rutinas de entrenamiento personalizadas seleccionando músculos y ejercicios.
+    
+    \item El sistema deberá permitir guardar las rutinas de entrenamiento creadas por el usuario para su uso posterior.
+    
+    \item El sistema deberá permitir consultar y gestionar las rutinas de entrenamiento previamente guardadas por el usuario.
+    
+    \item El sistema deberá permitir a los usuarios utilizar rutinas prediseñadas disponibles dentro de la aplicación.
+    
+    \item El sistema deberá permitir registrar los entrenamientos realizados por el usuario durante sus sesiones de ejercicio.
+    
+    \item El sistema deberá permitir visualizar un historial básico de entrenamientos realizados por el usuario.
+    
+    \item El sistema deberá proporcionar un panel de administración que permita gestionar los ejercicios, los grupos musculares y las rutinas prediseñadas disponibles en la aplicación.
+\end{itemize}
+
+\subsection{Requerimientos no funcionales}
+
+El sistema deberá cumplir con los siguientes requerimientos no funcionales:
+
+\begin{itemize}
+    \item \textbf{Usabilidad:} la aplicación deberá presentar una interfaz clara e intuitiva, de manera que un usuario nuevo pueda acceder a las funciones principales del sistema (iniciar sesión, seleccionar músculos, consultar ejercicios y guardar rutinas) tras un tiempo de aprendizaje no mayor a 10 minutos.
+    
+    \item \textbf{Rendimiento:} el tiempo de respuesta para la consulta de grupos musculares, ejercicios, variantes y rutinas no deberá superar los 2 segundos en condiciones normales de uso y con conexión estable a internet.
+    
+    \item \textbf{Compatibilidad:} la aplicación deberá ejecutarse correctamente en dispositivos móviles con sistema operativo Android versión 8.0 o superior, manteniendo el correcto funcionamiento de sus interfaces y funcionalidades principales.
+    
+    \item \textbf{Seguridad:} el sistema deberá implementar autenticación de usuarios mediante correo electrónico y contraseña, restringiendo el acceso a la información personalizada únicamente al propietario de la cuenta. Además, las contraseñas no deberán almacenarse en texto plano dentro de la base de datos.
+    
+    \item \textbf{Disponibilidad:} el sistema deberá garantizar que la información del usuario, incluyendo rutinas guardadas e historial de entrenamientos, esté disponible al menos el 95\% del tiempo durante su periodo de uso, salvo interrupciones por mantenimiento o fallas del servicio externo.
+    
+    \item \textbf{Mantenibilidad:} el sistema deberá desarrollarse con una estructura modular que permita agregar, modificar o eliminar funcionalidades relacionadas con ejercicios, músculos, rutinas y usuarios sin afectar el funcionamiento de los demás módulos principales.
+    
+    \item \textbf{Escalabilidad:} el sistema deberá permitir el crecimiento de la base de datos de ejercicios, músculos, rutinas y usuarios sin degradar significativamente el rendimiento general de la aplicación.
+    
+    \item \textbf{Consistencia de datos:} la información registrada por cada usuario, como rutinas personalizadas e historial de entrenamientos, deberá mantenerse íntegra y asociada correctamente a su cuenta, evitando duplicidades o pérdidas de información durante las operaciones de guardado y consulta.
+\end{itemize}

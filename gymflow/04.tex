@@ -1,0 +1,107 @@
+\section{Diseño del Proyecto}
+
+La fase de diseño del proyecto GymFlow tiene como objetivo definir la estructura conceptual y visual del sistema antes de su implementación. En esta etapa se establecen los lineamientos generales de la interfaz de usuario, la navegación dentro de la aplicación y la organización de los datos que serán utilizados por el sistema.
+
+En la versión actual del proyecto ya se cuenta con los mockups principales de la aplicación. Los diagramas formales de navegación y del modelo de datos todavía se encuentran en elaboración, por lo que en esta sección se presenta el diseño funcional definido hasta el momento y la estructura conceptual que guiará la implementación.
+
+\subsection{Diseño de interfaces}
+
+El diseño de interfaces de \textbf{GymFlow} se define con un enfoque funcional y directo, orientado al uso durante la sesión real de entrenamiento. En esta etapa, la prioridad no es la complejidad visual, sino la facilidad de uso para que el usuario pueda continuar su rutina cuando un ejercicio o máquina no se encuentre disponible.
+
+Desde el enfoque visual, la propuesta adopta una interfaz móvil moderna con predominio del color azul, tarjetas limpias, jerarquía tipográfica clara y una navegación enfocada en reducir pasos innecesarios. Este criterio permite mantener una experiencia consistente con el alcance del producto mínimo viable (MVP), pero con una presentación más cercana a un prototipo de alta fidelidad.
+
+La pantalla de \textit{login} permite ingresar correo electrónico y contraseña, y dispone del botón \textit{Entrar} como acción principal de acceso. Una vez autenticado, el usuario llega a la pantalla \textit{home}, que constituye la pantalla principal del sistema y presenta una lista simple de grupos musculares (por ejemplo, pecho, espalda y pierna) para iniciar la consulta.
+
+Al seleccionar un músculo, la pantalla de ejercicios por músculo muestra una lista de ejercicios asociados, como \textit{press banca}, \textit{aperturas} o \textit{flexiones}. Posteriormente, al seleccionar un ejercicio, la pantalla de variantes presenta alternativas para continuar el entrenamiento (por ejemplo, \textit{press banca} con opciones como \textit{press con mancuernas} o \textit{flexiones}). Esta pantalla representa el componente clave de la aplicación, ya que responde directamente al problema principal del proyecto: mantener la continuidad de la rutina ante la ocupación de equipos.
+
+De forma complementaria, la pantalla de crear rutina permite seleccionar ejercicios y guardar una rutina mediante un nombre. La pantalla de entrenamiento muestra la lista de ejercicios de la rutina activa y permite marcarlos como realizados. Finalmente, la pantalla de historial presenta un registro básico de rutinas completadas (por ejemplo, \textit{Rutina 1 - hoy} y \textit{Rutina 2 - ayer}).
+
+En conjunto, estas siete pantallas conforman una secuencia clara, consistente y suficiente para la versión inicial del sistema. Los layouts de referencia correspondientes a cada interfaz se presentan como \textbf{Figura \ref{fig:layout-login}}, \textbf{Figura \ref{fig:layout-home}}, \textbf{Figura \ref{fig:layout-ejercicios}}, \textbf{Figura \ref{fig:layout-variantes}}, \textbf{Figura \ref{fig:layout-crear-rutina}}, \textbf{Figura \ref{fig:layout-entrenamiento}} y \textbf{Figura \ref{fig:layout-historial}}, con el fin de respaldar visualmente las decisiones de diseño adoptadas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/login.png}
+    \caption{Layout de referencia de la pantalla de inicio de sesión (Login).}
+    \label{fig:layout-login}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/home.png}
+    \caption{Layout de referencia de la pantalla principal de músculos (Home).}
+    \label{fig:layout-home}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/ejercicios.png}
+    \caption{Layout de referencia de la pantalla de ejercicios por músculo.}
+    \label{fig:layout-ejercicios}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/variantes.png}
+    \caption{Layout de referencia de la pantalla de variantes de ejercicio.}
+    \label{fig:layout-variantes}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/crear-rutina.png}
+    \caption{Layout de referencia de la pantalla de creación de rutina.}
+    \label{fig:layout-crear-rutina}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/entrenamiento.png}
+    \caption{Layout de referencia de la pantalla de entrenamiento.}
+    \label{fig:layout-entrenamiento}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{layouts/historial.png}
+    \caption{Layout de referencia de la pantalla de historial.}
+    \label{fig:layout-historial}
+\end{figure}
+
+\subsection{Flujo de navegación del sistema}
+
+El flujo de navegación del sistema describe la manera en que los usuarios interactúan con la aplicación y cómo se conectan las diferentes pantallas dentro del sistema.
+
+En términos generales, el flujo de interacción de la aplicación sigue la siguiente estructura:
+
+\begin{enumerate}
+    \item El usuario inicia sesión con correo y contraseña mediante la pantalla de acceso.
+    \item El usuario ingresa a \textit{home} y selecciona el músculo que desea entrenar.
+    \item El sistema muestra los ejercicios disponibles para el músculo seleccionado.
+    \item El usuario consulta variantes cuando un ejercicio o máquina no está disponible.
+    \item El usuario crea una rutina simple, selecciona ejercicios y la guarda por nombre.
+    \item El usuario ejecuta la rutina, marca ejercicios como realizados y revisa su historial.
+\end{enumerate}
+
+Este flujo permite que el usuario continúe su entrenamiento incluso cuando ciertas máquinas o equipos del gimnasio no estén disponibles, ofreciendo alternativas para trabajar el mismo grupo muscular.
+
+El diagrama de flujo formal de navegación será incorporado en una siguiente revisión del documento. No obstante, la secuencia funcional ya se encuentra definida a partir de las pantallas presentadas y del recorrido descrito en esta subsección.
+
+\subsection{Modelo de datos del sistema}
+
+El modelo de datos del sistema organiza la información utilizada por la aplicación, incluyendo los usuarios, músculos, ejercicios, rutinas y entrenamientos registrados.
+
+De forma conceptual, el sistema considerará las siguientes entidades principales:
+
+\begin{itemize}
+    \item Usuario
+    \item Músculo
+    \item Ejercicio
+    \item Rutina
+    \item Entrenamiento
+\end{itemize}
+
+Las relaciones entre estas entidades permiten asociar ejercicios a grupos musculares, crear rutinas personalizadas para cada usuario y registrar los entrenamientos realizados durante cada sesión de ejercicio.
+
+El diagrama entidad-relación detallado será incorporado en una siguiente revisión del documento. Mientras tanto, la definición conceptual de las entidades principales deja establecida la base para la construcción de la base de datos.
+
+En la siguiente etapa del desarrollo del proyecto, estos diagramas permitirán precisar la organización de la información y facilitar la implementación de la base de datos dentro de los servicios de Firebase utilizados por la aplicación.

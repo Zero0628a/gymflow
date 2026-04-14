@@ -1,0 +1,144 @@
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage[table]{xcolor}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{placeins}
+\usepackage{enumitem}
+\geometry{
+  left=2.5cm,
+  right=2.5cm,
+  top=3.0cm,
+  bottom=2.5cm
+}
+
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{ragged2e}
+
+\usepackage{caption}
+
+\definecolor{gymblue}{HTML}{1565C0}
+\definecolor{gymblueDark}{HTML}{0D47A1}
+\definecolor{gymblueSoft}{HTML}{E3F2FD}
+\definecolor{gymblueSoftAlt}{HTML}{F4F9FF}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newcommand{\gymtableheaderrow}{\rowcolor{gymblue}}
+\newcommand{\gymth}[1]{\textcolor{white}{\textbf{#1}}}
+\newcommand{\storycell}[1]{\begin{minipage}[t]{\linewidth}\vspace{2pt}#1\vspace{2pt}\end{minipage}}
+\newcommand{\storyitems}[1]{\storycell{\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=2pt,parsep=0pt,partopsep=0pt]#1\end{enumerate}}}
+\renewcommand{\arraystretch}{1.25}
+
+\usepackage[style=apa, backend=biber, language=spanish]{biblatex}
+\addbibresource{referencias.bib}
+
+\usepackage{tocloft}
+
+% ---- Puntitos en el índice ----
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---- Títulos del índice ----
+\addto\captionsspanish{
+  \renewcommand{\contentsname}{ÍNDICE GENERAL}
+  \renewcommand{\listfigurename}{ÍNDICE DE FIGURAS}
+  \renewcommand{\listtablename}{ÍNDICE DE TABLAS}
+}
+
+\setlength{\cftbeforetoctitleskip}{0pt}
+\setlength{\cftaftertoctitleskip}{12pt}
+
+\renewcommand{\cfttoctitlefont}{\fontsize{12}{14}\selectfont\bfseries}
+
+\usepackage{titlesec}
+
+% ---- Formato de secciones ----
+\titleformat{\section}
+{\fontsize{12}{14}\selectfont\bfseries\centering}
+{\thesection.}
+{0.5em}
+{\MakeUppercase}
+
+\titlespacing*{\section}{0pt}{6pt}{6pt}
+
+\titleformat{\subsection}
+{\fontsize{12}{14}\selectfont\bfseries}
+{\thesubsection}
+{0.5em}
+{}
+
+\titlespacing*{\subsection}{0pt}{6pt}{6pt}
+
+\titleformat{\subsubsection}
+{\fontsize{11}{13}\selectfont\bfseries}
+{\thesubsubsection}
+{0.5em}
+{}
+
+\titlespacing*{\subsubsection}{0pt}{6pt}{6pt}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{gymblueDark}{\textbf{GymFlow}}}
+\fancyhead[R]{\textcolor{gymblueDark}{Informe del proyecto}}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{25pt}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{gymblue}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parindent}{0pt}
+
+\AtBeginDocument{
+\singlespacing
+\setlength{\parskip}{6pt}
+\justifying
+}
+
+\begin{document}
+
+%\input{caratula}
+
+
+\clearpage
+\section{Resumen Ejecutivo}
+
+GymFlow es una aplicación móvil orientada a apoyar al usuario durante su sesión de entrenamiento en el gimnasio. Su propósito principal es permitir la consulta rápida de grupos musculares, ejercicios y variantes útiles cuando una máquina o implemento no se encuentra disponible, reduciendo así la improvisación y mejorando la continuidad de la rutina.
+
+El proyecto se desarrolla con React Native y Expo, utilizando servicios de Firebase para autenticación y almacenamiento de información. El informe presenta el análisis del problema, el diseño de la solución, la arquitectura propuesta, la metodología SCRUM aplicada y la organización del trabajo grupal, estableciendo la base conceptual y técnica para la implementación del sistema.
+
+\input{02.tex}
+\input{04.tex}
+\input{03.tex}
+\input{05.tex}
+
+\section{Pruebas y Resultados}
+
+\subsection{Plan de Pruebas}
+
+\subsection{Resultados Obtenidos}
+
+\subsection{Mejoras Propuestas}
+
+\section{Conclusiones y Recomendaciones}
+
+\subsection{Conclusiones}
+
+\subsection{Recomendaciones}
+
+\clearpage
+\printbibliography[title={BIBLIOGRAFÍA}]
+
+\end{document}
