@@ -1,0 +1,24 @@
+\section{Arquitectura del Sistema}
+
+\subsection{Descripción General de la Arquitectura}
+
+La arquitectura de \textbf{GymFlow} se define a partir de tres bloques principales: la aplicación móvil, los servicios de Firebase y el almacenamiento de datos. El usuario interactúa directamente con la aplicación móvil desarrollada en React Native con Expo, desde donde puede registrarse, iniciar sesión, consultar ejercicios, visualizar variantes, crear rutinas y registrar entrenamientos.
+
+La aplicación móvil se integra con \textit{Firebase Authentication} para la gestión de acceso de usuarios. La información principal del sistema se organiza mediante \textit{Cloud Firestore} y \textit{Realtime Database}, donde se almacenan los datos de músculos, ejercicios, rutinas prediseñadas, rutinas personalizadas e historial básico de entrenamiento. Por otra parte, \textit{Firebase Storage} permite almacenar archivos o recursos complementarios que puedan ser utilizados dentro de la aplicación.
+
+De manera general, el flujo de la arquitectura puede representarse así:
+
+\begin{center}
+Aplicación móvil $\rightarrow$ Firebase Authentication $\rightarrow$ Cloud Firestore / Realtime Database $\rightarrow$ Firebase Storage
+\end{center}
+
+\subsection{Diagrama de Arquitectura}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{arquitecture.png}
+    \caption{Diagrama de arquitectura del sistema GymFlow}
+    \label{fig:arquitectura}
+\end{figure}
+
+Esta arquitectura centraliza la información, facilita la autenticación de usuarios y mantiene una estructura flexible para futuras ampliaciones del sistema.

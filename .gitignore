@@ -41,3 +41,22 @@ app-example
 # generated native folders
 /ios
 /android
+
+# material omitido o privado del informe/proyecto
+/gymflow/omitido/
+
+# LaTeX output
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.pdf
