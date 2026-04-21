@@ -1,0 +1,143 @@
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage[table]{xcolor}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{placeins}
+\usepackage{enumitem}
+\geometry{
+  left=2.5cm,
+  right=2.5cm,
+  top=3.0cm,
+  bottom=2.5cm
+}
+
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{ragged2e}
+\usepackage{caption}
+\usepackage{tocloft}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+\definecolor{gymblue}{HTML}{1565C0}
+\definecolor{gymblueDark}{HTML}{0D47A1}
+\definecolor{gymblueSoft}{HTML}{E3F2FD}
+\definecolor{gymblueSoftAlt}{HTML}{F4F9FF}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\newcommand{\gymtableheaderrow}{\rowcolor{gymblue}}
+\newcommand{\gymth}[1]{\textcolor{white}{\textbf{#1}}}
+\newcommand{\storycell}[1]{\begin{minipage}[t]{\linewidth}\vspace{2pt}#1\vspace{2pt}\end{minipage}}
+\newcommand{\storyitems}[1]{\storycell{\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=2pt,parsep=0pt,partopsep=0pt]#1\end{enumerate}}}
+\renewcommand{\arraystretch}{1.25}
+
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+
+\addto\captionsspanish{
+  \renewcommand{\contentsname}{ÍNDICE GENERAL}
+  \renewcommand{\listfigurename}{ÍNDICE DE FIGURAS}
+  \renewcommand{\listtablename}{ÍNDICE DE TABLAS}
+}
+
+\setlength{\cftbeforetoctitleskip}{0pt}
+\setlength{\cftaftertoctitleskip}{12pt}
+\renewcommand{\cfttoctitlefont}{\fontsize{12}{14}\selectfont\bfseries}
+
+\titleformat{\section}
+{\fontsize{12}{14}\selectfont\bfseries\centering}
+{\thesection.}
+{0.5em}
+{\MakeUppercase}
+
+\titlespacing*{\section}{0pt}{6pt}{6pt}
+
+\titleformat{\subsection}
+{\fontsize{12}{14}\selectfont\bfseries}
+{\thesubsection}
+{0.5em}
+{}
+
+\titlespacing*{\subsection}{0pt}{6pt}{6pt}
+
+\titleformat{\subsubsection}
+{\fontsize{11}{13}\selectfont\bfseries}
+{\thesubsubsection}
+{0.5em}
+{}
+
+\titlespacing*{\subsubsection}{0pt}{6pt}{6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textcolor{gymblueDark}{\textbf{GymFlow}}}
+\fancyhead[R]{\textcolor{gymblueDark}{Scrum Full Report hasta Sprint 1}}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{25pt}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{gymblue}\leaders\hrule height \headrulewidth\hfill}}
+
+\setlength{\parindent}{0pt}
+
+\AtBeginDocument{
+\singlespacing
+\setlength{\parskip}{6pt}
+\justifying
+}
+
+\begin{document}
+
+\input{caratula_sprint1}
+
+\clearpage
+\tableofcontents
+
+\clearpage
+\section{Resumen Ejecutivo}
+
+GymFlow es una aplicación móvil orientada a apoyar al usuario durante su sesión de entrenamiento en el gimnasio. Su propósito principal es permitir la consulta rápida de grupos musculares, ejercicios y variantes útiles cuando una máquina o implemento no se encuentra disponible, reduciendo así la improvisación y mejorando la continuidad de la rutina.
+
+El proyecto se desarrolla con React Native y Expo, utilizando servicios de Firebase para autenticación y almacenamiento de información. El presente documento recopila el informe del proyecto \textbf{hasta el cierre del Sprint 1}, por lo que mantiene el análisis general del problema, el diseño del sistema, la arquitectura propuesta y la metodología de trabajo, pero limita la planificación detallada, el backlog comprometido y las historias de usuario al \textbf{sprint 0} y al \textbf{sprint 1}.
+
+\input{02.tex}
+\input{04.tex}
+\input{03.tex}
+\input{05_sprint1.tex}
+
+\section{Pruebas y Resultados}
+
+\subsection{Plan de Pruebas}
+
+Hasta el cierre del Sprint 1 se considera como prioridad la validación del flujo base de acceso del sistema. En este sentido, las pruebas iniciales se enfocan en verificar la navegación entre registro, inicio de sesión y pantalla principal, así como la coherencia visual de las interfaces y la consistencia de los formularios definidos en los mockups.
+
+\subsection{Resultados Obtenidos}
+
+Como resultado del trabajo acumulado hasta Sprint 1, el proyecto cuenta con una base conceptual y visual clara, una arquitectura definida y un backlog funcional organizado para el incremento inicial. Asimismo, quedan documentadas las historias HU-01, HU-02 y HU-03 junto con sus tareas, criterios de aceptación y recursos visuales de referencia.
+
+\subsection{Mejoras Propuestas}
+
+Para el siguiente incremento se propone continuar con la implementación del núcleo funcional del sistema, incorporando la consulta de músculos, ejercicios y variantes. También se recomienda mantener la trazabilidad entre mockups, código y backlog para que la transición desde la autenticación hacia la funcionalidad principal del producto sea consistente.
+
+\section{Conclusiones y Recomendaciones}
+
+\subsection{Conclusiones}
+
+Hasta el Sprint 1, GymFlow cuenta con un avance documental sólido que cubre el problema del dominio, la propuesta de solución, el diseño de interfaces, la arquitectura tecnológica y la organización del trabajo bajo SCRUM. Este corte deja establecida la base necesaria para continuar con el desarrollo funcional del sistema en los siguientes sprints.
+
+\subsection{Recomendaciones}
+
+Se recomienda que los siguientes incrementos mantengan coherencia con la planificación inicial y con el objetivo principal del proyecto: ayudar al usuario a continuar su entrenamiento cuando no dispone de una máquina específica. También conviene actualizar de forma continua la evidencia documental del avance real del sistema para evitar diferencias entre el informe y la implementación.
+
+\end{document}

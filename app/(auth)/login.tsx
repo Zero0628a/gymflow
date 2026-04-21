@@ -1,214 +1,173 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GymFlowColors } from '@/constants/theme';
+
+import { AuthScreen } from '@/components/ui/auth-screen';
+import { Button }     from '@/components/ui/button';
+import { FormError }  from '@/components/ui/form-error';
+import { IconCircle } from '@/components/ui/icon-circle';
+import { Input }      from '@/components/ui/input';
+import { useGymColors } from '@/hooks/use-gym-colors';
+import { useAuth } from '@/providers/auth-provider';
+import { Fonts } from '@/constants/theme';
 
 export default function LoginScreen() {
-  const insets = useSafeAreaInsets();
+  const colors = useGymColors();
+  const { signIn } = useAuth();
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [showPass, setShowPass] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin() {
-    router.replace('/(tabs)');
+  function validate() {
+    let valid = true;
+
+    if (!email.trim()) {
+      setEmailError('Ingresa tu correo.');
+      valid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (!password) {
+      setPasswordError('Ingresa tu contraseña.');
+      valid = false;
+    } else {
+      setPasswordError('');
+    }
+
+    return valid;
+  }
+
+  async function handleLogin() {
+    if (!validate()) return;
+
+    setSubmitError('');
+    setLoading(true);
+
+    try {
+      await signIn(email, password);
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      const code = error?.code ?? '';
+      console.error('Error al iniciar sesión:', error);
+      if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) {
+        setSubmitError('Correo o contraseña incorrectos.');
+      } else if (code.includes('invalid-email')) {
+        setEmailError('El correo no es válido.');
+      } else if (code.includes('operation-not-allowed')) {
+        setSubmitError('Firebase no tiene habilitado Email/Password en Authentication.');
+      } else if (code.includes('network-request-failed')) {
+        setSubmitError('No se pudo conectar con Firebase. Revisa tu internet.');
+      } else {
+        setSubmitError(`No se pudo iniciar sesión (${code || 'error-desconocido'}).`);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: insets.top + 32 }]} keyboardShouldPersistTaps="handled">
+    <AuthScreen centered topPadding={32}>
+      <View style={styles.header}>
+        <IconCircle icon="barbell" size="lg" variant="solid" style={styles.logo} />
+        <Text style={[styles.appName, { color: colors.primaryDark }]}>GymFlow</Text>
+        <Text style={[styles.tagline, { color: colors.textSecondary }]}>
+          Registro de entrenamiento
+        </Text>
+      </View>
 
-        <View style={styles.header}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="barbell" size={40} color={GymFlowColors.white} />
-          </View>
-          <Text style={styles.appName}>GymFlow</Text>
-          <Text style={styles.tagline}>Entrena sin interrupciones</Text>
+      <View style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }]}>
+        <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Iniciar sesión</Text>
+
+        <Input
+          label="Correo electrónico"
+          placeholder="correo@ejemplo.com"
+          value={email}
+          onChangeText={setEmail}
+          icon="mail-outline"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.field}
+          error={emailError}
+        />
+
+        <Input
+          label="Contraseña"
+          placeholder="••••••••"
+          value={password}
+          onChangeText={setPassword}
+          icon="lock-closed-outline"
+          secureTextEntry
+          style={styles.field}
+          error={passwordError}
+        />
+
+        <FormError message={submitError} style={styles.formError} />
+
+        <Button onPress={handleLogin} size="lg" style={styles.btn} loading={loading}>
+          Entrar
+        </Button>
+
+        <View style={styles.divider}>
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+          <Text style={[styles.dividerText, { color: colors.textMuted }]}>o</Text>
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Iniciar sesión</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="mail-outline" size={18} color={GymFlowColors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="correo@ejemplo.com"
-                placeholderTextColor={GymFlowColors.textMuted}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contraseña</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={18} color={GymFlowColors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, styles.inputFlex]}
-                placeholder="••••••••"
-                placeholderTextColor={GymFlowColors.textMuted}
-                secureTextEntry={!showPass}
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPass(!showPass)} style={styles.eyeButton}>
-                <Ionicons
-                  name={showPass ? 'eye-off-outline' : 'eye-outline'}
-                  size={18}
-                  color={GymFlowColors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.primaryButton} onPress={handleLogin} activeOpacity={0.85}>
-            <Text style={styles.primaryButtonText}>Entrar</Text>
-          </TouchableOpacity>
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => router.push('/(auth)/register')}
-            activeOpacity={0.75}>
-            <Text style={styles.secondaryButtonText}>Crear cuenta nueva</Text>
-          </TouchableOpacity>
-        </View>
-
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <Button onPress={() => router.push('/(auth)/register')} variant="outline" size="lg">
+          Crear cuenta
+        </Button>
+      </View>
+    </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: GymFlowColors.background,
-  },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 48,
-  },
   header: {
     alignItems: 'center',
     marginBottom: 32,
   },
-  logoCircle: {
+  logo: {
+    marginBottom: 16,
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: GymFlowColors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    shadowColor: GymFlowColors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
   },
   appName: {
+    fontFamily: Fonts.display,
     fontSize: 32,
     fontWeight: '800',
-    color: GymFlowColors.primaryDark,
     letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   tagline: {
+    fontFamily: Fonts.bodyRegular,
     fontSize: 14,
-    color: GymFlowColors.textSecondary,
     marginTop: 4,
   },
   card: {
-    backgroundColor: GymFlowColors.white,
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
   },
   cardTitle: {
+    fontFamily: Fonts.bodyBold,
     fontSize: 20,
     fontWeight: '700',
-    color: GymFlowColors.textPrimary,
     marginBottom: 20,
+    textTransform: 'uppercase',
   },
-  inputGroup: {
+  field: {
     marginBottom: 16,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: GymFlowColors.textSecondary,
-    marginBottom: 6,
+  formError: {
+    marginBottom: 8,
   },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: GymFlowColors.border,
-    borderRadius: 12,
-    backgroundColor: GymFlowColors.surfaceAlt,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: GymFlowColors.textPrimary,
-  },
-  inputFlex: {
-    flex: 1,
-  },
-  eyeButton: {
-    padding: 4,
-  },
-  primaryButton: {
-    backgroundColor: GymFlowColors.primary,
-    borderRadius: 12,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+  btn: {
     marginTop: 8,
-    shadowColor: GymFlowColors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  primaryButtonText: {
-    color: GymFlowColors.white,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   divider: {
     flexDirection: 'row',
@@ -218,24 +177,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: GymFlowColors.border,
   },
   dividerText: {
+    fontFamily: Fonts.bodyRegular,
     marginHorizontal: 12,
-    color: GymFlowColors.textMuted,
     fontSize: 13,
-  },
-  secondaryButton: {
-    borderWidth: 1.5,
-    borderColor: GymFlowColors.primary,
-    borderRadius: 12,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryButtonText: {
-    color: GymFlowColors.primary,
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

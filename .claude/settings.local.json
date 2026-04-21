@@ -1,7 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(pdflatex -interaction=nonstopmode main.tex)"
-    ]
+    "allow": ["Bash(*)", "Read(*)", "Write(*)", "Edit(*)"]
   }
 }
