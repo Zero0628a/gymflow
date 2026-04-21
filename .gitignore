@@ -60,3 +60,4 @@ app-example
 *.synctex.gz
 *.toc
 *.pdf
+/gymflow/build/

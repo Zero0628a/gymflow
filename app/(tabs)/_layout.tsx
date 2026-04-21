@@ -2,24 +2,28 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { GymFlowColors } from '@/constants/theme';
+import { useGymColors } from '@/hooks/use-gym-colors';
 
 export default function TabLayout() {
+  const colors = useGymColors();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarActiveTintColor: GymFlowColors.primary,
-        tabBarInactiveTintColor: GymFlowColors.textMuted,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: GymFlowColors.white,
-          borderTopColor: GymFlowColors.border,
+          backgroundColor: colors.bgSurface,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          textTransform: 'uppercase',
+          letterSpacing: 0.6,
         },
       }}>
       <Tabs.Screen

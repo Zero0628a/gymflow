@@ -1,26 +1,26 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, FlatList, StyleSheet, Alert, Text } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { GymFlowColors } from '@/constants/theme';
+
+import { Button }        from '@/components/ui/button';
+import { Card }          from '@/components/ui/card';
+import { Input }         from '@/components/ui/input';
+import { ModalHeader }   from '@/components/ui/modal-header';
+import { Screen }        from '@/components/ui/screen';
+import { SectionHeader } from '@/components/ui/section-header';
+import { useGymColors }  from '@/hooks/use-gym-colors';
 import { exercises } from '@/data/mock';
 import type { Exercise } from '@/types';
 
 const allExercises: Exercise[] = Object.values(exercises).flat();
 
 export default function CrearRutinaScreen() {
-  const [name, setName]             = useState('');
-  const [selected, setSelected]     = useState<Set<string>>(new Set());
+  const colors = useGymColors();
+  const [name, setName]         = useState('');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  function toggleExercise(id: string) {
+  function toggle(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -43,52 +43,58 @@ export default function CrearRutinaScreen() {
   }
 
   function renderExercise({ item }: { item: Exercise }) {
-    const isSelected = selected.has(item.id);
+    const on = selected.has(item.id);
     return (
-      <TouchableOpacity
-        style={[styles.exerciseCard, isSelected && styles.exerciseCardSelected]}
-        onPress={() => toggleExercise(item.id)}
-        activeOpacity={0.75}>
-        <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
-          {isSelected && <Ionicons name="checkmark" size={14} color={GymFlowColors.white} />}
+      <Card
+        onPress={() => toggle(item.id)}
+        variant={on ? 'outlined' : 'elevated'}
+        style={on ? { backgroundColor: colors.surfaceAlt } : undefined}>
+        <View style={styles.row}>
+          <View
+            style={[
+              styles.checkbox,
+              { borderColor: on ? colors.primary : colors.border },
+              on && { backgroundColor: colors.primary },
+            ]}>
+            {on && <Ionicons name="checkmark" size={14} color="#fff" />}
+          </View>
+          <View style={styles.info}>
+            <Text style={[styles.exName, { color: on ? colors.primaryDark : colors.textPrimary }]}>
+              {item.name}
+            </Text>
+            <Text
+              style={[styles.exDesc, { color: colors.textMuted }]}
+              numberOfLines={1}>
+              {item.description}
+            </Text>
+          </View>
         </View>
-        <View style={styles.exerciseInfo}>
-          <Text style={[styles.exerciseName, isSelected && styles.exerciseNameSelected]}>
-            {item.name}
-          </Text>
-          <Text style={styles.exerciseDesc} numberOfLines={1}>{item.description}</Text>
-        </View>
-      </TouchableOpacity>
+      </Card>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="close" size={24} color={GymFlowColors.textSecondary} />
-        </TouchableOpacity>
-        <Text style={styles.topBarTitle}>Nueva Rutina</Text>
-        <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.saveText}>Guardar</Text>
-        </TouchableOpacity>
-      </View>
+    <Screen>
+      <ModalHeader
+        title="Nueva Rutina"
+        onClose={() => router.back()}
+        actionLabel="Guardar"
+        onAction={handleSave}
+      />
 
       <View style={styles.nameSection}>
-        <Text style={styles.label}>Nombre de la rutina</Text>
-        <TextInput
-          style={styles.nameInput}
+        <Input
+          label="Nombre de la rutina"
           placeholder="Ej: Empuje lunes"
-          placeholderTextColor={GymFlowColors.textMuted}
           value={name}
           onChangeText={setName}
         />
       </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Ejercicios</Text>
-        <Text style={styles.sectionCount}>{selected.size} seleccionados</Text>
-      </View>
+      <SectionHeader
+        title="Ejercicios"
+        right={`${selected.size} seleccionados`}
+      />
 
       <FlatList
         data={allExercises}
@@ -99,132 +105,53 @@ export default function CrearRutinaScreen() {
       />
 
       {selected.size > 0 && (
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave} activeOpacity={0.85}>
-            <Ionicons name="save-outline" size={18} color={GymFlowColors.white} />
-            <Text style={styles.saveButtonText}>Guardar rutina ({selected.size})</Text>
-          </TouchableOpacity>
+        <View
+          style={[
+            styles.footer,
+            { backgroundColor: colors.white, borderTopColor: colors.border },
+          ]}>
+          <Button onPress={handleSave} size="lg" icon="save-outline">
+            {`Guardar rutina (${selected.size})`}
+          </Button>
         </View>
       )}
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: GymFlowColors.background,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: GymFlowColors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: GymFlowColors.border,
-  },
-  topBarTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: GymFlowColors.textPrimary,
-  },
-  saveText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: GymFlowColors.primary,
-  },
   nameSection: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: GymFlowColors.textSecondary,
-    marginBottom: 8,
-  },
-  nameInput: {
-    backgroundColor: GymFlowColors.white,
-    borderWidth: 1.5,
-    borderColor: GymFlowColors.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 48,
-    fontSize: 15,
-    color: GymFlowColors.textPrimary,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: GymFlowColors.textPrimary,
-  },
-  sectionCount: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: GymFlowColors.primary,
-  },
   list: {
     paddingHorizontal: 20,
-    paddingBottom: 100,
+    paddingBottom: 120,
     gap: 8,
   },
-  exerciseCard: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: GymFlowColors.white,
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  exerciseCardSelected: {
-    borderColor: GymFlowColors.primary,
-    backgroundColor: GymFlowColors.surfaceAlt,
   },
   checkbox: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: GymFlowColors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  checkboxSelected: {
-    backgroundColor: GymFlowColors.primary,
-    borderColor: GymFlowColors.primary,
-  },
-  exerciseInfo: {
+  info: {
     flex: 1,
   },
-  exerciseName: {
+  exName: {
     fontSize: 14,
     fontWeight: '600',
-    color: GymFlowColors.textPrimary,
   },
-  exerciseNameSelected: {
-    color: GymFlowColors.primaryDark,
-  },
-  exerciseDesc: {
+  exDesc: {
     fontSize: 12,
-    color: GymFlowColors.textMuted,
     marginTop: 2,
   },
   footer: {
@@ -233,27 +160,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    backgroundColor: GymFlowColors.white,
     borderTopWidth: 1,
-    borderTopColor: GymFlowColors.border,
-  },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: GymFlowColors.primary,
-    borderRadius: 14,
-    height: 52,
-    shadowColor: GymFlowColors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  saveButtonText: {
-    color: GymFlowColors.white,
-    fontSize: 16,
-    fontWeight: '700',
   },
 });

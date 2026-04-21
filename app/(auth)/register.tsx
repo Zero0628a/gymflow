@@ -1,222 +1,218 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { GymFlowColors } from '@/constants/theme';
+
+import { AuthScreen } from '@/components/ui/auth-screen';
+import { Button }     from '@/components/ui/button';
+import { FormError }  from '@/components/ui/form-error';
+import { Input }      from '@/components/ui/input';
+import { useGymColors } from '@/hooks/use-gym-colors';
+import { useAuth } from '@/providers/auth-provider';
+import { Fonts } from '@/constants/theme';
 
 export default function RegisterScreen() {
+  const colors = useGymColors();
+  const { register } = useAuth();
   const [name, setName]         = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
-  const [showPass, setShowPass] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleRegister() {
-    router.replace('/(tabs)');
+  function validate() {
+    let valid = true;
+
+    if (!name.trim()) {
+      setNameError('Ingresa tu nombre.');
+      valid = false;
+    } else {
+      setNameError('');
+    }
+
+    if (!email.trim()) {
+      setEmailError('Ingresa tu correo.');
+      valid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (password.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres.');
+      valid = false;
+    } else {
+      setPasswordError('');
+    }
+
+    if (confirmPassword !== password) {
+      setConfirmPasswordError('Las contraseñas no coinciden.');
+      valid = false;
+    } else {
+      setConfirmPasswordError('');
+    }
+
+    return valid;
+  }
+
+  async function handleRegister() {
+    if (!validate()) return;
+
+    setSubmitError('');
+    setLoading(true);
+
+    try {
+      await register({ name, email, password });
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      const code = error?.code ?? '';
+      console.error('Error al registrar usuario:', error);
+      if (code.includes('email-already-in-use')) {
+        setEmailError('Ese correo ya está registrado.');
+      } else if (code.includes('invalid-email')) {
+        setEmailError('El correo no es válido.');
+      } else if (code.includes('weak-password')) {
+        setPasswordError('La contraseña es demasiado débil.');
+      } else if (code.includes('operation-not-allowed')) {
+        setSubmitError('Firebase no tiene habilitado Email/Password en Authentication.');
+      } else if (code.includes('network-request-failed')) {
+        setSubmitError('No se pudo conectar con Firebase. Revisa tu internet.');
+      } else {
+        setSubmitError(`No se pudo crear la cuenta (${code || 'error-desconocido'}).`);
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <AuthScreen>
+      <Pressable style={styles.back} onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={22} color={colors.primary} />
+        <Text style={[styles.backText, { color: colors.primary }]}>Acceso</Text>
+      </Pressable>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color={GymFlowColors.primary} />
-          <Text style={styles.backText}>Volver</Text>
-        </TouchableOpacity>
+      <View style={styles.titleBlock}>
+        <Text style={[styles.title, { color: colors.primaryDark }]}>Crear cuenta</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Configura tu acceso
+        </Text>
+      </View>
 
-        <View style={styles.titleBlock}>
-          <Text style={styles.title}>Crear cuenta</Text>
-          <Text style={styles.subtitle}>Únete a GymFlow y entrena mejor</Text>
-        </View>
+      <View style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }]}>
+        <Input
+          label="Nombre completo"
+          placeholder="Tu nombre"
+          value={name}
+          onChangeText={setName}
+          icon="person-outline"
+          autoCapitalize="words"
+          style={styles.field}
+          error={nameError}
+        />
+        <Input
+          label="Correo electrónico"
+          placeholder="correo@ejemplo.com"
+          value={email}
+          onChangeText={setEmail}
+          icon="mail-outline"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.field}
+          error={emailError}
+        />
+        <Input
+          label="Contraseña"
+          placeholder="Mínimo 6 caracteres"
+          value={password}
+          onChangeText={setPassword}
+          icon="lock-closed-outline"
+          secureTextEntry
+          style={styles.field}
+          error={passwordError}
+        />
+        <Input
+          label="Confirmar contraseña"
+          placeholder="Repite tu contraseña"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          icon="shield-checkmark-outline"
+          secureTextEntry
+          style={styles.field}
+          error={confirmPasswordError}
+        />
 
-        <View style={styles.card}>
+        <FormError message={submitError} style={styles.formError} />
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Nombre completo</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="person-outline" size={18} color={GymFlowColors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Tu nombre"
-                placeholderTextColor={GymFlowColors.textMuted}
-                autoCapitalize="words"
-                value={name}
-                onChangeText={setName}
-              />
-            </View>
-          </View>
+        <Button onPress={handleRegister} size="lg" style={styles.btn} loading={loading}>
+          Crear cuenta
+        </Button>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Correo electrónico</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="mail-outline" size={18} color={GymFlowColors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="correo@ejemplo.com"
-                placeholderTextColor={GymFlowColors.textMuted}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contraseña</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={18} color={GymFlowColors.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, styles.inputFlex]}
-                placeholder="Mínimo 6 caracteres"
-                placeholderTextColor={GymFlowColors.textMuted}
-                secureTextEntry={!showPass}
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPass(!showPass)} style={styles.eyeButton}>
-                <Ionicons
-                  name={showPass ? 'eye-off-outline' : 'eye-outline'}
-                  size={18}
-                  color={GymFlowColors.textSecondary}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.primaryButton} onPress={handleRegister} activeOpacity={0.85}>
-            <Text style={styles.primaryButtonText}>Crear cuenta</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.loginLink} onPress={() => router.back()}>
-            <Text style={styles.loginLinkText}>
-              ¿Ya tienes cuenta? <Text style={styles.loginLinkBold}>Inicia sesión</Text>
+        <Pressable style={styles.loginLink} onPress={() => router.back()}>
+          <Text style={[styles.loginText, { color: colors.textSecondary }]}>
+            ¿Ya tienes acceso?{' '}
+            <Text style={{ color: colors.primary, fontWeight: '700', fontFamily: Fonts.bodyBold }}>
+              Inicia sesión
             </Text>
-          </TouchableOpacity>
-
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </Text>
+        </Pressable>
+      </View>
+    </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: GymFlowColors.background,
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 56,
-    paddingBottom: 40,
-  },
-  backButton: {
+  back: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
     gap: 6,
+    marginBottom: 24,
   },
   backText: {
-    color: GymFlowColors.primary,
+    fontFamily: Fonts.bodySemiBold,
     fontSize: 15,
     fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   titleBlock: {
     marginBottom: 28,
   },
   title: {
+    fontFamily: Fonts.display,
     fontSize: 28,
     fontWeight: '800',
-    color: GymFlowColors.primaryDark,
+    textTransform: 'uppercase',
   },
   subtitle: {
+    fontFamily: Fonts.bodyRegular,
     fontSize: 14,
-    color: GymFlowColors.textSecondary,
     marginTop: 4,
   },
   card: {
-    backgroundColor: GymFlowColors.white,
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
   },
-  inputGroup: {
+  field: {
     marginBottom: 16,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: GymFlowColors.textSecondary,
-    marginBottom: 6,
+  formError: {
+    marginBottom: 8,
   },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: GymFlowColors.border,
-    borderRadius: 12,
-    backgroundColor: GymFlowColors.surfaceAlt,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: GymFlowColors.textPrimary,
-  },
-  inputFlex: {
-    flex: 1,
-  },
-  eyeButton: {
-    padding: 4,
-  },
-  primaryButton: {
-    backgroundColor: GymFlowColors.primary,
-    borderRadius: 12,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+  btn: {
     marginTop: 8,
-    shadowColor: GymFlowColors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  primaryButtonText: {
-    color: GymFlowColors.white,
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
   },
   loginLink: {
     alignItems: 'center',
     marginTop: 20,
   },
-  loginLinkText: {
+  loginText: {
+    fontFamily: Fonts.bodyRegular,
     fontSize: 14,
-    color: GymFlowColors.textSecondary,
-  },
-  loginLinkBold: {
-    color: GymFlowColors.primary,
-    fontWeight: '700',
   },
 });
