@@ -2,6 +2,7 @@ import { View, FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 
 import { Badge }      from '@/components/ui/badge';
 import { ListItem }   from '@/components/ui/list-item';
@@ -65,6 +66,19 @@ export default function EjerciciosScreen() {
         </Text>
       </View>
 
+      {muscle && (
+        <View
+          style={[
+            styles.hero,
+            {
+              backgroundColor: accent + '10',
+              borderColor: accent + '26',
+            },
+          ]}>
+          <Image source={muscle.image} style={styles.heroImage} contentFit="contain" />
+        </View>
+      )}
+
       <FlatList
         data={lista}
         keyExtractor={(item) => item.id}
@@ -111,6 +125,20 @@ const styles = StyleSheet.create({
   },
   hintText: {
     fontSize: 12,
+  },
+  hero: {
+    marginHorizontal: 20,
+    marginBottom: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    minHeight: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  heroImage: {
+    width: '78%',
+    height: 120,
   },
   list: {
     padding: 20,
