@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Anton_400Regular } from '@expo-google-fonts/anton';
 import {
@@ -17,6 +18,8 @@ import {
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
+import { RoutinesProvider } from '@/providers/routines-provider';
+import { TrainingProvider } from '@/providers/training-provider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { GymFlowColors, GymFlowDarkColors, NavigationThemes } from '@/constants/theme';
 
@@ -125,10 +128,16 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <RoutinesProvider>
+            <TrainingProvider>
+              <RootNavigator />
+            </TrainingProvider>
+          </RoutinesProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

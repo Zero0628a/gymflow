@@ -1,13 +1,13 @@
 import type { Muscle, Exercise, Variant, Routine, HistoryEntry } from '@/types';
 
 export const muscles: Muscle[] = [
-  { id: 'pecho',    name: 'Pecho',    icon: 'fitness-outline',  color: '#E53935' },
-  { id: 'espalda',  name: 'Espalda',  icon: 'body-outline',     color: '#8E24AA' },
-  { id: 'piernas',  name: 'Piernas',  icon: 'walk-outline',     color: '#00897B' },
-  { id: 'hombros',  name: 'Hombros',  icon: 'barbell-outline',  color: '#F57C00' },
-  { id: 'biceps',   name: 'Bíceps',   icon: 'barbell-outline',  color: '#1565C0' },
-  { id: 'triceps',  name: 'Tríceps',  icon: 'barbell-outline',  color: '#2E7D32' },
-  { id: 'abdomen',  name: 'Abdomen',  icon: 'body-outline',     color: '#D32F2F' },
+  { id: 'pecho',    name: 'Pecho',    icon: 'fitness-outline',  color: '#E53935', image: require('@/assets/musculos/pecho.png') },
+  { id: 'espalda',  name: 'Espalda',  icon: 'body-outline',     color: '#8E24AA', image: require('@/assets/musculos/espalda.png') },
+  { id: 'piernas',  name: 'Piernas',  icon: 'walk-outline',     color: '#00897B', image: require('@/assets/musculos/cuadriceceps.png') },
+  { id: 'hombros',  name: 'Hombros',  icon: 'barbell-outline',  color: '#F57C00', image: require('@/assets/musculos/hombros.png') },
+  { id: 'biceps',   name: 'Bíceps',   icon: 'barbell-outline',  color: '#1565C0', image: require('@/assets/musculos/brazos.png') },
+  { id: 'triceps',  name: 'Tríceps',  icon: 'barbell-outline',  color: '#2E7D32', image: require('@/assets/musculos/brazos.png') },
+  { id: 'abdomen',  name: 'Abdomen',  icon: 'body-outline',     color: '#D32F2F', image: require('@/assets/musculos/abdomen.png') },
 ];
 
 export const exercises: Record<string, Exercise[]> = {

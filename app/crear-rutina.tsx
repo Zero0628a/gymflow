@@ -11,24 +11,31 @@ import { Screen }        from '@/components/ui/screen';
 import { SectionHeader } from '@/components/ui/section-header';
 import { useGymColors }  from '@/hooks/use-gym-colors';
 import { exercises } from '@/data/mock';
+import { useRoutines } from '@/providers/routines-provider';
 import type { Exercise } from '@/types';
 
 const allExercises: Exercise[] = Object.values(exercises).flat();
 
 export default function CrearRutinaScreen() {
   const colors = useGymColors();
+  const { createRoutine } = useRoutines();
   const [name, setName]         = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
 
   function toggle(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!name.trim()) {
       Alert.alert('Nombre requerido', 'Escribe un nombre para tu rutina.');
       return;
@@ -37,9 +44,24 @@ export default function CrearRutinaScreen() {
       Alert.alert('Sin ejercicios', 'Selecciona al menos un ejercicio.');
       return;
     }
-    Alert.alert('Rutina guardada', `"${name}" con ${selected.size} ejercicio(s).`, [
-      { text: 'OK', onPress: () => router.back() },
-    ]);
+
+    setSaving(true);
+
+    try {
+      await createRoutine({
+        name,
+        exerciseIds: Array.from(selected),
+      });
+
+      Alert.alert('Rutina guardada', `"${name}" con ${selected.size} ejercicio(s).`, [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      console.error('Error al guardar rutina:', error);
+      Alert.alert('Error', 'No se pudo guardar la rutina en Firebase.');
+    } finally {
+      setSaving(false);
+    }
   }
 
   function renderExercise({ item }: { item: Exercise }) {
@@ -79,7 +101,7 @@ export default function CrearRutinaScreen() {
         title="Nueva Rutina"
         onClose={() => router.back()}
         actionLabel="Guardar"
-        onAction={handleSave}
+        onAction={() => void handleSave()}
       />
 
       <View style={styles.nameSection}>
@@ -110,7 +132,7 @@ export default function CrearRutinaScreen() {
             styles.footer,
             { backgroundColor: colors.white, borderTopColor: colors.border },
           ]}>
-          <Button onPress={handleSave} size="lg" icon="save-outline">
+          <Button onPress={() => void handleSave()} size="lg" icon="save-outline" loading={saving}>
             {`Guardar rutina (${selected.size})`}
           </Button>
         </View>

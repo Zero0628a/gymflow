@@ -9,12 +9,19 @@ import { ListItem }     from '@/components/ui/list-item';
 import { Screen }       from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { useGymColors } from '@/hooks/use-gym-colors';
-import { mockRoutines } from '@/data/mock';
+import { useRoutines } from '@/providers/routines-provider';
 import { Fonts } from '@/constants/theme';
 import type { Routine } from '@/types';
 
+const routineDateFormatter = new Intl.DateTimeFormat('es-ES', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
 export default function RutinasScreen() {
   const colors = useGymColors();
+  const { loading, routines } = useRoutines();
 
   function renderRoutine({ item }: { item: Routine }) {
     return (
@@ -24,7 +31,7 @@ export default function RutinasScreen() {
         right={<IconCircle icon="play" variant="solid" size="sm" />}>
         <View style={styles.meta}>
           <Badge variant="default">{`${item.exerciseIds.length} ejercicios`}</Badge>
-          <Text style={[styles.date, { color: colors.textMuted }]}>{item.createdAt}</Text>
+          <Text style={[styles.date, { color: colors.textMuted }]}>{formatRoutineDate(item.createdAt)}</Text>
         </View>
       </ListItem>
     );
@@ -34,7 +41,7 @@ export default function RutinasScreen() {
     <Screen>
       <ScreenHeader
         title="Mis Rutinas"
-        subtitle={`${mockRoutines.length} rutinas registradas`}
+        subtitle={loading ? 'Cargando rutinas' : `${routines.length} rutinas registradas`}
         right={
           <Button
             onPress={() => router.push('/crear-rutina')}
@@ -46,7 +53,7 @@ export default function RutinasScreen() {
       />
 
       <FlatList
-        data={mockRoutines}
+        data={routines}
         keyExtractor={(item) => item.id}
         renderItem={renderRoutine}
         contentContainerStyle={styles.list}
@@ -81,3 +88,16 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.monoRegular,
   },
 });
+
+function formatRoutineDate(value: string) {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return routineDateFormatter.format(date);
+}

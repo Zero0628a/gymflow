@@ -54,7 +54,7 @@ export function Input({
           />
         )}
         <TextInput
-          style={[styles.input, { color: colors.textPrimary }]}
+          style={[styles.input, { color: colors.textPrimary, backgroundColor: 'transparent' }]}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           value={value}
@@ -62,6 +62,9 @@ export function Input({
           secureTextEntry={secureTextEntry && !showSecret}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
+          underlineColorAndroid="transparent"
+          selectionColor={colors.accent}
+          cursorColor={colors.accent}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -101,7 +104,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   iconLeft: { marginRight: 8 },
-  input: { flex: 1, fontSize: 15, fontFamily: Fonts.bodyRegular },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: Fonts.bodyRegular,
+    paddingVertical: 0,
+    includeFontPadding: false,
+  },
   eye:      { padding: 4 },
   error: { fontSize: 12, lineHeight: 16, fontFamily: Fonts.bodyRegular },
 });

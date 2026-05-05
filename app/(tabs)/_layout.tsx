@@ -18,18 +18,24 @@ export default function TabLayout() {
           backgroundColor: colors.bgSurface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
+          height: 72,
+          paddingTop: 8,
+          paddingBottom: 10,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
           textTransform: 'uppercase',
-          letterSpacing: 0.6,
+          letterSpacing: 0.4,
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inicio',
+          title: 'Hoy',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -40,7 +46,7 @@ export default function TabLayout() {
         options={{
           title: 'Rutinas',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+            <Ionicons name="barbell-outline" size={size} color={color} />
           ),
         }}
       />
@@ -49,7 +55,7 @@ export default function TabLayout() {
         options={{
           title: 'Historial',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="time-outline" size={size} color={color} />
+            <Ionicons name="calendar-outline" size={size} color={color} />
           ),
         }}
       />

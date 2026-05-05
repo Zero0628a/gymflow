@@ -1,8 +1,11 @@
+import type { ImageSourcePropType } from 'react-native';
+
 export interface Muscle {
   id: string;
   name: string;
   icon: string;
   color: string;
+  image: ImageSourcePropType;
 }
 
 export interface Exercise {
@@ -32,3 +35,26 @@ export interface HistoryEntry {
   date: string;
   exerciseCount: number;
 }
+
+export type TrainingDayStatus = 'pending' | 'completed' | 'missed' | 'postponed';
+
+export interface TrainingDay {
+  dateKey: string;
+  dayLabel: string;
+  shortDateLabel: string;
+  muscleId: string;
+  muscleName: string;
+  muscleColor: string;
+  status: TrainingDayStatus;
+  isToday: boolean;
+  isPast: boolean;
+  isFuture: boolean;
+  exerciseIds: string[];
+  completedExerciseIds: string[];
+}
+
+export type TrainingActionFailure =
+  | 'closed_missed'
+  | 'closed_postponed'
+  | 'not_today'
+  | 'already_completed';
