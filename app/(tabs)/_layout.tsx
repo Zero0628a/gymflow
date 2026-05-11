@@ -59,7 +59,15 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Musculos',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="body-outline" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

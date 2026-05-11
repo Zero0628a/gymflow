@@ -1,158 +1,175 @@
-import { View, FlatList, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 
-import { Badge }      from '@/components/ui/badge';
-import { ListItem }   from '@/components/ui/list-item';
-import { Screen }     from '@/components/ui/screen';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Screen } from '@/components/ui/screen';
+import { ScreenHeader } from '@/components/ui/screen-header';
+import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
-import { muscles, exercises } from '@/data/mock';
+import { useCatalog } from '@/providers/catalog-provider';
 import type { Exercise } from '@/types';
 
 export default function EjerciciosScreen() {
   const { musculo } = useLocalSearchParams<{ musculo: string }>();
-  const insets      = useSafeAreaInsets();
-  const colors      = useGymColors();
+  const colors = useGymColors();
+  const { getExercisesByMuscle, getMuscleById, loading } = useCatalog();
 
-  const muscle = muscles.find((m) => m.id === musculo);
-  const lista  = exercises[musculo ?? ''] ?? [];
-  const accent = muscle?.color ?? colors.primary;
-
-  function renderExercise({ item, index }: { item: Exercise; index: number }) {
-    return (
-      <ListItem
-        title={item.name}
-        subtitle={item.description}
-        onPress={() => router.push(`/variantes/${item.id}`)}
-        left={
-          <View style={[styles.indexBadge, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.indexText, { color: colors.primary }]}>{index + 1}</Text>
-          </View>
-        }
-        right={<Ionicons name="shuffle-outline" size={18} color={colors.primary} />}
-      />
-    );
-  }
+  const muscle = getMuscleById(musculo ?? '');
+  const lista = getExercisesByMuscle(musculo ?? '');
 
   return (
     <Screen>
-      <View
-        style={[
-          styles.header,
-          {
-            paddingTop: insets.top + 12,
-            backgroundColor: colors.white,
-            borderBottomColor: accent,
-          },
-        ]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color={colors.primary} />
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={[styles.headerTitle, { color: colors.primaryDark }]}>
-            {muscle?.name ?? 'Ejercicios'}
-          </Text>
-          <Badge variant="default">{`${lista.length} ejercicios`}</Badge>
-        </View>
-        <View style={[styles.dot, { backgroundColor: accent }]} />
-      </View>
+      <ScreenHeader
+        title={muscle?.name ?? 'Ejercicios'}
+        subtitle={loading ? 'Cargando catalogo' : `${lista.length} ejercicios disponibles`}
+        left={
+          <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Ionicons name="arrow-back-outline" size={22} color={colors.textPrimary} />
+          </Pressable>
+        }
+      />
 
-      <View style={styles.hint}>
-        <Ionicons name="information-circle-outline" size={15} color={colors.textMuted} />
-        <Text style={[styles.hintText, { color: colors.textMuted }]}>
-          Toca un ejercicio para ver variantes
-        </Text>
-      </View>
-
-      {muscle && (
+      {muscle ? (
         <View
           style={[
             styles.hero,
             {
-              backgroundColor: accent + '10',
-              borderColor: accent + '26',
+              backgroundColor: colors.bgSurface,
+              borderColor: colors.border,
             },
           ]}>
-          <Image source={muscle.image} style={styles.heroImage} contentFit="contain" />
+          <View style={styles.heroCopy}>
+            <Text style={[styles.eyebrow, { color: colors.textSecondary }]}>Musculo</Text>
+            <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>{muscle.name}</Text>
+            <Text style={[styles.heroText, { color: colors.textSecondary }]}>
+              Elige un ejercicio y sigue directo hacia variantes funcionales si la maquina esta ocupada.
+            </Text>
+          </View>
+          {muscle.image ? <Image source={muscle.image} style={styles.heroImage} contentFit="contain" /> : null}
         </View>
-      )}
+      ) : null}
 
       <FlatList
         data={lista}
         keyExtractor={(item) => item.id}
-        renderItem={renderExercise}
+        renderItem={({ item, index }) => <ExerciseRow item={item} index={index} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          !loading ? (
+            <EmptyState
+              icon="barbell-outline"
+              title="Sin ejercicios"
+              description="Todavia no hay ejercicios cargados para este musculo."
+            />
+          ) : null
+        }
       />
     </Screen>
   );
 }
 
+function ExerciseRow({ item, index }: { item: Exercise; index: number }) {
+  const colors = useGymColors();
+
+  return (
+    <Pressable
+      onPress={() => router.push(`/variantes/${item.id}`)}
+      style={({ pressed }) => [
+        styles.row,
+        {
+          backgroundColor: colors.bgSurface,
+          borderColor: colors.border,
+        },
+        pressed && styles.rowPressed,
+      ]}>
+      <View style={styles.rowLeft}>
+        <Text style={[styles.index, { color: colors.accent }]}>{String(index + 1).padStart(2, '0')}</Text>
+      </View>
+
+      <View style={styles.rowContent}>
+        <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>{item.name}</Text>
+        <Text style={[styles.rowBody, { color: colors.textSecondary }]}>{item.description}</Text>
+      </View>
+
+      <Ionicons name="arrow-forward-outline" size={18} color={colors.textSecondary} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 3,
-    gap: 10,
-  },
-  backBtn: {
-    padding: 4,
-  },
-  headerCenter: {
-    flex: 1,
-    gap: 4,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  dot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-  },
-  hint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 8,
-  },
-  hintText: {
-    fontSize: 12,
-  },
   hero: {
     marginHorizontal: 20,
-    marginBottom: 6,
-    borderRadius: 20,
+    marginTop: 20,
     borderWidth: 1,
-    minHeight: 140,
+    borderRadius: 20,
+    padding: 18,
+    minHeight: 160,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+    gap: 12,
+  },
+  heroCopy: {
+    flex: 1,
+    gap: 6,
+  },
+  eyebrow: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  heroTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 34,
+    lineHeight: 36,
+    textTransform: 'uppercase',
+  },
+  heroText: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 14,
+    lineHeight: 20,
   },
   heroImage: {
-    width: '78%',
-    height: 120,
+    width: 116,
+    height: 116,
   },
   list: {
-    padding: 20,
-    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    gap: 12,
   },
-  indexBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  row: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 14,
   },
-  indexText: {
+  rowPressed: {
+    opacity: 0.92,
+  },
+  rowLeft: {
+    width: 34,
+  },
+  index: {
+    fontFamily: Fonts.monoData,
+    fontSize: 12,
+  },
+  rowContent: {
+    flex: 1,
+    gap: 3,
+  },
+  rowTitle: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 16,
+  },
+  rowBody: {
+    fontFamily: Fonts.bodyRegular,
     fontSize: 13,
-    fontWeight: '700',
+    lineHeight: 18,
   },
 });
