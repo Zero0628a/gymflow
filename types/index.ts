@@ -5,14 +5,27 @@ export interface Muscle {
   name: string;
   icon: string;
   color: string;
-  image: ImageSourcePropType;
+  image?: ImageSourcePropType;
+  imageKey?: string;
+  sortOrder?: number;
 }
+
+export type EquipmentTag =
+  | 'bodyweight'
+  | 'dumbbell'
+  | 'barbell'
+  | 'machine'
+  | 'cable'
+  | 'band'
+  | 'kettlebell';
 
 export interface Exercise {
   id: string;
   muscleId: string;
   name: string;
   description: string;
+  equipment?: EquipmentTag[];
+  sortOrder?: number;
 }
 
 export interface Variant {
@@ -20,6 +33,34 @@ export interface Variant {
   exerciseId: string;
   name: string;
   description: string;
+  sortOrder?: number;
+}
+
+export type RoutineStatus = 'draft' | 'ready' | 'active' | 'archived';
+export type RoutineSource = 'custom' | 'template';
+
+export type RoutineLevel = 'beginner' | 'intermediate' | 'advanced';
+export type RoutineGoal = 'strength' | 'hypertrophy' | 'endurance' | 'general';
+export type RoutineEquipmentSetup = 'home' | 'gym';
+export type RoutineSplit =
+  | 'full-body'
+  | 'upper-lower'
+  | 'ppl'
+  | 'bro-split'
+  | 'home-circuit';
+
+export interface PlannedExercise {
+  exerciseId: string;
+  sets: number;
+  reps: string;
+  rest?: string;
+  note?: string;
+}
+
+export interface PlannedDay {
+  label: string;
+  focus: string;
+  exercises: PlannedExercise[];
 }
 
 export interface Routine {
@@ -27,6 +68,31 @@ export interface Routine {
   name: string;
   exerciseIds: string[];
   createdAt: string;
+  updatedAt?: string;
+  lastUsedAt?: string;
+  status: RoutineStatus;
+  source: RoutineSource;
+  focusLabel?: string;
+  sortOrder?: number;
+  level?: RoutineLevel;
+  goal?: RoutineGoal;
+  daysPerWeek?: number;
+  equipment?: RoutineEquipmentSetup;
+  split?: RoutineSplit;
+  description?: string;
+  weeklyPlan?: PlannedDay[];
+  // Marca el inicio del ciclo semanal del usuario. Se setea cuando la rutina se activa
+  // y se usa para calcular el dia de sesion / descanso de cada fecha.
+  cycleStartedAt?: string;
+}
+
+export interface UserProfile {
+  goal: RoutineGoal;
+  level: RoutineLevel;
+  daysPerWeek: number;
+  equipment: RoutineEquipmentSetup;
+  completedOnboarding: boolean;
+  updatedAt?: string;
 }
 
 export interface HistoryEntry {
@@ -36,21 +102,33 @@ export interface HistoryEntry {
   exerciseCount: number;
 }
 
-export type TrainingDayStatus = 'pending' | 'completed' | 'missed' | 'postponed';
+export type TrainingDayStatus =
+  | 'pending'
+  | 'partial'
+  | 'completed'
+  | 'missed'
+  | 'postponed'
+  | 'rest';
 
 export interface TrainingDay {
   dateKey: string;
   dayLabel: string;
   shortDateLabel: string;
-  muscleId: string;
-  muscleName: string;
-  muscleColor: string;
   status: TrainingDayStatus;
   isToday: boolean;
   isPast: boolean;
   isFuture: boolean;
-  exerciseIds: string[];
+  // Indice del dia dentro del ciclo (1-based) y la sesion del weeklyPlan asignada (si entrena).
+  cycleDayIndex: number;
+  sessionIndex: number | null;
+  sessionLabel: string;
+  sessionFocus: string;
+  // Solo presente si NO es dia de descanso. Lista de ejercicios planificados.
+  plannedExercises: PlannedExercise[];
+  // Solo presente si NO es dia de descanso. Ids de los ejercicios completados.
   completedExerciseIds: string[];
+  // Color asociado (lo derivamos de la sesion). Se mantiene por compatibilidad visual.
+  accentColor: string;
 }
 
 export type TrainingActionFailure =

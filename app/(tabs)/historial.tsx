@@ -2,28 +2,20 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
 import { IconCircle } from '@/components/ui/icon-circle';
 import { ListItem } from '@/components/ui/list-item';
 import { Screen } from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
-import {
-  addLocalDays,
-  formatHistoryLabel,
-  fromLocalDateKey,
-  resolveTrainingDay,
-  toLocalDateKey,
-} from '@/lib/training-calendar';
 import { useTraining } from '@/providers/training-provider';
 import type { TrainingDayStatus } from '@/types';
 
 export default function HistorialScreen() {
   const colors = useGymColors();
-  const { currentWeek, recentHistory } = useTraining();
-  const displayHistory = hasAllClosedStates(recentHistory)
-    ? recentHistory
-    : buildMockHistory(currentWeek);
+  const { recentHistory } = useTraining();
+  const displayHistory = recentHistory;
 
   const completedCount = displayHistory.filter((day) => day.status === 'completed').length;
   const postponedCount = displayHistory.filter((day) => day.status === 'postponed').length;
@@ -37,9 +29,13 @@ export default function HistorialScreen() {
     const visual = getStatusVisual(item.status, colors);
     const statusCopy = getStatusCopy(item);
 
+    const title = item.sessionLabel
+      ? `${item.dayLabel} · ${item.sessionLabel}`
+      : item.dayLabel;
+
     return (
       <ListItem
-        title={`${item.dayLabel} · ${item.muscleName}`}
+        title={title}
         variant={item.isToday ? 'outlined' : 'elevated'}
         left={<IconCircle icon={visual.icon} color={visual.color} variant="soft" />}
       >
@@ -54,7 +50,8 @@ export default function HistorialScreen() {
           <Text style={[styles.dot, { color: colors.textMuted }]}>·</Text>
           <Ionicons name="barbell-outline" size={12} color={colors.textMuted} />
           <Text style={[styles.metaText, { color: colors.textMuted }]}>
-            {item.completedExerciseIds.length} ejercicios
+            {item.completedExerciseIds.length}
+            {item.plannedExercises.length > 0 ? ` / ${item.plannedExercises.length}` : ''} ejercicios
           </Text>
         </View>
       </ListItem>
@@ -111,38 +108,15 @@ export default function HistorialScreen() {
         renderItem={renderEntry}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <EmptyState
+            icon="calendar-outline"
+            title="Sin historial"
+            description="Todavia no cerraste dias en tu calendario."
+          />
+        }
       />
     </Screen>
-  );
-}
-
-function buildMockHistory(currentWeek: ReturnType<typeof useTraining>['currentWeek']) {
-  const today = currentWeek.find((day) => day.isToday);
-  const referenceDate = today ? fromLocalDateKey(today.dateKey) : new Date();
-  const todayKey = toLocalDateKey(referenceDate);
-  const statusCycle: TrainingDayStatus[] = ['completed', 'postponed', 'missed', 'completed'];
-
-  return statusCycle
-    .map((status, index) => {
-      const date = addLocalDays(referenceDate, -(index + 1));
-      const day = resolveTrainingDay({ date, todayKey });
-      const completedExerciseIds =
-        status === 'completed' ? day.exerciseIds.slice(0, Math.min(3, day.exerciseIds.length)) : [];
-
-      return {
-        ...day,
-        status,
-        completedExerciseIds,
-        historyLabel: formatHistoryLabel(day.dateKey),
-      };
-    });
-}
-
-function hasAllClosedStates(days: ReturnType<typeof useTraining>['recentHistory']) {
-  return (
-    days.some((day) => day.status === 'completed') &&
-    days.some((day) => day.status === 'postponed') &&
-    days.some((day) => day.status === 'missed')
   );
 }
 
@@ -153,6 +127,15 @@ function getStatusVisual(status: TrainingDayStatus, colors: ReturnType<typeof us
       icon: 'checkmark-circle' as const,
       color: colors.success,
       badgeVariant: 'success' as const,
+    };
+  }
+
+  if (status === 'partial') {
+    return {
+      label: 'Parcial',
+      icon: 'time-outline' as const,
+      color: colors.warning,
+      badgeVariant: 'warning' as const,
     };
   }
 
@@ -178,11 +161,15 @@ function getStatusCopy(item: ReturnType<typeof useTraining>['recentHistory'][num
     return `${item.completedExerciseIds.length} ejercicio(s) registrados`;
   }
 
-  if (item.status === 'postponed') {
-    return 'Día pausado sin contar como pérdida';
+  if (item.status === 'partial') {
+    return `${item.completedExerciseIds.length} de ${item.plannedExercises.length} ejercicios`;
   }
 
-  return 'No registraste ejercicios ese día';
+  if (item.status === 'postponed') {
+    return 'Sesion pausada sin contar como perdida';
+  }
+
+  return 'No registraste ejercicios ese dia';
 }
 
 const styles = StyleSheet.create({

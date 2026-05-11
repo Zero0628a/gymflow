@@ -18,6 +18,8 @@ import {
 import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-fonts/jetbrains-mono';
 
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
+import { CatalogProvider } from '@/providers/catalog-provider';
+import { ProfileProvider, useProfile } from '@/providers/profile-provider';
 import { RoutinesProvider } from '@/providers/routines-provider';
 import { TrainingProvider } from '@/providers/training-provider';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -34,22 +36,35 @@ function RootNavigator() {
   const colors = colorScheme === 'dark' ? GymFlowDarkColors : GymFlowColors;
   const router = useRouter();
   const segments = useSegments();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
+
+  const loading = authLoading || (!!user && profileLoading);
 
   useEffect(() => {
     if (loading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inOnboarding = segments[0] === 'onboarding';
 
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/login');
+    if (!user) {
+      if (!inAuthGroup) {
+        router.replace('/(auth)/login');
+      }
       return;
     }
 
-    if (user && inAuthGroup) {
+    const needsOnboarding = !profile || !profile.completedOnboarding;
+
+    if (needsOnboarding && !inOnboarding) {
+      router.replace('/onboarding');
+      return;
+    }
+
+    if (!needsOnboarding && (inAuthGroup || inOnboarding)) {
       router.replace('/(tabs)');
     }
-  }, [loading, router, segments, user]);
+  }, [loading, profile, router, segments, user]);
 
   if (loading) {
     return (
@@ -71,6 +86,7 @@ function RootNavigator() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen
           name="ejercicios/[musculo]"
           options={{
@@ -131,11 +147,15 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <RoutinesProvider>
-            <TrainingProvider>
-              <RootNavigator />
-            </TrainingProvider>
-          </RoutinesProvider>
+          <ProfileProvider>
+            <CatalogProvider>
+              <RoutinesProvider>
+                <TrainingProvider>
+                  <RootNavigator />
+                </TrainingProvider>
+              </RoutinesProvider>
+            </CatalogProvider>
+          </ProfileProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

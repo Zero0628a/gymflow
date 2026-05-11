@@ -1,512 +1,496 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Screen } from '@/components/ui/screen';
-import { ScreenHeader } from '@/components/ui/screen-header';
 import { Fonts } from '@/constants/theme';
-import { exercises, muscles } from '@/data/mock';
 import { useGymColors } from '@/hooks/use-gym-colors';
 import { useAuth } from '@/providers/auth-provider';
+import { useCatalog } from '@/providers/catalog-provider';
 import { useTraining } from '@/providers/training-provider';
-import type { TrainingActionFailure, TrainingDay, TrainingDayStatus } from '@/types';
+import type {
+  PlannedExercise,
+  Routine,
+  TrainingActionFailure,
+  TrainingDay,
+} from '@/types';
 
-const MISSED_DAY_MESSAGE =
-  'Este día ya cerró. Enfócate en tu rutina de hoy para no perder el ritmo.';
+const MISSED_MESSAGE = 'Este dia ya cerro. Enfocate en tu rutina de hoy para no perder el ritmo.';
 
 export default function HomeScreen() {
   const colors = useGymColors();
   const { logout } = useAuth();
+  const { getExerciseById } = useCatalog();
   const {
-    currentWeek,
+    activeRoutine,
+    today,
+    todayKey,
     loading,
-    postponedCount,
-    resetTraining,
-    toggleExercise,
     postponeDay,
-    weekLabel,
+    toggleExercise,
+    weekDays,
   } = useTraining();
-  const [selectedDateKey, setSelectedDateKey] = useState<string>('');
 
-  useEffect(() => {
-    if (!currentWeek.length) {
-      return;
-    }
+  const dateLabel = useMemo(() => formatTodayLabel(new Date()), [todayKey]);
 
-    if (!currentWeek.some((day) => day.dateKey === selectedDateKey)) {
-      const today = currentWeek.find((day) => day.isToday) ?? currentWeek[0];
-      setSelectedDateKey(today.dateKey);
-    }
-  }, [currentWeek, selectedDateKey]);
+  async function onExercisePress(exerciseId: string) {
+    if (!today) return;
+    const failure = await toggleExercise(today.dateKey, exerciseId);
+    handleFailure(failure);
+  }
+
+  async function onPostpone() {
+    if (!today) return;
+    const failure = await postponeDay(today.dateKey);
+    handleFailure(failure);
+  }
 
   if (loading) {
     return (
       <Screen>
-        <ScreenHeader
-          title="Calendario"
-          subtitle="Cargando tu semana"
-          right={
-            <View style={styles.headerActions}>
-              <Pressable
-                onPress={onResetPress}
-                style={({ pressed }) => [
-                  styles.headerIconButton,
-                  { borderColor: colors.border, backgroundColor: colors.bgSurface },
-                  pressed && styles.headerIconPressed,
-                ]}>
-                <Ionicons name="refresh-outline" size={18} color={colors.textPrimary} />
-              </Pressable>
-              <Pressable
-                onPress={() => logout()}
-                style={({ pressed }) => [
-                  styles.headerIconButton,
-                  { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
-                  pressed && styles.headerIconPressed,
-                ]}>
-                <Ionicons name="log-out-outline" size={18} color={colors.textPrimary} />
-              </Pressable>
-            </View>
-          }
-        />
-        <View style={styles.loadingState}>
+        <TopBar onLogout={() => logout()} />
+        <View style={styles.loading}>
           <Ionicons name="barbell-outline" size={26} color={colors.textMuted} />
           <Text style={[styles.loadingText, { color: colors.textMuted }]}>
-            Preparando tu calendario local
+            Preparando tu sesion
           </Text>
         </View>
       </Screen>
     );
   }
 
-  const displayWeek = hasAllClosedStates(currentWeek) ? currentWeek : buildMockWeek(currentWeek);
-  const selectedDay = displayWeek.find((day) => day.dateKey === selectedDateKey) ?? displayWeek[0];
-  const completedCount = displayWeek.filter((day) => day.status === 'completed').length;
-  const missedCount = displayWeek.filter((day) => day.status === 'missed').length;
-
-  async function onExercisePress(exerciseId: string) {
-    const failure = await toggleExercise(selectedDay.dateKey, exerciseId);
-    handleFailure(failure);
-  }
-
-  async function onPostponePress() {
-    const failure = await postponeDay(selectedDay.dateKey);
-    handleFailure(failure);
-  }
-
-  function onResetPress() {
-    Alert.alert(
-      'Resetear calendario',
-      'Se borrará tu progreso del calendario y podrás empezar la semana desde cero. Tus rutinas guardadas no se eliminarán.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Resetear',
-          style: 'destructive',
-          onPress: () => {
-            void resetTraining();
-            setSelectedDateKey('');
-          },
-        },
-      ]
+  if (!activeRoutine) {
+    return (
+      <Screen>
+        <TopBar onLogout={() => logout()} />
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <NoRoutineState />
+        </ScrollView>
+      </Screen>
     );
   }
 
-  function onDayPress(day: TrainingDay) {
-    setSelectedDateKey(day.dateKey);
-
-    if (day.status === 'missed') {
-      Alert.alert('Día cerrado', MISSED_DAY_MESSAGE);
-    }
+  if (!today) {
+    return (
+      <Screen>
+        <TopBar onLogout={() => logout()} />
+      </Screen>
+    );
   }
 
   return (
     <Screen>
-      <ScreenHeader
-        title="Tu Semana"
-        subtitle={weekLabel}
-        right={
-          <View style={styles.headerActions}>
-            <Pressable
-              onPress={onResetPress}
-              style={({ pressed }) => [
-                styles.headerIconButton,
-                { borderColor: colors.border, backgroundColor: colors.bgSurface },
-                pressed && styles.headerIconPressed,
-              ]}>
-              <Ionicons name="refresh-outline" size={18} color={colors.textPrimary} />
-            </Pressable>
-            <Pressable
-              onPress={() => logout()}
-              style={({ pressed }) => [
-                styles.headerIconButton,
-                { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
-                pressed && styles.headerIconPressed,
-              ]}>
-              <Ionicons name="log-out-outline" size={18} color={colors.textPrimary} />
-            </Pressable>
-          </View>
-        }
-      />
+      <TopBar onLogout={() => logout()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.summaryBar, { backgroundColor: colors.bgSurface, borderColor: colors.border }]}>
-          <SummaryStat
-            color={colors.success}
-            icon="checkmark-circle"
-            labelColor={colors.textMuted}
-            value={completedCount}
-            label="Listos"
+        <Header
+          dateLabel={dateLabel}
+          routine={activeRoutine}
+          today={today}
+        />
+
+        {today.status === 'rest' ? (
+          <RestCard today={today} weekDays={weekDays} />
+        ) : (
+          <SessionCard
+            today={today}
+            onExercisePress={onExercisePress}
+            getExerciseById={getExerciseById}
+            onPostpone={() => void onPostpone()}
           />
-          <SummaryStat
-            color={colors.warning}
-            icon="pause-circle"
-            labelColor={colors.textMuted}
-            value={postponedCount}
-            label="Pausas"
-          />
-          <SummaryStat
-            color={colors.danger}
-            icon="close-circle"
-            labelColor={colors.textMuted}
-            value={missedCount}
-            label="Perdidos"
-          />
-        </View>
+        )}
 
-        <Card
-          style={[
-            styles.detailCard,
-            { borderColor: selectedDay.isToday ? colors.accent : colors.border, borderWidth: 1.5 },
-          ]}>
-          <View style={styles.detailHeader}>
-            <View
-              style={[
-                styles.detailImageWrap,
-                {
-                  backgroundColor: selectedDay.muscleColor + '12',
-                  borderColor: selectedDay.muscleColor + '30',
-                },
-              ]}>
-              <Image
-                source={muscles.find((muscle) => muscle.id === selectedDay.muscleId)?.image}
-                style={styles.detailImage}
-                contentFit="contain"
-              />
-            </View>
-            <View style={styles.detailContent}>
-              <View style={styles.detailTitleBlock}>
-                <Text style={[styles.detailEyebrow, { color: colors.textSecondary }]}>
-                  {selectedDay.shortDateLabel}
-                </Text>
-                <Text style={[styles.detailTitle, { color: colors.textPrimary }]}>
-                  {selectedDay.dayLabel} · {selectedDay.muscleName}
-                </Text>
-              </View>
-              <View style={styles.detailBadgeRow}>
-                <Badge variant={getStatusVisual(selectedDay.status, colors).badgeVariant}>
-                  {getStatusVisual(selectedDay.status, colors).label}
-                </Badge>
-              </View>
-            </View>
-          </View>
-
-          <Text style={[styles.detailCopy, { color: colors.textSecondary }]}>
-            {getDetailCopy(selectedDay)}
-          </Text>
-
-          {selectedDay.status === 'missed' && (
-            <View
-              style={[
-                styles.missedNotice,
-                {
-                  backgroundColor: colors.danger + '12',
-                  borderColor: colors.danger + '34',
-                },
-              ]}>
-              <Ionicons name="alert-circle" size={18} color={colors.danger} />
-              <View style={styles.missedNoticeTextBlock}>
-                <Text style={[styles.missedNoticeTitle, { color: colors.danger }]}>
-                  Este día ya cerró
-                </Text>
-                <Text style={[styles.missedNoticeText, { color: colors.textSecondary }]}>
-                  No necesitas editarlo. Mira el día actual o usa reset si quieres reiniciar el calendario.
-                </Text>
-              </View>
-            </View>
-          )}
-
-          <View style={styles.exerciseList}>
-            {(exercises[selectedDay.muscleId] ?? []).map((exercise) => {
-              const checked = selectedDay.completedExerciseIds.includes(exercise.id);
-              const disabled = !selectedDay.isToday || selectedDay.status === 'postponed' || selectedDay.status === 'missed';
-
-              return (
-                <Pressable
-                  key={exercise.id}
-                  onPress={() => {
-                    if (disabled) {
-                      handleFailure(
-                        selectedDay.status === 'missed'
-                          ? 'closed_missed'
-                          : selectedDay.status === 'postponed'
-                            ? 'closed_postponed'
-                            : 'not_today'
-                      );
-                      return;
-                    }
-
-                    void onExercisePress(exercise.id);
-                  }}
-                  style={[
-                    styles.exerciseItem,
-                    {
-                      backgroundColor: checked ? colors.accentSoft : colors.bgSurface,
-                      borderColor: checked ? colors.accent : colors.border,
-                    },
-                  ]}>
-                  <View style={styles.exerciseInfo}>
-                    <Ionicons
-                      name={checked ? 'checkmark-circle' : 'ellipse-outline'}
-                      size={18}
-                      color={checked ? colors.accent : colors.textMuted}
-                    />
-                    <View style={styles.exerciseTextBlock}>
-                      <Text style={[styles.exerciseName, { color: colors.textPrimary }]}>
-                        {exercise.name}
-                      </Text>
-                      <Text style={[styles.exerciseDescription, { color: colors.textMuted }]}>
-                        {exercise.description}
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          {selectedDay.isToday && selectedDay.status === 'pending' && (
-            <Button
-              onPress={() => void onPostponePress()}
-              variant="outline"
-              icon="pause-circle-outline"
-              style={styles.postponeButton}>
-              Posponer entrenamiento
-            </Button>
-          )}
-        </Card>
-
-        <View style={styles.weekList}>
-          {displayWeek.map((day) => {
-            const isSelected = day.dateKey === selectedDay.dateKey;
-            const visual = getStatusVisual(day.status, colors);
-
-            return (
-              <Pressable
-                key={day.dateKey}
-                onPress={() => onDayPress(day)}
-                style={[
-                  styles.dayCard,
-                  {
-                    backgroundColor: visual.background,
-                    borderColor: day.isToday
-                      ? colors.accent
-                      : isSelected
-                        ? colors.borderStrong
-                        : colors.border,
-                    borderWidth: day.isToday ? 2 : isSelected ? 1.5 : 1,
-                  },
-                ]}>
-                <View style={styles.dayCardTop}>
-                  <View>
-                    <Text style={[styles.dayName, { color: colors.textPrimary }]}>{day.dayLabel}</Text>
-                    <Text style={[styles.dayDate, { color: colors.textMuted }]}>
-                      {day.shortDateLabel}
-                    </Text>
-                  </View>
-                  <Ionicons name={visual.icon} size={22} color={visual.iconColor} />
-                </View>
-
-                <Text style={[styles.muscleName, { color: colors.textPrimary }]}>
-                  {day.muscleName}
-                </Text>
-
-                {day.status === 'missed' && (
-                  <View style={[styles.closedBanner, { backgroundColor: colors.danger + '16' }]}>
-                    <Ionicons name="lock-closed" size={12} color={colors.danger} />
-                    <Text style={[styles.closedBannerText, { color: colors.danger }]}>
-                      Día cerrado
-                    </Text>
-                  </View>
-                )}
-
-                <View style={styles.dayFooter}>
-                  <Badge variant={visual.badgeVariant}>{visual.label}</Badge>
-                  {day.isToday && (
-                    <Text style={[styles.todayLabel, { color: colors.accent }]}>HOY</Text>
-                  )}
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+        <WeekStrip weekDays={weekDays} todayKey={todayKey} />
       </ScrollView>
     </Screen>
   );
 }
 
-function buildMockWeek(currentWeek: TrainingDay[]) {
-  if (!currentWeek.length) {
-    return currentWeek;
-  }
+// =============================================================
+// Subcomponentes
+// =============================================================
 
-  const pastDays = currentWeek.filter((day) => day.isPast);
-  const demoStatusByIndex: TrainingDayStatus[] = ['completed', 'postponed', 'missed'];
+function TopBar({ onLogout }: { onLogout: () => void }) {
+  const colors = useGymColors();
+  const insets = useSafeAreaInsets();
 
-  return currentWeek.map((day) => {
-    if (!day.isPast) {
-      return day;
-    }
-
-    const demoIndex = pastDays.findIndex((pastDay) => pastDay.dateKey === day.dateKey);
-
-    if (demoIndex === -1 || demoIndex >= demoStatusByIndex.length) {
-      return day;
-    }
-
-    const mockStatus = demoStatusByIndex[demoIndex];
-
-    return {
-      ...day,
-      status: mockStatus,
-      completedExerciseIds:
-        mockStatus === 'completed' ? day.exerciseIds.slice(0, Math.min(2, day.exerciseIds.length)) : [],
-    };
-  });
-}
-
-function hasAllClosedStates(days: TrainingDay[]) {
   return (
-    days.some((day) => day.status === 'completed') &&
-    days.some((day) => day.status === 'postponed') &&
-    days.some((day) => day.status === 'missed')
-  );
-}
-
-function SummaryStat({
-  color,
-  icon,
-  labelColor,
-  value,
-  label,
-}: {
-  color: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  labelColor: string;
-  value: number;
-  label: string;
-}) {
-  return (
-    <View style={styles.summaryStat}>
-      <Ionicons name={icon} size={15} color={color} />
-      <Text style={[styles.summaryValue, { color }]}>{value}</Text>
-      <Text style={[styles.summaryLabel, { color: labelColor }]}>{label}</Text>
+    <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+      <View style={styles.topActions}>
+        <Pressable
+          onPress={onLogout}
+          style={({ pressed }) => [
+            styles.iconBtn,
+            { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
+            pressed && styles.pressed,
+          ]}>
+          <Ionicons name="log-out-outline" size={18} color={colors.textPrimary} />
+        </Pressable>
+      </View>
     </View>
   );
 }
 
-function getStatusVisual(status: TrainingDayStatus, colors: ReturnType<typeof useGymColors>) {
-  if (status === 'completed') {
-    return {
-      label: 'Completado',
-      icon: 'checkmark-circle' as const,
-      iconColor: colors.success,
-      background: colors.success + '12',
-      badgeVariant: 'success' as const,
-    };
-  }
+function Header({
+  dateLabel,
+  routine,
+  today,
+}: {
+  dateLabel: string;
+  routine: Routine;
+  today: TrainingDay;
+}) {
+  const colors = useGymColors();
 
-  if (status === 'missed') {
-    return {
-      label: 'Perdido',
-      icon: 'close-circle' as const,
-      iconColor: colors.danger,
-      background: colors.bgSurfaceAlt,
-      badgeVariant: 'danger' as const,
-    };
-  }
+  const totalSessions = routine.weeklyPlan?.length ?? routine.daysPerWeek ?? 0;
+  const sessionNumber = (today.sessionIndex ?? 0) + 1;
+  const eyebrow =
+    today.status === 'rest' || today.sessionIndex === null
+      ? dateLabel.toUpperCase()
+      : `${dateLabel.toUpperCase()} · SESION ${sessionNumber}${totalSessions ? ` / ${totalSessions}` : ''}`;
 
-  if (status === 'postponed') {
-    return {
-      label: 'Pospuesto',
-      icon: 'pause-circle' as const,
-      iconColor: colors.warning,
-      background: colors.warning + '12',
-      badgeVariant: 'warning' as const,
-    };
-  }
+  // Si la sesion no tiene focus, usar el label como fallback. Si tiene focus,
+  // usar focus como titulo (mas descriptivo: "EMPUJE" vs "LUNES").
+  const heroTitle =
+    today.status === 'rest'
+      ? 'DESCANSO'
+      : (today.sessionFocus || today.sessionLabel || 'SESION').toUpperCase();
 
-  return {
-    label: 'Pendiente',
-    icon: 'ellipse-outline' as const,
-    iconColor: colors.textMuted,
-    background: colors.bgSurface,
-    badgeVariant: 'outline' as const,
-  };
+  const showSubtitle =
+    today.status !== 'rest' &&
+    today.sessionLabel &&
+    today.sessionLabel.toUpperCase() !== heroTitle;
+
+  return (
+    <View style={styles.header}>
+      <Text style={[styles.eyebrow, { color: colors.textSecondary }]} numberOfLines={1}>
+        {eyebrow}
+      </Text>
+      <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2}>
+        {heroTitle}
+      </Text>
+      {showSubtitle ? (
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]} numberOfLines={2}>
+          {today.sessionLabel}
+        </Text>
+      ) : null}
+      <Text style={[styles.routineNote, { color: colors.textMuted }]} numberOfLines={1}>
+        {routine.name}
+      </Text>
+    </View>
+  );
 }
 
-function getDetailCopy(day: TrainingDay) {
-  if (day.status === 'missed') {
-    return MISSED_DAY_MESSAGE;
-  }
+function SessionCard({
+  today,
+  onExercisePress,
+  getExerciseById,
+  onPostpone,
+}: {
+  today: TrainingDay;
+  onExercisePress: (id: string) => void;
+  getExerciseById: (id: string) => ReturnType<typeof useCatalog>['exercises'][number] | undefined;
+  onPostpone: () => void;
+}) {
+  const colors = useGymColors();
+  const total = today.plannedExercises.length;
+  const completed = today.completedExerciseIds.length;
+  const allDisabled = today.status === 'missed' || today.status === 'postponed' || !today.isToday;
 
-  if (day.status === 'postponed') {
-    return 'Este día quedó marcado como pospuesto y no cuenta como perdido.';
-  }
+  return (
+    <View style={[styles.sessionCard, { borderColor: colors.border, backgroundColor: colors.bgSurface }]}>
+      <View style={styles.sessionTop}>
+        <View style={styles.metaBlock}>
+          <Text style={[styles.metaLabel, { color: colors.textMuted }]}>EJERCICIOS</Text>
+          <Text style={[styles.metaValue, { color: colors.textPrimary }]}>
+            {completed} / {total}
+          </Text>
+        </View>
+        <StatusBadge status={today.status} />
+      </View>
 
-  if (day.isFuture) {
-    return 'Este bloque sigue pendiente. El día no se adelanta aunque pierdas sesiones previas.';
-  }
+      {today.status === 'missed' && (
+        <View
+          style={[
+            styles.noticeBox,
+            { backgroundColor: colors.danger + '12', borderColor: colors.danger + '34' },
+          ]}>
+          <Ionicons name="alert-circle" size={18} color={colors.danger} />
+          <Text style={[styles.noticeText, { color: colors.textSecondary }]}>{MISSED_MESSAGE}</Text>
+        </View>
+      )}
 
-  if (day.status === 'completed') {
-    return `Registraste ${day.completedExerciseIds.length} ejercicio(s) dentro del día local.`;
-  }
+      {today.status === 'postponed' && (
+        <View
+          style={[
+            styles.noticeBox,
+            { backgroundColor: colors.warning + '12', borderColor: colors.warning + '34' },
+          ]}>
+          <Ionicons name="pause-circle" size={18} color={colors.warning} />
+          <Text style={[styles.noticeText, { color: colors.textSecondary }]}>
+            Pospusiste esta sesion. Manana retomas con la siguiente del plan.
+          </Text>
+        </View>
+      )}
 
-  return 'Registra al menos un ejercicio antes de las 23:59 para cerrar el día como completado.';
+      <View style={styles.exerciseList}>
+        {today.plannedExercises.map((planned, index) => (
+          <ExerciseRow
+            key={`${planned.exerciseId}-${index}`}
+            index={index + 1}
+            planned={planned}
+            checked={today.completedExerciseIds.includes(planned.exerciseId)}
+            disabled={allDisabled}
+            exerciseName={getExerciseById(planned.exerciseId)?.name ?? planned.exerciseId}
+            onPress={() => onExercisePress(planned.exerciseId)}
+          />
+        ))}
+      </View>
+
+      {today.isToday && today.status !== 'completed' && today.status !== 'postponed' && today.status !== 'missed' && (
+        <Button
+          onPress={onPostpone}
+          variant="outline"
+          icon="pause-circle-outline"
+          style={styles.postponeBtn}>
+          Posponer sesion
+        </Button>
+      )}
+    </View>
+  );
+}
+
+function ExerciseRow({
+  index,
+  planned,
+  exerciseName,
+  checked,
+  disabled,
+  onPress,
+}: {
+  index: number;
+  planned: PlannedExercise;
+  exerciseName: string;
+  checked: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  const colors = useGymColors();
+
+  const meta = [
+    `${planned.sets} × ${planned.reps}`,
+    planned.rest ? `${planned.rest} desc.` : null,
+  ]
+    .filter(Boolean)
+    .join('  ·  ');
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (disabled) return;
+        onPress();
+      }}
+      style={({ pressed }) => [
+        styles.exerciseRow,
+        {
+          backgroundColor: checked ? colors.accentSoft : colors.bgSurfaceAlt,
+          borderColor: checked ? colors.accent : colors.border,
+          opacity: disabled ? 0.55 : 1,
+        },
+        pressed && !disabled && styles.pressed,
+      ]}>
+      <Text style={[styles.exerciseIndex, { color: checked ? colors.accent : colors.textMuted }]}>
+        {String(index).padStart(2, '0')}
+      </Text>
+      <View style={styles.exerciseInfo}>
+        <Text style={[styles.exerciseName, { color: colors.textPrimary }]} numberOfLines={1}>
+          {exerciseName}
+        </Text>
+        <Text style={[styles.exerciseMeta, { color: colors.textSecondary }]} numberOfLines={1}>
+          {meta}
+        </Text>
+        {planned.note ? (
+          <Text style={[styles.exerciseNote, { color: colors.textMuted }]} numberOfLines={2}>
+            {planned.note}
+          </Text>
+        ) : null}
+      </View>
+      <Ionicons
+        name={checked ? 'checkmark-circle' : 'ellipse-outline'}
+        size={22}
+        color={checked ? colors.accent : colors.textMuted}
+      />
+    </Pressable>
+  );
+}
+
+function RestCard({ today, weekDays }: { today: TrainingDay; weekDays: TrainingDay[] }) {
+  const colors = useGymColors();
+  const next = weekDays.find(
+    (day) =>
+      day.dateKey > today.dateKey && day.status !== 'rest' && day.plannedExercises.length > 0
+  );
+
+  return (
+    <View style={[styles.restCard, { borderColor: colors.border, backgroundColor: colors.bgSurface }]}>
+      <Ionicons name="moon-outline" size={32} color={colors.textSecondary} />
+      <Text style={[styles.restTitle, { color: colors.textPrimary }]}>Dia de descanso</Text>
+      <Text style={[styles.restBody, { color: colors.textSecondary }]}>
+        Tu cuerpo crece en la recuperacion. Hidratate bien y enfocate en dormir.
+      </Text>
+      {next ? (
+        <View style={[styles.nextBlock, { borderColor: colors.border }]}>
+          <Text style={[styles.nextLabel, { color: colors.textMuted }]}>PROXIMA SESION</Text>
+          <Text style={[styles.nextTitle, { color: colors.textPrimary }]}>
+            {next.dayLabel} · {next.sessionLabel}
+          </Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function WeekStrip({ weekDays, todayKey }: { weekDays: TrainingDay[]; todayKey: string }) {
+  const colors = useGymColors();
+
+  return (
+    <View style={styles.weekStrip}>
+      <Text style={[styles.eyebrow, { color: colors.textSecondary }]}>TU SEMANA</Text>
+      <View style={styles.weekRow}>
+        {weekDays.map((day) => {
+          const visual = getStatusVisual(day.status, colors);
+          const isToday = day.dateKey === todayKey;
+          return (
+            <View
+              key={day.dateKey}
+              style={[
+                styles.weekChip,
+                {
+                  borderColor: isToday ? colors.accent : colors.border,
+                  backgroundColor: isToday ? colors.accentSoft : colors.bgSurface,
+                  borderWidth: isToday ? 1.5 : 1,
+                },
+              ]}>
+              <Text style={[styles.weekChipDay, { color: colors.textMuted }]}>
+                {day.dayLabel.slice(0, 3).toUpperCase()}
+              </Text>
+              <Ionicons name={visual.icon} size={16} color={visual.color} />
+              <Text style={[styles.weekChipDate, { color: colors.textSecondary }]}>
+                {day.shortDateLabel.split(' ')[0]}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function StatusBadge({ status }: { status: TrainingDay['status'] }) {
+  const colors = useGymColors();
+  const map = {
+    completed: { variant: 'success' as const, label: 'Completada' },
+    partial: { variant: 'warning' as const, label: 'En progreso' },
+    pending: { variant: 'outline' as const, label: 'Pendiente' },
+    missed: { variant: 'danger' as const, label: 'Perdida' },
+    postponed: { variant: 'warning' as const, label: 'Pospuesta' },
+    rest: { variant: 'outline' as const, label: 'Descanso' },
+  } as const;
+  const info = map[status];
+  return <Badge variant={info.variant}>{info.label}</Badge>;
+}
+
+function NoRoutineState() {
+  const colors = useGymColors();
+  return (
+    <View style={styles.empty}>
+      <Ionicons name="barbell-outline" size={48} color={colors.textMuted} />
+      <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>SIN RUTINA ACTIVA</Text>
+      <Text style={[styles.emptyBody, { color: colors.textSecondary }]}>
+        Activa una rutina desde la biblioteca para empezar a marcar tus sesiones del dia.
+      </Text>
+      <Button onPress={() => router.push('/(tabs)/rutinas')} icon="arrow-forward" iconPosition="right" style={styles.emptyBtn}>
+        Ir a rutinas
+      </Button>
+    </View>
+  );
+}
+
+// =============================================================
+// Utilidades de UI
+// =============================================================
+
+function getStatusVisual(status: TrainingDay['status'], colors: ReturnType<typeof useGymColors>) {
+  switch (status) {
+    case 'completed':
+      return { icon: 'checkmark-circle' as const, color: colors.success };
+    case 'partial':
+      return { icon: 'time-outline' as const, color: colors.warning };
+    case 'postponed':
+      return { icon: 'pause-circle' as const, color: colors.warning };
+    case 'missed':
+      return { icon: 'close-circle' as const, color: colors.danger };
+    case 'rest':
+      return { icon: 'moon-outline' as const, color: colors.textMuted };
+    default:
+      return { icon: 'ellipse-outline' as const, color: colors.textMuted };
+  }
 }
 
 function handleFailure(failure: TrainingActionFailure | null) {
-  if (!failure) {
-    return;
-  }
-
-  if (failure === 'closed_missed') {
-    Alert.alert('Día cerrado', MISSED_DAY_MESSAGE);
-    return;
-  }
-
-  if (failure === 'closed_postponed') {
-    Alert.alert('Día pospuesto', 'Este día fue pospuesto y ya quedó cerrado.');
-    return;
-  }
-
-  if (failure === 'already_completed') {
-    Alert.alert('Día completado', 'Ya registraste este día. No hace falta posponerlo.');
-    return;
-  }
-
-  Alert.alert('Solo hoy', 'Solo puedes registrar ejercicios del día actual.');
+  if (!failure) return;
+  if (failure === 'closed_missed') Alert.alert('Dia cerrado', MISSED_MESSAGE);
+  else if (failure === 'closed_postponed') Alert.alert('Sesion pospuesta', 'Esta sesion ya quedo cerrada por hoy.');
+  else if (failure === 'already_completed') Alert.alert('Sesion completada', 'Ya cerraste el dia. No hace falta posponer.');
+  else Alert.alert('Solo hoy', 'Solo podes registrar ejercicios del dia actual.');
 }
 
+const longDateFormatter = new Intl.DateTimeFormat('es-ES', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'short',
+});
+
+function formatTodayLabel(date: Date) {
+  return longDateFormatter.format(date);
+}
+
+// =============================================================
+// Estilos
+// =============================================================
+
 const styles = StyleSheet.create({
-  content: {
-    padding: 20,
-    gap: 18,
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
   },
-  loadingState: {
+  topActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.86,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 120,
+    gap: 24,
+  },
+  loading: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -516,206 +500,199 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyRegular,
     fontSize: 14,
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  header: {
     gap: 8,
-  },
-  headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerIconPressed: {
-    opacity: 0.82,
-  },
-  summaryBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  summaryStat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    minWidth: 84,
-  },
-  summaryValue: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  summaryLabel: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
-    textTransform: 'uppercase',
-  },
-  weekList: {
-    gap: 10,
-  },
-  dayCard: {
-    borderRadius: 18,
-    padding: 16,
-  },
-  dayCardTop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  dayName: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  dayDate: {
-    fontFamily: Fonts.monoRegular,
-    fontSize: 12,
-    marginTop: 2,
-  },
-  muscleName: {
-    fontFamily: Fonts.display,
-    fontSize: 20,
-    letterSpacing: 0.2,
-    textTransform: 'uppercase',
-  },
-  closedBanner: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginTop: 10,
-  },
-  closedBannerText: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  dayFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginTop: 12,
   },
-  todayLabel: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-  },
-  detailCard: {
-    padding: 18,
-    borderRadius: 22,
-  },
-  detailImageWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 14,
-    overflow: 'hidden',
-    width: 72,
-    height: 72,
-  },
-  detailImage: {
-    width: 62,
-    height: 62,
-  },
-  detailHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  detailContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  detailTitleBlock: {
-    minWidth: 0,
-  },
-  detailEyebrow: {
+  eyebrow: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 12,
-    marginBottom: 4,
+    letterSpacing: 1,
     textTransform: 'uppercase',
   },
-  detailTitle: {
+  title: {
     fontFamily: Fonts.display,
-    fontSize: 22,
-    letterSpacing: 0.2,
+    fontSize: 44,
+    lineHeight: 46,
     textTransform: 'uppercase',
   },
-  detailBadgeRow: {
-    marginTop: 10,
-  },
-  detailCopy: {
+  subtitle: {
     fontFamily: Fonts.bodyRegular,
-    fontSize: 14,
+    fontSize: 15,
     lineHeight: 20,
-    marginTop: 10,
   },
-  missedNotice: {
+  routineNote: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginTop: 4,
+  },
+  sessionCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 18,
+    gap: 14,
+  },
+  sessionTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  metaBlock: {
+    gap: 2,
+  },
+  metaLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  metaValue: {
+    fontFamily: Fonts.display,
+    fontSize: 32,
+    lineHeight: 34,
+  },
+  noticeBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-    marginTop: 14,
+    borderRadius: 14,
+    padding: 12,
   },
-  missedNoticeTextBlock: {
+  noticeText: {
     flex: 1,
-    gap: 4,
-  },
-  missedNoticeTitle: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  missedNoticeText: {
     fontFamily: Fonts.bodyRegular,
     fontSize: 13,
     lineHeight: 18,
   },
   exerciseList: {
     gap: 10,
-    marginTop: 16,
   },
-  exerciseItem: {
-    borderRadius: 16,
+  exerciseRow: {
     borderWidth: 1,
+    borderRadius: 16,
     padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  exerciseIndex: {
+    fontFamily: Fonts.monoData,
+    fontSize: 13,
+    width: 24,
+    textAlign: 'center',
   },
   exerciseInfo: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  exerciseTextBlock: {
     flex: 1,
-    gap: 3,
+    gap: 2,
   },
   exerciseName: {
     fontFamily: Fonts.bodyBold,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
   },
-  exerciseDescription: {
+  exerciseMeta: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 12,
+  },
+  exerciseNote: {
     fontFamily: Fonts.bodyRegular,
     fontSize: 12,
-    lineHeight: 17,
+    lineHeight: 16,
+    marginTop: 2,
   },
-  postponeButton: {
+  postponeBtn: {
+    marginTop: 4,
+  },
+  restCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+  },
+  restTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 28,
+    lineHeight: 30,
+    textTransform: 'uppercase',
+  },
+  restBody: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    maxWidth: 320,
+  },
+  nextBlock: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    paddingTop: 16,
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'stretch',
+  },
+  nextLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    letterSpacing: 0.8,
+  },
+  nextTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 18,
+    lineHeight: 20,
+    textTransform: 'uppercase',
+  },
+  weekStrip: {
+    gap: 12,
+    marginTop: 4,
+  },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  weekChip: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    gap: 4,
+  },
+  weekChipDay: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 10,
+    letterSpacing: 0.6,
+  },
+  weekChipDate: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 11,
+  },
+  empty: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 64,
+    paddingHorizontal: 24,
+    gap: 14,
+  },
+  emptyTitle: {
+    fontFamily: Fonts.display,
+    fontSize: 32,
+    lineHeight: 34,
+    textTransform: 'uppercase',
+    marginTop: 12,
+  },
+  emptyBody: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    maxWidth: 320,
+  },
+  emptyBtn: {
     marginTop: 16,
   },
 });

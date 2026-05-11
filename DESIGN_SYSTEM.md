@@ -569,8 +569,18 @@ Pantalla editorial por excelencia.
 ### 15.3 `(tabs)/rutinas`
 
 - Header editorial con título "RUTINAS" display-lg y chip count a la derecha ("12").
-- Grid de 2 columnas con cards 4:5 para rutinas.
+- La pantalla se divide en dos bloques, en este orden: **Tus rutinas** y **Sugeridas**. El primer bloque ocupa el foco principal; el segundo funciona como apoyo, no como competencia visual.
+- **Tus rutinas** usa grid de 2 columnas con cards 4:5 para rutinas personalizadas o ya guardadas.
+- **Sugeridas** puede resolverse como carrusel horizontal o grid reducido de 2 columnas, con menor contraste y menor presencia que las rutinas del usuario.
 - Cada card: nombre de rutina en `heading-md` Anton, metadata en label uppercase (ej: "PECHO · 6 EJERCICIOS"), y una barra lateral izquierda `accent/voltage` si es la rutina activa esta semana.
+- La metadata mínima visible por card es: enfoque muscular, cantidad de ejercicios y último uso. Si no existe último uso, se reemplaza por `NUEVA`.
+- Las rutinas activas llevan un chip o eyebrow `ACTIVA` en `accent/voltage`. Solo puede haber **una** rutina activa por ciclo semanal visible.
+- Las rutinas en borrador llevan chip `BORRADOR` en variante `outline`; no usan el acento azul para no competir con la activa.
+- Las rutinas archivadas no se eliminan visualmente: bajan a `text/secondary`, pierden protagonismo y aparecen al final del bloque `Tus rutinas`.
+- Las rutinas sugeridas muestran un label `SUGERIDA` o el foco muscular principal, pero nunca comparten el mismo tratamiento visual de `ACTIVA`.
+- La acción primaria de una card nunca vive al frente como botón grande dentro del grid. El tap abre detalle o edición; las acciones secundarias viven en menú contextual.
+- Menú contextual por rutina: `Ver`, `Editar`, `Duplicar`, `Archivar`, `Eliminar`. El orden va de menor a mayor costo cognitivo y la acción destructiva siempre queda última.
+- Si no hay rutinas propias, el empty state muestra el mensaje principal y debajo mantiene visibles de 2 a 4 rutinas sugeridas como puente de entrada.
 - FAB o botón inferior anclado "Crear rutina" primary.
 
 ### 15.4 `crear-rutina`
@@ -578,9 +588,17 @@ Pantalla editorial por excelencia.
 - Header funcional con back.
 - Título display-md "NUEVA RUTINA".
 - Input de nombre sin label visible (placeholder en display-md Anton atenuado, tipo "Nombre de la rutina…"). Al enfocar, el placeholder sube como eyebrow.
-- Lista de ejercicios añadidos en filas editoriales, draggables, con handle a la izquierda (ícono `GripVertical`).
+- La pantalla se construye en dos bloques verticales, en este orden: **Nombre** y **Ejercicios**. No se mezclan ambos lenguajes en un solo bloque denso.
+- Debajo del nombre puede aparecer una línea de soporte en `body-sm text/secondary` con resumen breve: "6 ejercicios · empuje superior", generada automáticamente si el contenido ya lo permite.
+- La lista de ejercicios añadidos usa filas editoriales draggables, con handle a la izquierda (ícono `GripVertical`) y jerarquía visual basada en nombre + músculo + orden.
+- Cada fila muestra el nombre del ejercicio en `heading-sm`, el grupo muscular en `label` uppercase y metadatos opcionales en `body-sm text/secondary`.
+- El orden importa y debe sentirse visible. El índice de cada ejercicio puede mostrarse como cifra tabular discreta al borde izquierdo o dentro del handle.
 - Botón "Agregar ejercicio" secondary, full-width, dashed 1.5 px `border/subtle`.
-- CTA final "Guardar rutina" primary anclado.
+- Al tocar "Agregar ejercicio", el usuario entra a una selección con foco en búsqueda y filtros por músculo. Esa selección vuelve a `crear-rutina` sin romper el contexto.
+- Antes de guardar definitivamente, la rutina puede existir como `BORRADOR`. Este estado permite salir y retomar sin exigir cierre inmediato.
+- El CTA final cambia por contexto: `Guardar rutina` cuando es nueva, `Actualizar rutina` cuando existe y se está editando.
+- El CTA primary permanece anclado al borde inferior con safe area. Si la rutina está incompleta, el botón no desaparece: se desactiva y explica por qué.
+- Criterio mínimo de completitud: nombre no vacío + al menos 1 ejercicio. Por debajo de ese umbral, la UI sigue mostrando avance, no error prematuro.
 
 ### 15.5 `ejercicios/[musculo]`
 

@@ -1,15 +1,15 @@
-import { exercises, muscles } from '@/data/mock';
-import type { Exercise, Muscle, TrainingDay, TrainingDayStatus } from '@/types';
+import type {
+  PlannedDay,
+  PlannedExercise,
+  Routine,
+  TrainingDay,
+  TrainingDayStatus,
+} from '@/types';
 
-type ScheduledDay = {
-  weekdayIndex: number;
-  muscleId: string;
-  dayLabel: string;
-};
-
-type PersistedTrainingDay = {
+// Estado persistido por dia. dateKey = 'YYYY-MM-DD' local.
+export type PersistedTrainingDay = {
   dateKey: string;
-  status: Exclude<TrainingDayStatus, 'missed'> | 'pending';
+  status: Exclude<TrainingDayStatus, 'missed' | 'rest'> | 'pending';
   completedExerciseIds: string[];
   completedAt?: string;
   postponedAt?: string;
@@ -22,16 +22,6 @@ export type TrainingCalendarStore = {
 
 export const TRAINING_STORAGE_KEY = 'gymflow.training-calendar.v1';
 
-export const WEEKLY_SCHEDULE: ScheduledDay[] = [
-  { weekdayIndex: 0, dayLabel: 'Lunes', muscleId: 'pecho' },
-  { weekdayIndex: 1, dayLabel: 'Martes', muscleId: 'espalda' },
-  { weekdayIndex: 2, dayLabel: 'Miércoles', muscleId: 'piernas' },
-  { weekdayIndex: 3, dayLabel: 'Jueves', muscleId: 'hombros' },
-  { weekdayIndex: 4, dayLabel: 'Viernes', muscleId: 'biceps' },
-  { weekdayIndex: 5, dayLabel: 'Sábado', muscleId: 'triceps' },
-  { weekdayIndex: 6, dayLabel: 'Domingo', muscleId: 'abdomen' },
-];
-
 const shortDateFormatter = new Intl.DateTimeFormat('es-ES', {
   day: 'numeric',
   month: 'short',
@@ -43,9 +33,20 @@ const longDateFormatter = new Intl.DateTimeFormat('es-ES', {
   year: 'numeric',
 });
 
+const dayNameFormatter = new Intl.DateTimeFormat('es-ES', { weekday: 'long' });
+
 function pad(value: number) {
   return String(value).padStart(2, '0');
 }
+
+function capitalize(value: string) {
+  if (!value.length) return value;
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+// =============================================================
+// Fechas locales (date keys)
+// =============================================================
 
 export function toLocalDateKey(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
@@ -60,22 +61,10 @@ export function addLocalDays(date: Date, amount: number) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
 }
 
-export function getMondayWeekdayIndex(date: Date) {
-  return (date.getDay() + 6) % 7;
-}
-
-export function getWeekStart(date: Date) {
-  return addLocalDays(date, -getMondayWeekdayIndex(date));
-}
-
-export function getWeekKey(date: Date) {
-  return toLocalDateKey(getWeekStart(date));
-}
-
-export function getWeekLabel(date: Date) {
-  const start = getWeekStart(date);
-  const end = addLocalDays(start, 6);
-  return `${capitalize(shortDateFormatter.format(start))} - ${capitalize(shortDateFormatter.format(end))}`;
+export function diffInDays(from: Date, to: Date) {
+  const start = new Date(from.getFullYear(), from.getMonth(), from.getDate()).getTime();
+  const end = new Date(to.getFullYear(), to.getMonth(), to.getDate()).getTime();
+  return Math.round((end - start) / 86_400_000);
 }
 
 export function createEmptyTrainingStore(): TrainingCalendarStore {
@@ -85,115 +74,213 @@ export function createEmptyTrainingStore(): TrainingCalendarStore {
   };
 }
 
-export function getScheduledDay(date: Date) {
-  return WEEKLY_SCHEDULE[getMondayWeekdayIndex(date)];
+// =============================================================
+// Patrones de dias de entrenamiento dentro de una semana de 7 dias.
+// El indice 0 = primer dia del ciclo (NO es lunes; es el dia de activacion).
+// true = dia de entrenamiento, false = descanso.
+// =============================================================
+
+const TRAINING_PATTERN: Record<number, boolean[]> = {
+  3: [true, false, true, false, true, false, false],
+  4: [true, true, false, true, true, false, false],
+  5: [true, true, true, true, true, false, false],
+  6: [true, true, true, true, true, true, false],
+  7: [true, true, true, true, true, true, true],
+};
+
+function getPatternForDays(daysPerWeek: number): boolean[] {
+  if (TRAINING_PATTERN[daysPerWeek]) {
+    return TRAINING_PATTERN[daysPerWeek];
+  }
+  // Fallback razonable: si daysPerWeek < 3, entrenar dias seguidos al inicio.
+  return Array.from({ length: 7 }, (_, i) => i < Math.max(1, Math.min(daysPerWeek, 7)));
 }
 
-export function getMuscleById(muscleId: string) {
-  return muscles.find((muscle) => muscle.id === muscleId);
+// =============================================================
+// Para una fecha dada, dado el cycleStartedAt, devolvemos:
+//   - cycleDayIndex (1-based) dentro de la semana actual (1..7)
+//   - sessionIndex en weeklyPlan (rotando con modulo) o null si descanso
+// =============================================================
+
+export type RoutineSessionInfo = {
+  cycleDayIndex: number; // 1..7
+  sessionIndex: number | null; // null si descanso
+  isTrainingDay: boolean;
+};
+
+export function getRoutineSessionInfo(
+  date: Date,
+  routine: Routine | null
+): RoutineSessionInfo | null {
+  if (!routine || !routine.cycleStartedAt) {
+    return null;
+  }
+
+  const start = fromLocalDateKey(toLocalDateKey(new Date(routine.cycleStartedAt)));
+  const daysSinceStart = diffInDays(start, date);
+  if (daysSinceStart < 0) {
+    // Fecha anterior al inicio del ciclo: no aplicamos rutina.
+    return null;
+  }
+
+  const daysPerWeek = routine.daysPerWeek ?? Math.max(routine.weeklyPlan?.length ?? 3, 1);
+  const pattern = getPatternForDays(daysPerWeek);
+
+  const weekday = daysSinceStart % 7;
+  const isTrainingDay = pattern[weekday];
+
+  if (!isTrainingDay) {
+    return {
+      cycleDayIndex: weekday + 1,
+      sessionIndex: null,
+      isTrainingDay: false,
+    };
+  }
+
+  // Cuantos dias de entrenamiento hubo desde el inicio hasta este dia (inclusive).
+  let trainingCount = 0;
+  for (let i = 0; i <= weekday; i += 1) {
+    if (pattern[i]) trainingCount += 1;
+  }
+
+  // Mapeamos a sessionIndex del weeklyPlan con modulo.
+  const planLength = routine.weeklyPlan?.length ?? 0;
+  if (planLength === 0) {
+    return {
+      cycleDayIndex: weekday + 1,
+      sessionIndex: null,
+      isTrainingDay: true,
+    };
+  }
+
+  const sessionIndex = (trainingCount - 1) % planLength;
+
+  return {
+    cycleDayIndex: weekday + 1,
+    sessionIndex,
+    isTrainingDay: true,
+  };
 }
 
-export function getExercisesByMuscle(muscleId: string) {
-  return exercises[muscleId] ?? [];
-}
+// =============================================================
+// Resolver un TrainingDay completo para una fecha dada
+// =============================================================
 
 export function resolveTrainingDay(input: {
   date: Date;
   todayKey: string;
+  activeRoutine: Routine | null;
   persisted?: PersistedTrainingDay;
 }): TrainingDay {
-  const dateKey = toLocalDateKey(input.date);
-  const scheduledDay = getScheduledDay(input.date);
-  const muscle = getMuscleById(scheduledDay.muscleId) as Muscle;
-  const persisted = input.persisted;
+  const { date, todayKey, activeRoutine, persisted } = input;
+  const dateKey = toLocalDateKey(date);
+  const session = getRoutineSessionInfo(date, activeRoutine);
 
-  let status: TrainingDayStatus = persisted?.status ?? 'pending';
-  if (dateKey < input.todayKey && status === 'pending') {
+  const dayLabel = capitalize(dayNameFormatter.format(date));
+  const shortDateLabel = capitalize(shortDateFormatter.format(date));
+  const isToday = dateKey === todayKey;
+  const isPast = dateKey < todayKey;
+  const isFuture = dateKey > todayKey;
+
+  // Sin rutina activa: el dia no entra al sistema, lo tratamos como descanso "sin rutina".
+  if (!session) {
+    return {
+      dateKey,
+      dayLabel,
+      shortDateLabel,
+      status: persisted?.status === 'postponed' ? 'postponed' : 'rest',
+      isToday,
+      isPast,
+      isFuture,
+      cycleDayIndex: 0,
+      sessionIndex: null,
+      sessionLabel: 'Sin rutina activa',
+      sessionFocus: '',
+      plannedExercises: [],
+      completedExerciseIds: [],
+      accentColor: '#2F6BFF',
+    };
+  }
+
+  // Dia de descanso programado.
+  if (!session.isTrainingDay) {
+    return {
+      dateKey,
+      dayLabel,
+      shortDateLabel,
+      status: 'rest',
+      isToday,
+      isPast,
+      isFuture,
+      cycleDayIndex: session.cycleDayIndex,
+      sessionIndex: null,
+      sessionLabel: 'Descanso',
+      sessionFocus: 'Dia de recuperacion',
+      plannedExercises: [],
+      completedExerciseIds: [],
+      accentColor: '#2F6BFF',
+    };
+  }
+
+  // Dia de entrenamiento: agarramos la sesion correspondiente del weeklyPlan.
+  const planDay: PlannedDay | undefined =
+    session.sessionIndex !== null && activeRoutine?.weeklyPlan
+      ? activeRoutine.weeklyPlan[session.sessionIndex]
+      : undefined;
+
+  const plannedExercises: PlannedExercise[] = planDay?.exercises ?? [];
+  const completedExerciseIds = persisted?.completedExerciseIds ?? [];
+
+  // Status:
+  //   - postponed se mantiene si esta persistido
+  //   - completed cuando completedExerciseIds.length === plannedExercises.length (TODOS)
+  //   - partial cuando hay algunos pero no todos
+  //   - pending por defecto
+  //   - missed solo si la fecha ya paso y no se complete ni se pospuso
+  let status: TrainingDayStatus = 'pending';
+
+  if (persisted?.status === 'postponed') {
+    status = 'postponed';
+  } else if (plannedExercises.length > 0 && completedExerciseIds.length >= plannedExercises.length) {
+    status = 'completed';
+  } else if (completedExerciseIds.length > 0) {
+    status = 'partial';
+  } else {
+    status = 'pending';
+  }
+
+  if (isPast && status === 'pending') {
     status = 'missed';
   }
 
   return {
     dateKey,
-    dayLabel: scheduledDay.dayLabel,
-    shortDateLabel: capitalize(shortDateFormatter.format(input.date)),
-    muscleId: scheduledDay.muscleId,
-    muscleName: muscle.name,
-    muscleColor: muscle.color,
+    dayLabel,
+    shortDateLabel,
     status,
-    isToday: dateKey === input.todayKey,
-    isPast: dateKey < input.todayKey,
-    isFuture: dateKey > input.todayKey,
-    exerciseIds: getExercisesByMuscle(scheduledDay.muscleId).map((exercise) => exercise.id),
-    completedExerciseIds: persisted?.completedExerciseIds ?? [],
+    isToday,
+    isPast,
+    isFuture,
+    cycleDayIndex: session.cycleDayIndex,
+    sessionIndex: session.sessionIndex,
+    sessionLabel: planDay?.label ?? `Sesion ${(session.sessionIndex ?? 0) + 1}`,
+    sessionFocus: planDay?.focus ?? '',
+    plannedExercises,
+    completedExerciseIds,
+    accentColor: '#2F6BFF',
   };
 }
 
-export function getWeekDays(store: TrainingCalendarStore, referenceDate = new Date()) {
-  const todayKey = toLocalDateKey(referenceDate);
-  const weekStart = getWeekStart(referenceDate);
-
-  return Array.from({ length: 7 }, (_, index) =>
-    resolveTrainingDay({
-      date: addLocalDays(weekStart, index),
-      todayKey,
-      persisted: store.days[toLocalDateKey(addLocalDays(weekStart, index))],
-    })
-  );
-}
-
-export function getRecentDays(
-  store: TrainingCalendarStore,
-  options?: { referenceDate?: Date; days?: number; includePendingToday?: boolean }
-) {
-  const referenceDate = options?.referenceDate ?? new Date();
-  const totalDays = options?.days ?? 21;
-  const todayKey = toLocalDateKey(referenceDate);
-
-  return Array.from({ length: totalDays }, (_, index) => {
-    const date = addLocalDays(referenceDate, -index);
-    return resolveTrainingDay({
-      date,
-      todayKey,
-      persisted: store.days[toLocalDateKey(date)],
-    });
-  }).filter((day) => options?.includePendingToday || day.status !== 'pending');
-}
-
-export function countWeekPostpones(store: TrainingCalendarStore, referenceDate = new Date()) {
-  const weekKey = getWeekKey(referenceDate);
-
-  return Object.values(store.days).filter((day) => {
-    if (day.status !== 'postponed') {
-      return false;
-    }
-
-    return getWeekKey(fromLocalDateKey(day.dateKey)) === weekKey;
-  }).length;
-}
+// =============================================================
+// Helpers de fechas para UI
+// =============================================================
 
 export function formatHistoryLabel(dateKey: string) {
   return capitalize(longDateFormatter.format(fromLocalDateKey(dateKey)));
 }
 
-export function setDayRecord(
-  store: TrainingCalendarStore,
-  record: PersistedTrainingDay
-): TrainingCalendarStore {
-  return {
-    ...store,
-    days: {
-      ...store.days,
-      [record.dateKey]: record,
-    },
-  };
+export function getWeekLabel(date: Date) {
+  const start = addLocalDays(date, -((date.getDay() + 6) % 7));
+  const end = addLocalDays(start, 6);
+  return `${capitalize(shortDateFormatter.format(start))} - ${capitalize(shortDateFormatter.format(end))}`;
 }
-
-function capitalize(value: string) {
-  if (!value.length) {
-    return value;
-  }
-
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-export type { Exercise, PersistedTrainingDay };
