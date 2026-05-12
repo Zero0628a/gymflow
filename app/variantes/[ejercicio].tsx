@@ -25,7 +25,7 @@ export default function VariantesScreen() {
         subtitle={loading ? 'Cargando alternativas' : `Base para ${exercise?.name ?? 'ejercicio'}`}
         left={
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="arrow-back-outline" size={22} color={colors.textPrimary} />
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
           </Pressable>
         }
       />

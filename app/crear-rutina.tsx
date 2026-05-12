@@ -112,6 +112,7 @@ export default function CrearRutinaScreen() {
       <ModalHeader
         title="Nueva Rutina"
         onClose={() => router.back()}
+        closeIcon="chevron-back"
         actionLabel="Borrador"
         onAction={() => void handleSave('draft')}
         actionDisabled={saving || !name.trim()}
