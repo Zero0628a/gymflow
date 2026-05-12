@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import { ActionSheet, type ActionSheetOption } from '@/components/ui/action-sheet';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Screen } from '@/components/ui/screen';
@@ -23,6 +24,8 @@ const routineDateFormatter = new Intl.DateTimeFormat('es-ES', {
 export default function RutinasScreen() {
   const colors = useGymColors();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [sheetRoutine, setSheetRoutine] = useState<Routine | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Routine | null>(null);
   const { loading: catalogLoading, routineTemplates } = useCatalog();
   const { profile } = useProfile();
   const {
@@ -70,7 +73,6 @@ export default function RutinasScreen() {
         weeklyPlan: template.weeklyPlan,
         source: 'template',
       });
-      Alert.alert('Rutina guardada', 'La sugerida ya está en tus rutinas.');
     } catch (error) {
       console.error('No se pudo guardar rutina sugerida:', error);
       Alert.alert('No se pudo guardar', 'Intentá de nuevo en unos segundos.');
@@ -79,41 +81,39 @@ export default function RutinasScreen() {
     }
   }
 
-  function openRoutineActions(routine: Routine) {
-    const actions = [
-      routine.status !== 'active'
-        ? {
-            text: 'Activar',
-            onPress: () => void runRoutineAction(routine.id, () => activateRoutine(routine.id)),
-          }
-        : null,
-      {
-        text: 'Duplicar',
-        onPress: () => void runRoutineAction(routine.id, () => duplicateRoutine(routine.id)),
-      },
-      routine.status !== 'archived'
-        ? {
-            text: 'Archivar',
-            onPress: () => void runRoutineAction(routine.id, () => archiveRoutine(routine.id)),
-          }
-        : null,
-      {
-        text: 'Eliminar',
-        style: 'destructive' as const,
-        onPress: () =>
-          Alert.alert('Eliminar rutina', 'Esta acción no se puede deshacer.', [
-            { text: 'Cancelar', style: 'cancel' },
-            {
-              text: 'Eliminar',
-              style: 'destructive',
-              onPress: () => void runRoutineAction(routine.id, () => deleteRoutine(routine.id)),
-            },
-          ]),
-      },
-      { text: 'Cancelar', style: 'cancel' as const },
-    ].filter(Boolean);
+  function buildSheetOptions(routine: Routine): ActionSheetOption[] {
+    const options: ActionSheetOption[] = [];
 
-    Alert.alert(routine.name, 'Elegí una acción.', actions);
+    if (routine.status !== 'active') {
+      options.push({
+        label: 'Activar rutina',
+        icon: 'play-circle-outline',
+        onPress: () => void runRoutineAction(routine.id, () => activateRoutine(routine.id)),
+      });
+    }
+
+    options.push({
+      label: 'Duplicar',
+      icon: 'copy-outline',
+      onPress: () => void runRoutineAction(routine.id, () => duplicateRoutine(routine.id)),
+    });
+
+    if (routine.status !== 'archived') {
+      options.push({
+        label: 'Archivar',
+        icon: 'archive-outline',
+        onPress: () => void runRoutineAction(routine.id, () => archiveRoutine(routine.id)),
+      });
+    }
+
+    options.push({
+      label: 'Eliminar',
+      icon: 'trash-outline',
+      variant: 'destructive',
+      onPress: () => setConfirmDelete(routine),
+    });
+
+    return options;
   }
 
   async function runRoutineAction(routineId: string, action: () => Promise<void>) {
@@ -130,6 +130,35 @@ export default function RutinasScreen() {
 
   return (
     <Screen>
+      {/* Sheet de acciones */}
+      <ActionSheet
+        visible={!!sheetRoutine}
+        title={sheetRoutine?.name}
+        options={sheetRoutine ? buildSheetOptions(sheetRoutine) : []}
+        onClose={() => setSheetRoutine(null)}
+      />
+
+      {/* Confirmacion de eliminar */}
+      <ActionSheet
+        visible={!!confirmDelete}
+        title="Eliminar rutina"
+        subtitle="Esta acción no se puede deshacer."
+        options={[
+          {
+            label: 'Eliminar definitivamente',
+            icon: 'trash-outline',
+            variant: 'destructive',
+            onPress: () => {
+              if (confirmDelete) {
+                void runRoutineAction(confirmDelete.id, () => deleteRoutine(confirmDelete.id));
+              }
+              setConfirmDelete(null);
+            },
+          },
+        ]}
+        onClose={() => setConfirmDelete(null)}
+      />
+
       <ScreenHeader
         title="Rutinas"
         subtitle={loading || catalogLoading ? 'Cargando biblioteca' : `${userRoutines.length} guardadas`}
@@ -170,7 +199,7 @@ export default function RutinasScreen() {
                     void runRoutineAction(routine.id, () => activateRoutine(routine.id));
                   }
                 }}
-                onMorePress={() => openRoutineActions(routine)}
+                onMorePress={() => setSheetRoutine(routine)}
               />
             ))}
           </View>
