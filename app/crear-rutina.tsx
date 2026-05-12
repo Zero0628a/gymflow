@@ -128,7 +128,8 @@ export default function CrearRutinaScreen() {
             placeholder="Nombre de la rutina"
             placeholderTextColor={colors.textMuted}
             selectionColor={colors.accent}
-            defaultValue={name}
+            autoCapitalize="characters"
+            value={name}
             onChangeText={setName}
           />
           <Text style={[styles.helper, { color: colors.textSecondary }]}>
@@ -392,7 +393,6 @@ const styles = StyleSheet.create({
     fontSize: 36,
     lineHeight: 40,
     paddingBottom: 10,
-    textTransform: 'uppercase',
   },
   helper: {
     fontFamily: Fonts.bodyRegular,
