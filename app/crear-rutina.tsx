@@ -91,14 +91,7 @@ export default function CrearRutinaScreen() {
         focusLabel: summary.focusLabel,
         status,
       });
-
-      Alert.alert(
-        status === 'draft' ? 'Borrador guardado' : 'Rutina guardada',
-        status === 'draft'
-          ? 'La rutina quedó lista para retomarla después.'
-          : `"${name.trim()}" ya está disponible en tus rutinas.`,
-        [{ text: 'Aceptar', onPress: () => router.back() }]
-      );
+      router.back();
     } catch (error) {
       console.error('Error al guardar rutina:', error);
       Alert.alert('No se pudo guardar', 'Revisá tu conexión y probá de nuevo.');
