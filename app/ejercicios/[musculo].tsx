@@ -26,7 +26,7 @@ export default function EjerciciosScreen() {
         subtitle={loading ? 'Cargando catalogo' : `${lista.length} ejercicios disponibles`}
         left={
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="arrow-back-outline" size={22} color={colors.textPrimary} />
+            <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />
           </Pressable>
         }
       />

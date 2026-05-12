@@ -87,41 +87,10 @@ function RootNavigator() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen
-          name="ejercicios/[musculo]"
-          options={{
-            title: '',
-            headerBackTitle: 'Inicio',
-            headerTintColor: colors.accent,
-            headerStyle: { backgroundColor: colors.bgSurface },
-            headerShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="variantes/[ejercicio]"
-          options={{
-            title: '',
-            headerBackTitle: 'Ejercicios',
-            headerTintColor: colors.accent,
-            headerStyle: { backgroundColor: colors.bgSurface },
-            headerShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="crear-rutina"
-          options={{
-            title: 'Crear Rutina',
-            headerTintColor: colors.accent,
-            headerStyle: { backgroundColor: colors.bgSurface },
-            headerShadowVisible: false,
-          }}
-        />
-        <Stack.Screen
-          name="sesion/[ejercicio]"
-          options={{
-            headerShown: false,
-          }}
-        />
+        <Stack.Screen name="ejercicios/[musculo]" options={{ headerShown: false }} />
+        <Stack.Screen name="variantes/[ejercicio]" options={{ headerShown: false }} />
+        <Stack.Screen name="crear-rutina" options={{ headerShown: false }} />
+        <Stack.Screen name="sesion/[ejercicio]" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
