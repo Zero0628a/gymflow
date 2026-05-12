@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
 import { useCatalog } from '@/providers/catalog-provider';
@@ -70,6 +70,7 @@ export default function OnboardingScreen() {
   const [equipment, setEquipment] = useState<RoutineEquipmentSetup | null>(null);
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState('');
 
   const currentStep = STEPS[stepIndex];
   const profileDraft: UserProfile | null = useMemo(() => {
@@ -146,7 +147,7 @@ export default function OnboardingScreen() {
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Error al finalizar onboarding:', error);
-      Alert.alert('No se pudo guardar', 'Revisa tu conexion e intenta de nuevo.');
+      setToast('No se pudo guardar. Revisa tu conexion e intenta de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -154,6 +155,7 @@ export default function OnboardingScreen() {
 
   return (
     <Screen>
+      <Toast visible={!!toast} message={toast} variant="error" onHide={() => setToast('')} />
       <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
         <Pressable
           onPress={handleBack}

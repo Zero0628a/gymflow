@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Button } from '@/components/ui/button';
 import { ModalHeader } from '@/components/ui/modal-header';
 import { Screen } from '@/components/ui/screen';
+import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
 import { useCatalog } from '@/providers/catalog-provider';
@@ -30,6 +30,8 @@ export default function CrearRutinaScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [query, setQuery] = useState('');
   const [muscleFilter, setMuscleFilter] = useState<string | null>(null);
+  const [nameError, setNameError] = useState('');
+  const [toast, setToast] = useState('');
 
   const selectedExercises = useMemo(
     () => selectedIds.map((id) => allExercises.find((exercise) => exercise.id === id)).filter(Boolean) as Exercise[],
@@ -72,18 +74,16 @@ export default function CrearRutinaScreen() {
   }
 
   async function handleSave(status: 'draft' | 'ready') {
+    setNameError('');
     if (!name.trim()) {
-      Alert.alert('Nombre requerido', 'Escribe un nombre para la rutina.');
+      setNameError('Escribe un nombre para la rutina.');
       return;
     }
-
     if (status === 'ready' && selectedIds.length === 0) {
-      Alert.alert('Sin ejercicios', 'Agrega al menos un ejercicio para guardarla.');
+      setToast('Agrega al menos un ejercicio para guardarla.');
       return;
     }
-
     setSaving(true);
-
     try {
       await createRoutine({
         name,
@@ -94,7 +94,7 @@ export default function CrearRutinaScreen() {
       router.back();
     } catch (error) {
       console.error('Error al guardar rutina:', error);
-      Alert.alert('No se pudo guardar', 'Revisá tu conexión y probá de nuevo.');
+      setToast('No se pudo guardar. Revisá tu conexión.');
     } finally {
       setSaving(false);
     }
@@ -102,6 +102,7 @@ export default function CrearRutinaScreen() {
 
   return (
     <Screen>
+      <Toast visible={!!toast} message={toast} variant="error" onHide={() => setToast('')} />
       <ModalHeader
         title="Nueva Rutina"
         onClose={() => router.back()}
@@ -132,9 +133,13 @@ export default function CrearRutinaScreen() {
             value={name}
             onChangeText={setName}
           />
-          <Text style={[styles.helper, { color: colors.textSecondary }]}>
-            {catalogLoading ? 'Cargando catalogo...' : summary.supportLine}
-          </Text>
+          {nameError ? (
+            <Text style={[styles.fieldError, { color: colors.danger }]}>{nameError}</Text>
+          ) : (
+            <Text style={[styles.helper, { color: colors.textSecondary }]}>
+              {catalogLoading ? 'Cargando catalogo...' : summary.supportLine}
+            </Text>
+          )}
         </View>
 
         <View style={styles.block}>
@@ -398,6 +403,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyRegular,
     fontSize: 14,
     lineHeight: 20,
+  },
+  fieldError: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 13,
   },
   sectionRow: {
     flexDirection: 'row',
