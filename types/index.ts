@@ -136,3 +136,18 @@ export type TrainingActionFailure =
   | 'closed_postponed'
   | 'not_today'
   | 'already_completed';
+
+// Un set registrado por el usuario durante la sesion
+export interface LoggedSet {
+  setNumber: number;
+  weight: number;    // kg
+  reps: number;
+}
+
+// Todos los sets de un ejercicio en un dia dado
+export interface ExerciseLog {
+  exerciseId: string;
+  dateKey: string;
+  sets: LoggedSet[];
+  updatedAt: string;
+}

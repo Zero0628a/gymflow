@@ -1,9 +1,8 @@
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 
-import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Screen } from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
@@ -14,17 +13,7 @@ import type { Muscle } from '@/types';
 
 export default function MusculosScreen() {
   const colors = useGymColors();
-  const { loading, muscles, seedCatalog } = useCatalog();
-
-  async function handleSeedCatalog() {
-    try {
-      await seedCatalog();
-      Alert.alert('Catalogo cargado', 'Ya puedes navegar musculos, ejercicios y variantes.');
-    } catch (error) {
-      console.error('No se pudo cargar catalogo base:', error);
-      Alert.alert('No se pudo cargar', 'Revisa reglas de Firestore o tu conexion.');
-    }
-  }
+  const { loading, muscles } = useCatalog();
 
   return (
     <Screen>
@@ -46,24 +35,17 @@ export default function MusculosScreen() {
             <EmptyState
               icon="body-outline"
               title="Catalogo vacio"
-              description="No hay musculos cargados en Firestore. Inserta el catalogo base para empezar a probar."
-              actionLabel="Cargar catalogo base"
-              onAction={() => void handleSeedCatalog()}
+              description="No hay grupos musculares disponibles."
             />
           ) : null
         }
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <Text style={[styles.eyebrow, { color: colors.textSecondary }]}>Consulta base</Text>
+            <Text style={[styles.eyebrow, { color: colors.textSecondary }]}>Biblioteca</Text>
             <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>Elige la zona a entrenar</Text>
             <Text style={[styles.heroBody, { color: colors.textSecondary }]}>
-              Desde aqui sale el flujo completo del sprint 2: musculo, ejercicios y variantes.
+              Explora ejercicios y variantes por grupo muscular.
             </Text>
-            {muscles.length === 0 ? null : (
-              <Button onPress={() => void handleSeedCatalog()} size="sm" variant="outline">
-                Recargar catalogo base
-              </Button>
-            )}
           </View>
         }
       />

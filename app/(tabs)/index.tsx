@@ -246,7 +246,14 @@ function SessionCard({
             checked={today.completedExerciseIds.includes(planned.exerciseId)}
             disabled={allDisabled}
             exerciseName={getExerciseById(planned.exerciseId)?.name ?? planned.exerciseId}
-            onPress={() => onExercisePress(planned.exerciseId)}
+            onToggle={() => onExercisePress(planned.exerciseId)}
+            onOpenLog={() =>
+              router.push({
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                pathname: '/sesion/[ejercicio]' as any,
+                params: { ejercicio: planned.exerciseId, dateKey: today.dateKey },
+              })
+            }
           />
         ))}
       </View>
@@ -270,14 +277,16 @@ function ExerciseRow({
   exerciseName,
   checked,
   disabled,
-  onPress,
+  onToggle,
+  onOpenLog,
 }: {
   index: number;
   planned: PlannedExercise;
   exerciseName: string;
   checked: boolean;
   disabled: boolean;
-  onPress: () => void;
+  onToggle: () => void;
+  onOpenLog: () => void;
 }) {
   const colors = useGymColors();
 
@@ -292,7 +301,7 @@ function ExerciseRow({
     <Pressable
       onPress={() => {
         if (disabled) return;
-        onPress();
+        onOpenLog();
       }}
       style={({ pressed }) => [
         styles.exerciseRow,
@@ -319,11 +328,20 @@ function ExerciseRow({
           </Text>
         ) : null}
       </View>
-      <Ionicons
-        name={checked ? 'checkmark-circle' : 'ellipse-outline'}
-        size={22}
-        color={checked ? colors.accent : colors.textMuted}
-      />
+      <Pressable
+        onPress={(e) => {
+          e.stopPropagation();
+          if (disabled) return;
+          onToggle();
+        }}
+        hitSlop={8}
+        style={({ pressed }) => [pressed && !disabled && styles.pressed]}>
+        <Ionicons
+          name={checked ? 'checkmark-circle' : 'ellipse-outline'}
+          size={26}
+          color={checked ? colors.accent : colors.textMuted}
+        />
+      </Pressable>
     </Pressable>
   );
 }
