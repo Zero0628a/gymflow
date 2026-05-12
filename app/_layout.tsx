@@ -116,6 +116,12 @@ function RootNavigator() {
             headerShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="sesion/[ejercicio]"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>

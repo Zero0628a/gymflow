@@ -31,7 +31,7 @@ import {
 } from '@/lib/training-calendar';
 import { useAuth } from '@/providers/auth-provider';
 import { useRoutines } from '@/providers/routines-provider';
-import type { Routine, TrainingActionFailure, TrainingDay } from '@/types';
+import type { ExerciseLog, LoggedSet, Routine, TrainingActionFailure, TrainingDay } from '@/types';
 
 type TrainingContextValue = {
   loading: boolean;
@@ -42,8 +42,11 @@ type TrainingContextValue = {
   weekDays: TrainingDay[];
   postponedCount: number;
   recentHistory: Array<TrainingDay & { historyLabel: string }>;
+  exerciseLogs: Record<string, ExerciseLog>;
   toggleExercise: (dateKey: string, exerciseId: string) => Promise<TrainingActionFailure | null>;
   postponeDay: (dateKey: string) => Promise<TrainingActionFailure | null>;
+  saveExerciseLog: (dateKey: string, exerciseId: string, sets: LoggedSet[]) => Promise<void>;
+  getExerciseLog: (dateKey: string, exerciseId: string) => ExerciseLog | null;
   resetTraining: () => Promise<void>;
 };
 
@@ -55,6 +58,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<TrainingCalendarStore>(createEmptyTrainingStore());
   const [todayKey, setTodayKey] = useState(() => toLocalDateKey(new Date()));
+  const [exerciseLogs, setExerciseLogs] = useState<Record<string, ExerciseLog>>({});
 
   const activeRoutine = useMemo(
     () => routines.find((routine) => routine.status === 'active') ?? null,
@@ -75,7 +79,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
     setLoading(true);
 
     const trainingDaysRef = collection(db, 'users', user.uid, 'training_days');
-    const unsubscribe = onSnapshot(
+    const unsubDays = onSnapshot(
       query(trainingDaysRef),
       (snapshot) => {
         const days = snapshot.docs.reduce<Record<string, PersistedTrainingDay>>((acc, item) => {
@@ -95,7 +99,26 @@ export function TrainingProvider({ children }: PropsWithChildren) {
       }
     );
 
-    return unsubscribe;
+    const exerciseLogsRef = collection(db, 'users', user.uid, 'exercise_logs');
+    const unsubLogs = onSnapshot(
+      query(exerciseLogsRef),
+      (snapshot) => {
+        const logs = snapshot.docs.reduce<Record<string, ExerciseLog>>((acc, item) => {
+          const data = item.data() as ExerciseLog;
+          acc[item.id] = { ...data };
+          return acc;
+        }, {});
+        setExerciseLogs(logs);
+      },
+      (error) => {
+        console.error('No se pudo cargar exercise_logs:', error);
+      }
+    );
+
+    return () => {
+      unsubDays();
+      unsubLogs();
+    };
   }, [authLoading, routinesLoading, user]);
 
   useEffect(() => {
@@ -187,6 +210,24 @@ export function TrainingProvider({ children }: PropsWithChildren) {
       weekDays,
       postponedCount,
       recentHistory,
+      exerciseLogs,
+      getExerciseLog(dateKey: string, exerciseId: string) {
+        const key = `${dateKey}_${exerciseId}`;
+        return exerciseLogs[key] ?? null;
+      },
+      async saveExerciseLog(dateKey: string, exerciseId: string, sets: LoggedSet[]) {
+        if (!user) return;
+        const key = `${dateKey}_${exerciseId}`;
+        await setDoc(
+          doc(db, 'users', user.uid, 'exercise_logs', key),
+          {
+            exerciseId,
+            dateKey,
+            sets,
+            updatedAt: new Date().toISOString(),
+          }
+        );
+      },
       async toggleExercise(dateKey: string, exerciseId: string) {
         if (!user) return 'not_today';
         if (dateKey !== currentTodayKey) return 'not_today';
@@ -275,7 +316,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
         await Promise.all(snapshot.docs.map((item) => deleteDoc(item.ref)));
       },
     };
-  }, [activeRoutine, loading, store, todayKey, user]);
+  }, [activeRoutine, exerciseLogs, loading, store, todayKey, user]);
 
   return <TrainingContext.Provider value={value}>{children}</TrainingContext.Provider>;
 }
