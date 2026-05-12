@@ -1,4 +1,12 @@
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import {
+  Animated,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -24,23 +32,67 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
   const colors = useGymColors();
   const insets = useSafeAreaInsets();
 
+  const translateY = useRef(new Animated.Value(600)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: true,
+        }),
+        Animated.spring(translateY, {
+          toValue: 0,
+          damping: 22,
+          stiffness: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(overlayOpacity, {
+          toValue: 0,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 600,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [visible, translateY, overlayOpacity]);
+
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="none"
       statusBarTranslucent
       onRequestClose={onClose}>
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable
+
+      {/* Overlay oscuro — solo opacidad, no se mueve */}
+      <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      </Animated.View>
+
+      {/* Sheet — solo sube/baja */}
+      <Animated.View
+        style={[
+          styles.sheetWrapper,
+          { transform: [{ translateY }] },
+        ]}>
+        <View
           style={[
             styles.sheet,
             {
               backgroundColor: colors.bgSurface,
               paddingBottom: insets.bottom + 12,
             },
-          ]}
-          onPress={() => {}}>
+          ]}>
           {/* Handle */}
           <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
 
@@ -61,7 +113,7 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
           )}
 
           {/* Options */}
-          <View style={styles.options}>
+          <View style={[styles.options, { borderColor: colors.border }]}>
             {options.map((option, index) => {
               const isDestructive = option.variant === 'destructive';
               const color = isDestructive ? colors.danger : colors.textPrimary;
@@ -72,7 +124,7 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
                   key={option.label}
                   onPress={() => {
                     onClose();
-                    setTimeout(option.onPress, 200);
+                    setTimeout(option.onPress, 250);
                   }}
                   style={({ pressed }) => [
                     styles.option,
@@ -98,17 +150,22 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
             ]}>
             <Text style={[styles.cancelLabel, { color: colors.textSecondary }]}>Cancelar</Text>
           </Pressable>
-        </Pressable>
-      </Pressable>
+        </View>
+      </Animated.View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+  },
+  sheetWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   sheet: {
     borderTopLeftRadius: 24,
