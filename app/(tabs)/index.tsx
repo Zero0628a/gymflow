@@ -291,30 +291,28 @@ function ExerciseRow({
   const colors = useGymColors();
 
   const meta = [
-    `${planned.sets} × ${planned.reps}`,
-    planned.rest ? `${planned.rest} desc.` : null,
+    `${planned.sets} series × ${planned.reps} reps`,
+    planned.rest ? `${planned.rest} descanso` : null,
   ]
     .filter(Boolean)
     .join('  ·  ');
 
   return (
-    <Pressable
-      onPress={() => {
-        if (disabled) return;
-        onOpenLog();
-      }}
-      style={({ pressed }) => [
+    <View
+      style={[
         styles.exerciseRow,
         {
           backgroundColor: checked ? colors.accentSoft : colors.bgSurfaceAlt,
           borderColor: checked ? colors.accent : colors.border,
           opacity: disabled ? 0.55 : 1,
         },
-        pressed && !disabled && styles.pressed,
       ]}>
+      {/* Número */}
       <Text style={[styles.exerciseIndex, { color: checked ? colors.accent : colors.textMuted }]}>
         {String(index).padStart(2, '0')}
       </Text>
+
+      {/* Info + botón registrar */}
       <View style={styles.exerciseInfo}>
         <Text style={[styles.exerciseName, { color: colors.textPrimary }]} numberOfLines={1}>
           {exerciseName}
@@ -322,27 +320,53 @@ function ExerciseRow({
         <Text style={[styles.exerciseMeta, { color: colors.textSecondary }]} numberOfLines={1}>
           {meta}
         </Text>
+        {!disabled && (
+          <Pressable
+            onPress={onOpenLog}
+            style={({ pressed }) => [
+              styles.logBtn,
+              {
+                backgroundColor: checked ? colors.accent + '22' : colors.bgSurface,
+                borderColor: checked ? colors.accent + '60' : colors.border,
+              },
+              pressed && styles.pressed,
+            ]}>
+            <Ionicons
+              name="create-outline"
+              size={13}
+              color={checked ? colors.accent : colors.textSecondary}
+            />
+            <Text
+              style={[
+                styles.logBtnText,
+                { color: checked ? colors.accent : colors.textSecondary },
+              ]}>
+              {checked ? 'Ver series' : 'Registrar series'}
+            </Text>
+          </Pressable>
+        )}
         {planned.note ? (
           <Text style={[styles.exerciseNote, { color: colors.textMuted }]} numberOfLines={2}>
             {planned.note}
           </Text>
         ) : null}
       </View>
+
+      {/* Checkbox */}
       <Pressable
-        onPress={(e) => {
-          e.stopPropagation();
+        onPress={() => {
           if (disabled) return;
           onToggle();
         }}
-        hitSlop={8}
+        hitSlop={10}
         style={({ pressed }) => [pressed && !disabled && styles.pressed]}>
         <Ionicons
           name={checked ? 'checkmark-circle' : 'ellipse-outline'}
-          size={26}
+          size={28}
           color={checked ? colors.accent : colors.textMuted}
         />
       </Pressable>
-    </Pressable>
+    </View>
   );
 }
 
@@ -620,6 +644,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     marginTop: 2,
+  },
+  logBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginTop: 6,
+    alignSelf: 'flex-start',
+  },
+  logBtnText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
   },
   postponeBtn: {
     marginTop: 4,
