@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
 import { useAuth } from '@/providers/auth-provider';
@@ -34,24 +35,30 @@ export default function HomeScreen() {
     toggleExercise,
     weekDays,
   } = useTraining();
+  const [toast, setToast] = useState<{ message: string; variant: 'error' | 'warning' | 'info' } | null>(null);
 
   const dateLabel = useMemo(() => formatTodayLabel(new Date()), [todayKey]);
+
+  function showToast(message: string, variant: 'error' | 'warning' | 'info' = 'warning') {
+    setToast({ message, variant });
+  }
 
   async function onExercisePress(exerciseId: string) {
     if (!today) return;
     const failure = await toggleExercise(today.dateKey, exerciseId);
-    handleFailure(failure);
+    if (failure) handleFailure(failure, showToast);
   }
 
   async function onPostpone() {
     if (!today) return;
     const failure = await postponeDay(today.dateKey);
-    handleFailure(failure);
+    if (failure) handleFailure(failure, showToast);
   }
 
   if (loading) {
     return (
       <Screen>
+        <Toast visible={!!toast} message={toast?.message ?? ''} variant={toast?.variant} onHide={() => setToast(null)} />
         <TopBar onLogout={() => logout()} />
         <View style={styles.loading}>
           <Ionicons name="barbell-outline" size={26} color={colors.textMuted} />
@@ -66,6 +73,7 @@ export default function HomeScreen() {
   if (!activeRoutine) {
     return (
       <Screen>
+        <Toast visible={!!toast} message={toast?.message ?? ''} variant={toast?.variant} onHide={() => setToast(null)} />
         <TopBar onLogout={() => logout()} />
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <NoRoutineState />
@@ -84,6 +92,7 @@ export default function HomeScreen() {
 
   return (
     <Screen>
+      <Toast visible={!!toast} message={toast?.message ?? ''} variant={toast?.variant} onHide={() => setToast(null)} />
       <TopBar onLogout={() => logout()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -459,12 +468,14 @@ function getStatusVisual(status: TrainingDay['status'], colors: ReturnType<typeo
   }
 }
 
-function handleFailure(failure: TrainingActionFailure | null) {
-  if (!failure) return;
-  if (failure === 'closed_missed') Alert.alert('Dia cerrado', MISSED_MESSAGE);
-  else if (failure === 'closed_postponed') Alert.alert('Sesion pospuesta', 'Esta sesion ya quedo cerrada por hoy.');
-  else if (failure === 'already_completed') Alert.alert('Sesion completada', 'Ya cerraste el dia. No hace falta posponer.');
-  else Alert.alert('Solo hoy', 'Solo podes registrar ejercicios del dia actual.');
+function handleFailure(
+  failure: TrainingActionFailure,
+  show: (msg: string, variant?: 'error' | 'warning' | 'info') => void
+) {
+  if (failure === 'closed_missed') show(MISSED_MESSAGE, 'error');
+  else if (failure === 'closed_postponed') show('Esta sesion ya quedo cerrada por hoy.', 'warning');
+  else if (failure === 'already_completed') show('Ya cerraste el dia. No hace falta posponer.', 'info');
+  else show('Solo podes registrar ejercicios del dia actual.', 'warning');
 }
 
 const longDateFormatter = new Intl.DateTimeFormat('es-ES', {

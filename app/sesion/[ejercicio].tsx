@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
 import { useCatalog } from '@/providers/catalog-provider';
@@ -60,6 +60,7 @@ export default function RegistroEjercicioScreen() {
 
   const [sets, setSets] = useState<LoggedSet[]>(initialSets);
   const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     setSets(initialSets);
@@ -92,20 +93,18 @@ export default function RegistroEjercicioScreen() {
     if (!dateKey || !exerciseId) return;
     const hasData = sets.some((s) => s.weight > 0 || s.reps > 0);
     if (!hasData) {
-      Alert.alert('Sin datos', 'Ingresa al menos peso o reps en una serie antes de guardar.');
+      setToast('Ingresa al menos peso o reps en una serie antes de guardar.');
       return;
     }
-
     setSaving(true);
     try {
       await saveExerciseLog(dateKey, exerciseId, sets);
-      // Marcar el ejercicio como completado si no lo estaba
       if (today && !today.completedExerciseIds.includes(exerciseId)) {
         await toggleExercise(dateKey, exerciseId);
       }
       router.back();
     } catch {
-      Alert.alert('Error', 'No se pudo guardar. Intentalo de nuevo.');
+      setToast('No se pudo guardar. Intentalo de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -115,6 +114,7 @@ export default function RegistroEjercicioScreen() {
 
   return (
     <Screen>
+      <Toast visible={!!toast} message={toast} variant="error" onHide={() => setToast('')} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

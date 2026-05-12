@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ActionSheet, type ActionSheetOption } from '@/components/ui/action-sheet';
 import { Button } from '@/components/ui/button';
+import { Toast } from '@/components/ui/toast';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Screen } from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
@@ -26,6 +27,7 @@ export default function RutinasScreen() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [sheetRoutine, setSheetRoutine] = useState<Routine | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Routine | null>(null);
+  const [toast, setToast] = useState('');
   const { loading: catalogLoading, routineTemplates } = useCatalog();
   const { profile } = useProfile();
   const {
@@ -75,7 +77,7 @@ export default function RutinasScreen() {
       });
     } catch (error) {
       console.error('No se pudo guardar rutina sugerida:', error);
-      Alert.alert('No se pudo guardar', 'Intentá de nuevo en unos segundos.');
+      setToast('No se pudo guardar. Intentá de nuevo.');
     } finally {
       setBusyId(null);
     }
@@ -122,7 +124,7 @@ export default function RutinasScreen() {
       await action();
     } catch (error) {
       console.error('No se pudo gestionar rutina:', error);
-      Alert.alert('No se pudo completar', 'Revisá tu conexión e intentá de nuevo.');
+      setToast('No se pudo completar. Revisá tu conexión.');
     } finally {
       setBusyId(null);
     }
@@ -130,6 +132,7 @@ export default function RutinasScreen() {
 
   return (
     <Screen>
+      <Toast visible={!!toast} message={toast} variant="error" onHide={() => setToast('')} />
       {/* Sheet de acciones */}
       <ActionSheet
         visible={!!sheetRoutine}
