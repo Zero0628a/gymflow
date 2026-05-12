@@ -1,14 +1,14 @@
-import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { useEffect } from 'react';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+} from 'react-native-reanimated';
 
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
@@ -32,39 +32,30 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
   const colors = useGymColors();
   const insets = useSafeAreaInsets();
 
-  const translateY = useRef(new Animated.Value(600)).current;
-  const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const translateY = useSharedValue(600);
+  const overlayOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
-      Animated.parallel([
-        Animated.timing(overlayOpacity, {
-          toValue: 1,
-          duration: 220,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateY, {
-          toValue: 0,
-          damping: 22,
-          stiffness: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      overlayOpacity.value = withTiming(1, { duration: 200 });
+      translateY.value = withSpring(0, {
+        damping: 20,
+        stiffness: 180,
+        mass: 0.8,
+      });
     } else {
-      Animated.parallel([
-        Animated.timing(overlayOpacity, {
-          toValue: 0,
-          duration: 180,
-          useNativeDriver: true,
-        }),
-        Animated.timing(translateY, {
-          toValue: 600,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      overlayOpacity.value = withTiming(0, { duration: 180 });
+      translateY.value = withTiming(600, { duration: 220 });
     }
-  }, [visible, translateY, overlayOpacity]);
+  }, [visible]);
+
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: overlayOpacity.value,
+  }));
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   return (
     <Modal
@@ -74,17 +65,13 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
       statusBarTranslucent
       onRequestClose={onClose}>
 
-      {/* Overlay oscuro — solo opacidad, no se mueve */}
-      <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
+      {/* Overlay — solo opacidad */}
+      <Animated.View style={[styles.overlay, overlayStyle]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
-      {/* Sheet — solo sube/baja */}
-      <Animated.View
-        style={[
-          styles.sheetWrapper,
-          { transform: [{ translateY }] },
-        ]}>
+      {/* Sheet — solo translateY */}
+      <Animated.View style={[styles.sheetWrapper, sheetStyle]}>
         <View
           style={[
             styles.sheet,
@@ -93,10 +80,8 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
               paddingBottom: insets.bottom + 12,
             },
           ]}>
-          {/* Handle */}
           <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
 
-          {/* Header */}
           {(title || subtitle) && (
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               {title && (
@@ -112,7 +97,6 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
             </View>
           )}
 
-          {/* Options */}
           <View style={[styles.options, { borderColor: colors.border }]}>
             {options.map((option, index) => {
               const isDestructive = option.variant === 'destructive';
@@ -140,7 +124,6 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
             })}
           </View>
 
-          {/* Cancel */}
           <Pressable
             onPress={onClose}
             style={({ pressed }) => [
