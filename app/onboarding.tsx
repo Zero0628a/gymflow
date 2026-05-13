@@ -166,7 +166,7 @@ export default function OnboardingScreen() {
             stepIndex === 0 && styles.backDisabled,
             pressed && stepIndex > 0 && styles.pressed,
           ]}>
-          <Ionicons name="arrow-back" size={18} color={colors.textPrimary} />
+          <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </Pressable>
         <View style={styles.progressBar}>
           {STEPS.map((step, index) => (

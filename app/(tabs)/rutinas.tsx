@@ -95,6 +95,19 @@ export default function RutinasScreen() {
     }
 
     options.push({
+      label: 'Editar',
+      icon: 'pencil-outline',
+      onPress: () => {
+        setSheetRoutine(null);
+        router.push({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          pathname: '/editar-rutina/[id]' as any,
+          params: { id: routine.id },
+        });
+      },
+    });
+
+    options.push({
       label: 'Duplicar',
       icon: 'copy-outline',
       onPress: () => void runRoutineAction(routine.id, () => duplicateRoutine(routine.id)),

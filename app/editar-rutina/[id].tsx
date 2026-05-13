@@ -7,7 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,30 +27,33 @@ const DEFAULT_SETS = 3;
 const DEFAULT_REPS = '10';
 const DEFAULT_REST = '60s';
 
-export default function CrearRutinaScreen() {
+export default function EditarRutinaScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useGymColors();
   const insets = useSafeAreaInsets();
-  const { createRoutine } = useRoutines();
+  const { routines, updateRoutine } = useRoutines();
   const { exercises: allExercises, loading: catalogLoading, muscles } = useCatalog();
 
-  const [name, setName] = useState('');
-  const [daysPerWeek, setDaysPerWeek] = useState(3);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const routine = useMemo(() => routines.find((r) => r.id === id), [routines, id]);
+
+  const [name, setName] = useState(routine?.name ?? '');
+  const [daysPerWeek, setDaysPerWeek] = useState(routine?.daysPerWeek ?? 3);
+  const [selectedIds, setSelectedIds] = useState<string[]>(routine?.exerciseIds ?? []);
   const [saving, setSaving] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [nameError, setNameError] = useState('');
   const [toast, setToast] = useState('');
 
   const selectedExercises = useMemo(
-    () => selectedIds.map((id) => allExercises.find((e) => e.id === id)).filter(Boolean) as Exercise[],
+    () => selectedIds.map((eid) => allExercises.find((e) => e.id === eid)).filter(Boolean) as Exercise[],
     [allExercises, selectedIds]
   );
 
   const isComplete = name.trim().length > 0 && selectedIds.length > 0;
 
-  function toggleExercise(id: string) {
+  function toggleExercise(eid: string) {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]
+      prev.includes(eid) ? prev.filter((e) => e !== eid) : [...prev, eid]
     );
   }
 
@@ -64,34 +67,35 @@ export default function CrearRutinaScreen() {
     });
   }
 
-  async function handleSave(status: 'draft' | 'ready') {
+  async function handleSave() {
     setNameError('');
     if (!name.trim()) {
       setNameError('Escribe un nombre para la rutina.');
       return;
     }
-    if (status === 'ready' && selectedIds.length === 0) {
-      setToast('Agrega al menos un ejercicio para guardarla.');
-      return;
-    }
+    if (!id) return;
     setSaving(true);
     try {
       const weeklyPlan = buildWeeklyPlan(selectedExercises, daysPerWeek, muscles);
       const focusLabel = buildFocusLabel(selectedExercises, muscles);
-      await createRoutine({
-        name,
-        exerciseIds: selectedIds,
-        focusLabel,
-        daysPerWeek,
-        weeklyPlan,
-        status,
-      });
+      await updateRoutine(id, { name, exerciseIds: selectedIds, daysPerWeek, weeklyPlan, focusLabel });
       router.back();
     } catch {
       setToast('No se pudo guardar. Revisá tu conexión.');
     } finally {
       setSaving(false);
     }
+  }
+
+  if (!routine) {
+    return (
+      <Screen>
+        <ModalHeader title="Editar Rutina" onClose={() => router.back()} closeIcon="chevron-back" />
+        <View style={styles.notFound}>
+          <Text style={[styles.notFoundText, { color: colors.textMuted }]}>Rutina no encontrada.</Text>
+        </View>
+      </Screen>
+    );
   }
 
   return (
@@ -106,12 +110,9 @@ export default function CrearRutinaScreen() {
         onClose={() => setShowPicker(false)}
       />
       <ModalHeader
-        title="Nueva Rutina"
+        title="Editar Rutina"
         onClose={() => router.back()}
         closeIcon="chevron-back"
-        actionLabel="Borrador"
-        onAction={() => void handleSave('draft')}
-        actionDisabled={saving || !name.trim()}
       />
 
       <ScrollView
@@ -138,7 +139,7 @@ export default function CrearRutinaScreen() {
             <Text style={[styles.fieldError, { color: colors.danger }]}>{nameError}</Text>
           ) : (
             <Text style={[styles.helper, { color: colors.textSecondary }]}>
-              {catalogLoading ? 'Cargando catálogo...' : 'Los ejercicios se distribuyen automáticamente.'}
+              {catalogLoading ? 'Cargando catálogo...' : `${selectedIds.length} ejercicios · ${daysPerWeek} días/semana`}
             </Text>
           )}
         </View>
@@ -171,9 +172,6 @@ export default function CrearRutinaScreen() {
               );
             })}
           </View>
-          <Text style={[styles.helper, { color: colors.textSecondary }]}>
-            Rotación automática · {daysPerWeek} sesiones por semana
-          </Text>
         </View>
 
         {/* Ejercicios */}
@@ -198,7 +196,7 @@ export default function CrearRutinaScreen() {
               <Ionicons name="add-circle-outline" size={28} color={colors.textMuted} />
               <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Agregar ejercicios</Text>
               <Text style={[styles.emptyCopy, { color: colors.textSecondary }]}>
-                Toca para abrir el catálogo y elegir los ejercicios de esta rutina.
+                Toca para abrir el catálogo y elegir los ejercicios.
               </Text>
             </Pressable>
           ) : (
@@ -266,7 +264,7 @@ export default function CrearRutinaScreen() {
           )}
         </View>
 
-        {/* Preview de distribución */}
+        {/* Preview */}
         {selectedIds.length > 0 && (
           <View style={styles.block}>
             <Text style={[styles.eyebrow, { color: colors.textSecondary }]}>Vista previa del plan</Text>
@@ -286,19 +284,18 @@ export default function CrearRutinaScreen() {
           },
         ]}>
         <View style={styles.footerText}>
-          <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>Estado actual</Text>
+          <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>Estado</Text>
           <Text style={[styles.footerValue, { color: colors.textPrimary }]} numberOfLines={1}>
-            {isComplete ? 'Lista para guardar' : 'Falta nombre o ejercicios'}
+            {isComplete ? 'Listo para guardar' : 'Falta nombre o ejercicios'}
           </Text>
         </View>
-
         <Button
-          onPress={() => void handleSave('ready')}
+          onPress={() => void handleSave()}
           size="lg"
           icon="save-outline"
           loading={saving}
           disabled={!isComplete}>
-          Guardar rutina
+          Guardar
         </Button>
       </View>
     </Screen>
@@ -306,7 +303,7 @@ export default function CrearRutinaScreen() {
 }
 
 // =============================================================
-// Plan preview — shows how exercises are distributed across days
+// Plan preview
 // =============================================================
 
 function PlanPreview({
@@ -346,37 +343,27 @@ function PlanPreview({
 }
 
 // =============================================================
-// Helper — auto-distribute exercises across training days
+// Helpers
 // =============================================================
 
 function buildWeeklyPlan(
   exercises: Exercise[],
   daysPerWeek: number,
   muscles: { id: string; name: string }[]
-): import('@/types').PlannedDay[] {
+): PlannedDay[] {
   if (exercises.length === 0) return [];
-
   const days = Math.max(1, daysPerWeek);
-
-  // Group exercises into `days` buckets, round-robin by muscle group first
   const buckets: Exercise[][] = Array.from({ length: days }, () => []);
-
-  // Sort exercises by muscleId so the same muscles cluster together
   const sorted = [...exercises].sort((a, b) => a.muscleId.localeCompare(b.muscleId));
-
-  sorted.forEach((exercise, i) => {
-    buckets[i % days].push(exercise);
-  });
+  sorted.forEach((e, i) => { buckets[i % days].push(e); });
 
   return buckets.map((bucket, i) => {
     const focusMuscles = [...new Set(bucket.map((e) => e.muscleId))]
       .slice(0, 2)
       .map((mId) => muscles.find((m) => m.id === mId)?.name ?? mId);
-    const focus = focusMuscles.join(' + ') || 'Entrenamiento';
-
     return {
       label: `Sesión ${i + 1}`,
-      focus,
+      focus: focusMuscles.join(' + ') || 'Entrenamiento',
       exercises: bucket.map((e) => ({
         exerciseId: e.id,
         sets: DEFAULT_SETS,
@@ -393,9 +380,7 @@ function buildFocusLabel(
 ): string | undefined {
   if (exercises.length === 0) return undefined;
   const counts = new Map<string, number>();
-  for (const e of exercises) {
-    counts.set(e.muscleId, (counts.get(e.muscleId) ?? 0) + 1);
-  }
+  for (const e of exercises) counts.set(e.muscleId, (counts.get(e.muscleId) ?? 0) + 1);
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
   return top.map(([mId]) => muscles.find((m) => m.id === mId)?.name ?? mId).join(' · ');
 }
@@ -580,5 +565,14 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyRegular,
     fontSize: 14,
     marginTop: 2,
+  },
+  notFound: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notFoundText: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 15,
   },
 });

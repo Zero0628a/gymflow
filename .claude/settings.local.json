@@ -1,5 +1,13 @@
 {
   "permissions": {
-    "allow": ["Bash(*)", "Read(*)", "Write(*)", "Edit(*)"]
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "PowerShell(cd \"c:\\\\Users\\\\markv\\\\OneDrive\\\\Escritorio\\\\Proyectos\\\\movil-trabajo\\\\reynaldo\\\\gymflow\"; npx tsc --noEmit 2>&1 | Where-Object { $_ -notmatch \"node_modules\" } | Select-Object -First 20)"
+    ]
   }
 }

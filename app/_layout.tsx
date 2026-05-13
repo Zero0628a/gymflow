@@ -91,6 +91,8 @@ function RootNavigator() {
         <Stack.Screen name="variantes/[ejercicio]" options={{ headerShown: false }} />
         <Stack.Screen name="crear-rutina" options={{ headerShown: false }} />
         <Stack.Screen name="sesion/[ejercicio]" options={{ headerShown: false }} />
+        <Stack.Screen name="configuracion" options={{ headerShown: false }} />
+        <Stack.Screen name="editar-rutina/[id]" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>

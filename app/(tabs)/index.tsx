@@ -131,6 +131,15 @@ function TopBar({ onLogout }: { onLogout: () => void }) {
     <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
       <View style={styles.topActions}>
         <Pressable
+          onPress={() => router.push('/configuracion')}
+          style={({ pressed }) => [
+            styles.iconBtn,
+            { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
+            pressed && styles.pressed,
+          ]}>
+          <Ionicons name="settings-outline" size={18} color={colors.textPrimary} />
+        </Pressable>
+        <Pressable
           onPress={onLogout}
           style={({ pressed }) => [
             styles.iconBtn,
