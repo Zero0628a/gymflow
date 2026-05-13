@@ -9,12 +9,14 @@ import { Screen } from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
+import { useCatalog } from '@/providers/catalog-provider';
 import { useTraining } from '@/providers/training-provider';
 import type { TrainingDayStatus } from '@/types';
 
 export default function HistorialScreen() {
   const colors = useGymColors();
-  const { recentHistory } = useTraining();
+  const { recentHistory, getExerciseLog } = useTraining();
+  const { getExerciseById } = useCatalog();
   const displayHistory = recentHistory;
 
   const completedCount = displayHistory.filter((day) => day.status === 'completed').length;
@@ -32,6 +34,14 @@ export default function HistorialScreen() {
     const title = item.sessionLabel
       ? `${item.dayLabel} · ${item.sessionLabel}`
       : item.dayLabel;
+
+    const loggedExercises = item.completedExerciseIds
+      .map((eid) => {
+        const log = getExerciseLog(item.dateKey, eid);
+        const exercise = getExerciseById(eid);
+        return log ? { name: exercise?.name ?? eid, sets: log.sets } : null;
+      })
+      .filter(Boolean) as { name: string; sets: { weight: number; reps: number }[] }[];
 
     return (
       <ListItem
@@ -54,6 +64,31 @@ export default function HistorialScreen() {
             {item.plannedExercises.length > 0 ? ` / ${item.plannedExercises.length}` : ''} ejercicios
           </Text>
         </View>
+        {loggedExercises.length > 0 && (
+          <View style={[styles.logsBlock, { borderColor: colors.border }]}>
+            {loggedExercises.map((entry) => {
+              const totalVolume = entry.sets.reduce((acc, s) => acc + s.weight * s.reps, 0);
+              const setsStr = entry.sets
+                .map((s) => `${s.weight > 0 ? `${s.weight}kg` : '–'} × ${s.reps}`)
+                .join('  ');
+              return (
+                <View key={entry.name} style={styles.logRow}>
+                  <Text style={[styles.logName, { color: colors.textPrimary }]} numberOfLines={1}>
+                    {entry.name}
+                  </Text>
+                  <Text style={[styles.logSets, { color: colors.textSecondary }]} numberOfLines={1}>
+                    {setsStr}
+                  </Text>
+                  {totalVolume > 0 && (
+                    <Text style={[styles.logVolume, { color: colors.textMuted }]}>
+                      {totalVolume % 1 === 0 ? totalVolume : totalVolume.toFixed(1)} kg vol.
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        )}
       </ListItem>
     );
   }
@@ -221,5 +256,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
+  },
+  logsBlock: {
+    marginTop: 10,
+    borderTopWidth: 1,
+    paddingTop: 10,
+    gap: 8,
+  },
+  logRow: {
+    gap: 2,
+  },
+  logName: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 13,
+  },
+  logSets: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 12,
+  },
+  logVolume: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
 });

@@ -48,10 +48,19 @@ type CreateRoutineInput = {
   weeklyPlan?: PlannedDay[];
 };
 
+type UpdateRoutineInput = {
+  name: string;
+  exerciseIds: string[];
+  daysPerWeek?: number;
+  weeklyPlan?: import('@/types').PlannedDay[];
+  focusLabel?: string;
+};
+
 type RoutinesContextValue = {
   loading: boolean;
   routines: Routine[];
   createRoutine: (input: CreateRoutineInput) => Promise<void>;
+  updateRoutine: (routineId: string, input: UpdateRoutineInput) => Promise<void>;
   activateRoutine: (routineId: string) => Promise<void>;
   archiveRoutine: (routineId: string) => Promise<void>;
   duplicateRoutine: (routineId: string) => Promise<void>;
@@ -139,6 +148,17 @@ export function RoutinesProvider({ children }: PropsWithChildren) {
           equipment: input.equipment ?? null,
           split: input.split ?? null,
           weeklyPlan: sanitizeWeeklyPlan(input.weeklyPlan),
+        });
+      },
+      async updateRoutine(routineId: string, input: UpdateRoutineInput) {
+        if (!user) throw new Error('Usuario no autenticado');
+        await updateDoc(doc(db, 'users', user.uid, 'routines', routineId), {
+          name: input.name.trim(),
+          exerciseIds: input.exerciseIds,
+          ...(input.daysPerWeek != null && { daysPerWeek: input.daysPerWeek }),
+          ...(input.focusLabel != null && { focusLabel: input.focusLabel }),
+          ...(input.weeklyPlan != null && { weeklyPlan: sanitizeWeeklyPlan(input.weeklyPlan) }),
+          updatedAt: new Date().toISOString(),
         });
       },
       async activateRoutine(routineId: string) {
