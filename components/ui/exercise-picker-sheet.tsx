@@ -56,7 +56,7 @@ export function ExercisePickerSheet({
       setQuery('');
       setMuscleFilter(null);
     }
-  }, [visible]);
+  }, [overlayOpacity, translateY, visible]);
 
   const overlayStyle = useAnimatedStyle(() => ({ opacity: overlayOpacity.value }));
   const sheetStyle = useAnimatedStyle(() => ({

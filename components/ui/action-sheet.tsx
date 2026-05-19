@@ -7,7 +7,6 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   withTiming,
-  runOnJS,
 } from 'react-native-reanimated';
 
 import { Fonts } from '@/constants/theme';
@@ -47,7 +46,7 @@ export function ActionSheet({ visible, title, subtitle, options, onClose }: Prop
       overlayOpacity.value = withTiming(0, { duration: 180 });
       translateY.value = withTiming(600, { duration: 220 });
     }
-  }, [visible]);
+  }, [overlayOpacity, translateY, visible]);
 
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: overlayOpacity.value,

@@ -140,7 +140,7 @@ export type TrainingActionFailure =
 // Un set registrado por el usuario durante la sesion
 export interface LoggedSet {
   setNumber: number;
-  weight: number;    // kg
+  weight?: number;
   reps: number;
 }
 

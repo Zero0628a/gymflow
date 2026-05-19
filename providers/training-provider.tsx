@@ -31,7 +31,7 @@ import {
 } from '@/lib/training-calendar';
 import { useAuth } from '@/providers/auth-provider';
 import { useRoutines } from '@/providers/routines-provider';
-import type { ExerciseLog, LoggedSet, Routine, TrainingActionFailure, TrainingDay } from '@/types';
+import type { ExerciseLog, Routine, TrainingActionFailure, TrainingDay } from '@/types';
 
 type TrainingContextValue = {
   loading: boolean;
@@ -43,9 +43,10 @@ type TrainingContextValue = {
   postponedCount: number;
   recentHistory: Array<TrainingDay & { historyLabel: string }>;
   exerciseLogs: Record<string, ExerciseLog>;
+  getTrainingDay: (dateKey: string) => TrainingDay | null;
   toggleExercise: (dateKey: string, exerciseId: string) => Promise<TrainingActionFailure | null>;
   postponeDay: (dateKey: string) => Promise<TrainingActionFailure | null>;
-  saveExerciseLog: (dateKey: string, exerciseId: string, sets: LoggedSet[]) => Promise<void>;
+  undoPostponeDay: (dateKey: string) => Promise<TrainingActionFailure | null>;
   getExerciseLog: (dateKey: string, exerciseId: string) => ExerciseLog | null;
   resetTraining: () => Promise<void>;
 };
@@ -133,28 +134,26 @@ export function TrainingProvider({ children }: PropsWithChildren) {
     const now = new Date();
     const currentTodayKey = toLocalDateKey(now);
 
-    const today = resolveTrainingDay({
-      date: now,
-      todayKey: currentTodayKey,
-      activeRoutine,
-      persisted: store.days[currentTodayKey],
-    });
-
-    // Semana visible: 7 dias desde el inicio del ciclo de la rutina activa
-    // (o desde hoy si no hay rutina, para que la app no se vea vacia).
-    const weekStart = activeRoutine?.cycleStartedAt
-      ? fromLocalDateKey(toLocalDateKey(new Date(activeRoutine.cycleStartedAt)))
-      : addLocalDays(now, -((now.getDay() + 6) % 7));
-
-    const weekDays: TrainingDay[] = Array.from({ length: 7 }, (_, index) => {
-      const date = addLocalDays(weekStart, index);
+    const resolveDay = (date: Date) => {
       const dateKey = toLocalDateKey(date);
       return resolveTrainingDay({
         date,
         todayKey: currentTodayKey,
         activeRoutine,
         persisted: store.days[dateKey],
+        sessionOffset: getPostponedSessionOffset(dateKey, activeRoutine, store.days),
       });
+    };
+
+    const today = resolveDay(now);
+
+    // Semana visible: siempre lunes a domingo para que la distribucion
+    // de sesiones coincida con el calendario que ve el usuario.
+    const weekStart = addLocalDays(now, -((now.getDay() + 6) % 7));
+
+    const weekDays: TrainingDay[] = Array.from({ length: 7 }, (_, index) => {
+      const date = addLocalDays(weekStart, index);
+      return resolveDay(date);
     });
 
     const postponedCount = weekDays.filter((day) => day.status === 'postponed').length;
@@ -165,29 +164,18 @@ export function TrainingProvider({ children }: PropsWithChildren) {
     Object.keys(store.days).forEach((dateKey) => {
       historyMap.set(
         dateKey,
-        resolveTrainingDay({
-          date: fromLocalDateKey(dateKey),
-          todayKey: currentTodayKey,
-          activeRoutine,
-          persisted: store.days[dateKey],
-        })
+        resolveDay(fromLocalDateKey(dateKey))
       );
     });
 
-    // Si hay rutina activa: incluir dias del ciclo que esten en el pasado y no marcados
+    // Si hay rutina activa: incluir dias de la semana activa que esten en el pasado y no marcados
     if (activeRoutine?.cycleStartedAt) {
-      const cycleStart = fromLocalDateKey(toLocalDateKey(new Date(activeRoutine.cycleStartedAt)));
       for (let index = 0; index < 7; index += 1) {
-        const date = addLocalDays(cycleStart, index);
+        const date = addLocalDays(weekStart, index);
         const dateKey = toLocalDateKey(date);
         if (dateKey >= currentTodayKey || historyMap.has(dateKey)) continue;
 
-        const resolved = resolveTrainingDay({
-          date,
-          todayKey: currentTodayKey,
-          activeRoutine,
-          persisted: store.days[dateKey],
-        });
+        const resolved = resolveDay(date);
 
         if (resolved.status !== 'pending' && resolved.status !== 'rest') {
           historyMap.set(dateKey, resolved);
@@ -211,34 +199,20 @@ export function TrainingProvider({ children }: PropsWithChildren) {
       postponedCount,
       recentHistory,
       exerciseLogs,
+      getTrainingDay(dateKey: string) {
+        if (!dateKey) return null;
+        return resolveDay(fromLocalDateKey(dateKey));
+      },
       getExerciseLog(dateKey: string, exerciseId: string) {
         const key = `${dateKey}_${exerciseId}`;
         return exerciseLogs[key] ?? null;
-      },
-      async saveExerciseLog(dateKey: string, exerciseId: string, sets: LoggedSet[]) {
-        if (!user) return;
-        const key = `${dateKey}_${exerciseId}`;
-        await setDoc(
-          doc(db, 'users', user.uid, 'exercise_logs', key),
-          {
-            exerciseId,
-            dateKey,
-            sets,
-            updatedAt: new Date().toISOString(),
-          }
-        );
       },
       async toggleExercise(dateKey: string, exerciseId: string) {
         if (!user) return 'not_today';
         if (dateKey !== currentTodayKey) return 'not_today';
 
         // Resuelvo el dia de hoy con la rutina activa para validar
-        const dayResolved = resolveTrainingDay({
-          date: now,
-          todayKey: currentTodayKey,
-          activeRoutine,
-          persisted: store.days[dateKey],
-        });
+        const dayResolved = resolveDay(now);
 
         if (dayResolved.status === 'rest') return 'not_today';
         if (dayResolved.status === 'postponed') return 'closed_postponed';
@@ -281,12 +255,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
         if (!user) return 'not_today';
         if (dateKey !== currentTodayKey) return 'not_today';
 
-        const dayResolved = resolveTrainingDay({
-          date: now,
-          todayKey: currentTodayKey,
-          activeRoutine,
-          persisted: store.days[dateKey],
-        });
+        const dayResolved = resolveDay(now);
 
         if (dayResolved.status === 'rest') return 'not_today';
         if (dayResolved.status === 'missed') return 'closed_missed';
@@ -301,6 +270,28 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: [],
             completedAt: null,
             postponedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+
+        return null;
+      },
+      async undoPostponeDay(dateKey: string) {
+        if (!user) return 'not_today';
+        if (dateKey !== currentTodayKey) return 'not_today';
+
+        const existing = store.days[dateKey];
+        if (existing?.status !== 'postponed') return null;
+
+        await setDoc(
+          doc(db, 'users', user.uid, 'training_days', dateKey),
+          {
+            dateKey,
+            status: 'pending',
+            completedExerciseIds: [],
+            completedAt: null,
+            postponedAt: null,
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -346,4 +337,20 @@ function fromTrainingDayDoc(snapshot: QueryDocumentSnapshot) {
     completedAt: typeof data.completedAt === 'string' ? data.completedAt : undefined,
     postponedAt: typeof data.postponedAt === 'string' ? data.postponedAt : undefined,
   } satisfies PersistedTrainingDay;
+}
+
+function getPostponedSessionOffset(
+  dateKey: string,
+  activeRoutine: Routine | null,
+  days: Record<string, PersistedTrainingDay>
+) {
+  if (!activeRoutine?.cycleStartedAt) {
+    return 0;
+  }
+
+  const cycleStartKey = toLocalDateKey(new Date(activeRoutine.cycleStartedAt));
+
+  return Object.values(days).filter(
+    (day) => day.status === 'postponed' && day.dateKey >= cycleStartKey && day.dateKey < dateKey
+  ).length;
 }
