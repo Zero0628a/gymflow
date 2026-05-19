@@ -1,8 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  Easing,
+  LinearTransition,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,11 +41,89 @@ export default function HomeScreen() {
     loading,
     postponeDay,
     toggleExercise,
+    undoPostponeDay,
     weekDays,
   } = useTraining();
   const [toast, setToast] = useState<{ message: string; variant: 'error' | 'warning' | 'info' } | null>(null);
+  // `selectedDateKey` = lo que el usuario tocó (resalta el chip al instante).
+  // `visibleDateKey` = lo que realmente se renderiza; solo cambia a mitad de la
+  // animación, cuando el contenido viejo ya salió de pantalla.
+  const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
+  const [visibleDateKey, setVisibleDateKey] = useState(todayKey);
+  // Progreso de la fase activa: 0 = fuera de pantalla, 1 = en reposo.
+  const transitionProgress = useSharedValue(1);
+  // Signo del desplazamiento durante la fase actual (-1 izq, 1 der).
+  const transitionDirection = useSharedValue(1);
 
-  const dateLabel = useMemo(() => formatTodayLabel(new Date()), [todayKey]);
+  const selectedDay = useMemo(
+    () => weekDays.find((day) => day.dateKey === visibleDateKey) ?? today,
+    [visibleDateKey, today, weekDays]
+  );
+
+  const dayTransitionStyle = useAnimatedStyle(() => {
+    const p = transitionProgress.value;
+    return {
+      opacity: p,
+      transform: [
+        // Cuanto más lejos del reposo, más desplazado horizontalmente.
+        { translateX: (1 - p) * transitionDirection.value * 36 },
+      ],
+    };
+  });
+
+  // Al cambiar visibleDateKey (swap a mitad de transición) el nuevo contenido
+  // entra desde el lado opuesto deslizándose hasta su lugar.
+  const animateIn = useCallback(() => {
+    transitionProgress.value = withTiming(1, {
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [transitionProgress]);
+
+  useEffect(() => {
+    setSelectedDateKey(todayKey);
+    setVisibleDateKey(todayKey);
+  }, [todayKey]);
+
+  // Cuando el swap de contenido ocurre, lanzamos la entrada. Se hace en effect
+  // para garantizar que el nuevo día ya está renderizado fuera de pantalla.
+  useEffect(() => {
+    if (visibleDateKey === selectedDateKey && transitionProgress.value === 0) {
+      animateIn();
+    }
+  }, [visibleDateKey, selectedDateKey, transitionProgress, animateIn]);
+
+  const swapContent = useCallback(
+    (dateKey: string, direction: number) => {
+      // El contenido viejo terminó de salir. Reposicionamos el nuevo al lado
+      // opuesto (progress sigue en 0) y cambiamos qué día se muestra.
+      transitionDirection.value = -direction;
+      setVisibleDateKey(dateKey);
+    },
+    [transitionDirection]
+  );
+
+  function selectDay(dateKey: string) {
+    if (dateKey === selectedDateKey) return;
+
+    const currentIndex = weekDays.findIndex((day) => day.dateKey === visibleDateKey);
+    const nextIndex = weekDays.findIndex((day) => day.dateKey === dateKey);
+    const direction = nextIndex >= currentIndex ? 1 : -1;
+
+    // Resalta el chip elegido de inmediato.
+    setSelectedDateKey(dateKey);
+
+    // Fase de salida: el contenido actual se desvanece y se desliza hacia
+    // `direction`. Al terminar, hacemos el swap en el hilo de JS.
+    transitionDirection.value = direction;
+    transitionProgress.value = withTiming(
+      0,
+      { duration: 200, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(swapContent)(dateKey, direction);
+      }
+    );
+  }
 
   function showToast(message: string, variant: 'error' | 'warning' | 'info' = 'warning') {
     setToast({ message, variant });
@@ -52,6 +138,12 @@ export default function HomeScreen() {
   async function onPostpone() {
     if (!today) return;
     const failure = await postponeDay(today.dateKey);
+    if (failure) handleFailure(failure, showToast);
+  }
+
+  async function onUndoPostpone() {
+    if (!today) return;
+    const failure = await undoPostponeDay(today.dateKey);
     if (failure) handleFailure(failure, showToast);
   }
 
@@ -82,7 +174,7 @@ export default function HomeScreen() {
     );
   }
 
-  if (!today) {
+  if (!today || !selectedDay) {
     return (
       <Screen>
         <TopBar onLogout={() => logout()} />
@@ -96,24 +188,30 @@ export default function HomeScreen() {
       <TopBar onLogout={() => logout()} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Header
-          dateLabel={dateLabel}
-          routine={activeRoutine}
-          today={today}
-        />
-
-        {today.status === 'rest' ? (
-          <RestCard today={today} weekDays={weekDays} />
-        ) : (
-          <SessionCard
-            today={today}
-            onExercisePress={onExercisePress}
-            getExerciseById={getExerciseById}
-            onPostpone={() => void onPostpone()}
+        <Animated.View style={[styles.dayContent, dayTransitionStyle]}>
+          <Header
+            routine={activeRoutine}
+            day={selectedDay}
           />
-        )}
 
-        <WeekStrip weekDays={weekDays} todayKey={todayKey} />
+          {selectedDay.status === 'rest' ? (
+            <RestCard day={selectedDay} weekDays={weekDays} />
+          ) : (
+            <SessionCard
+              day={selectedDay}
+              onExercisePress={onExercisePress}
+              getExerciseById={getExerciseById}
+              onPostpone={() => void onPostpone()}
+              onUndoPostpone={() => void onUndoPostpone()}
+            />
+          )}
+        </Animated.View>
+
+        {/* LinearTransition: cuando el contenido de arriba cambia de altura,
+            la barra se desliza suave a su nueva posición en vez de saltar. */}
+        <Animated.View layout={LinearTransition.duration(280).easing(Easing.inOut(Easing.cubic))}>
+          <WeekStrip weekDays={weekDays} selectedDateKey={selectedDateKey} onSelect={selectDay} />
+        </Animated.View>
       </ScrollView>
     </Screen>
   );
@@ -154,34 +252,32 @@ function TopBar({ onLogout }: { onLogout: () => void }) {
 }
 
 function Header({
-  dateLabel,
   routine,
-  today,
+  day,
 }: {
-  dateLabel: string;
   routine: Routine;
-  today: TrainingDay;
+  day: TrainingDay;
 }) {
   const colors = useGymColors();
 
   const totalSessions = routine.weeklyPlan?.length ?? routine.daysPerWeek ?? 0;
-  const sessionNumber = (today.sessionIndex ?? 0) + 1;
+  const sessionNumber = (day.sessionIndex ?? 0) + 1;
   const eyebrow =
-    today.status === 'rest' || today.sessionIndex === null
-      ? dateLabel.toUpperCase()
-      : `${dateLabel.toUpperCase()} · SESION ${sessionNumber}${totalSessions ? ` / ${totalSessions}` : ''}`;
+    day.status === 'rest' || day.sessionIndex === null
+      ? `${day.dayLabel.toUpperCase()} · ${day.shortDateLabel.toUpperCase()}`
+      : `${day.dayLabel.toUpperCase()} · ${day.shortDateLabel.toUpperCase()} · SESION ${sessionNumber}${totalSessions ? ` / ${totalSessions}` : ''}`;
 
   // Si la sesion no tiene focus, usar el label como fallback. Si tiene focus,
   // usar focus como titulo (mas descriptivo: "EMPUJE" vs "LUNES").
   const heroTitle =
-    today.status === 'rest'
+    day.status === 'rest'
       ? 'DESCANSO'
-      : (today.sessionFocus || today.sessionLabel || 'SESION').toUpperCase();
+      : (day.sessionFocus || day.sessionLabel || 'SESION').toUpperCase();
 
   const showSubtitle =
-    today.status !== 'rest' &&
-    today.sessionLabel &&
-    today.sessionLabel.toUpperCase() !== heroTitle;
+    day.status !== 'rest' &&
+    day.sessionLabel &&
+    day.sessionLabel.toUpperCase() !== heroTitle;
 
   return (
     <View style={styles.header}>
@@ -193,7 +289,7 @@ function Header({
       </Text>
       {showSubtitle ? (
         <Text style={[styles.subtitle, { color: colors.textSecondary }]} numberOfLines={2}>
-          {today.sessionLabel}
+          {day.sessionLabel}
         </Text>
       ) : null}
       <Text style={[styles.routineNote, { color: colors.textMuted }]} numberOfLines={1}>
@@ -204,20 +300,22 @@ function Header({
 }
 
 function SessionCard({
-  today,
+  day,
   onExercisePress,
   getExerciseById,
   onPostpone,
+  onUndoPostpone,
 }: {
-  today: TrainingDay;
+  day: TrainingDay;
   onExercisePress: (id: string) => void;
   getExerciseById: (id: string) => ReturnType<typeof useCatalog>['exercises'][number] | undefined;
   onPostpone: () => void;
+  onUndoPostpone: () => void;
 }) {
   const colors = useGymColors();
-  const total = today.plannedExercises.length;
-  const completed = today.completedExerciseIds.length;
-  const allDisabled = today.status === 'missed' || today.status === 'postponed' || !today.isToday;
+  const total = day.plannedExercises.length;
+  const completed = day.completedExerciseIds.length;
+  const toggleDisabled = day.status === 'missed' || day.status === 'postponed' || !day.isToday;
 
   return (
     <View style={styles.sessionSection}>
@@ -228,10 +326,10 @@ function SessionCard({
             {completed} / {total}
           </Text>
         </View>
-        <StatusBadge status={today.status} />
+        <StatusBadge status={day.status} />
       </View>
 
-      {today.status === 'missed' && (
+      {day.status === 'missed' && (
         <View
           style={[
             styles.noticeBox,
@@ -242,7 +340,7 @@ function SessionCard({
         </View>
       )}
 
-      {today.status === 'postponed' && (
+      {day.status === 'postponed' && (
         <View
           style={[
             styles.noticeBox,
@@ -250,33 +348,36 @@ function SessionCard({
           ]}>
           <Ionicons name="pause-circle" size={18} color={colors.warning} />
           <Text style={[styles.noticeText, { color: colors.textSecondary }]}>
-            Pospusiste esta sesion. Manana retomas con la siguiente del plan.
+            Pospusiste esta sesion. Retomas en el siguiente dia de entrenamiento.
           </Text>
         </View>
       )}
 
       <View style={styles.exerciseList}>
-        {today.plannedExercises.map((planned, index) => (
+        {day.plannedExercises.map((planned, index) => (
           <ExerciseRow
             key={`${planned.exerciseId}-${index}`}
             index={index + 1}
             planned={planned}
-            checked={today.completedExerciseIds.includes(planned.exerciseId)}
-            disabled={allDisabled}
+            checked={day.completedExerciseIds.includes(planned.exerciseId)}
+            toggleDisabled={toggleDisabled}
             exerciseName={getExerciseById(planned.exerciseId)?.name ?? planned.exerciseId}
             onToggle={() => onExercisePress(planned.exerciseId)}
-            onOpenLog={() =>
-              router.push({
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                pathname: '/sesion/[ejercicio]' as any,
-                params: { ejercicio: planned.exerciseId, dateKey: today.dateKey },
-              })
-            }
           />
         ))}
       </View>
 
-      {today.isToday && today.status !== 'completed' && today.status !== 'postponed' && today.status !== 'missed' && (
+      {day.isToday && day.status === 'postponed' && (
+        <Button
+          onPress={onUndoPostpone}
+          variant="outline"
+          icon="play-circle-outline"
+          style={styles.postponeBtn}>
+          Reanudar sesion
+        </Button>
+      )}
+
+      {day.isToday && day.status !== 'completed' && day.status !== 'postponed' && day.status !== 'missed' && (
         <Button
           onPress={onPostpone}
           variant="outline"
@@ -294,17 +395,15 @@ function ExerciseRow({
   planned,
   exerciseName,
   checked,
-  disabled,
+  toggleDisabled,
   onToggle,
-  onOpenLog,
 }: {
   index: number;
   planned: PlannedExercise;
   exerciseName: string;
   checked: boolean;
-  disabled: boolean;
+  toggleDisabled: boolean;
   onToggle: () => void;
-  onOpenLog: () => void;
 }) {
   const colors = useGymColors();
 
@@ -318,17 +417,17 @@ function ExerciseRow({
   return (
     <Pressable
       onPress={() => {
-        if (disabled) return;
-        onOpenLog();
+        if (toggleDisabled) return;
+        onToggle();
       }}
       style={({ pressed }) => [
         styles.exerciseRow,
         {
           backgroundColor: checked ? colors.accentSoft : colors.bgSurfaceAlt,
           borderColor: checked ? colors.accent : colors.border,
-          opacity: disabled ? 0.55 : 1,
+          opacity: toggleDisabled ? 0.8 : 1,
         },
-        pressed && !disabled && styles.pressed,
+        pressed && !toggleDisabled && styles.pressed,
       ]}>
       <Text style={[styles.exerciseIndex, { color: checked ? colors.accent : colors.textMuted }]}>
         {String(index).padStart(2, '0')}
@@ -349,26 +448,28 @@ function ExerciseRow({
       <Pressable
         onPress={(e) => {
           e.stopPropagation();
-          if (disabled) return;
+          if (toggleDisabled) return;
           onToggle();
         }}
         hitSlop={10}
-        style={({ pressed }) => [pressed && !disabled && styles.pressed]}>
-        <Ionicons
-          name={checked ? 'checkmark-circle' : 'ellipse-outline'}
-          size={26}
-          color={checked ? colors.accent : colors.textMuted}
-        />
+        style={({ pressed }) => [pressed && !toggleDisabled && styles.pressed]}>
+        {toggleDisabled ? null : (
+          <Ionicons
+            name={checked ? 'checkmark-circle' : 'ellipse-outline'}
+            size={26}
+            color={checked ? colors.accent : colors.textMuted}
+          />
+        )}
       </Pressable>
     </Pressable>
   );
 }
 
-function RestCard({ today, weekDays }: { today: TrainingDay; weekDays: TrainingDay[] }) {
+function RestCard({ day, weekDays }: { day: TrainingDay; weekDays: TrainingDay[] }) {
   const colors = useGymColors();
   const next = weekDays.find(
-    (day) =>
-      day.dateKey > today.dateKey && day.status !== 'rest' && day.plannedExercises.length > 0
+    (candidate) =>
+      candidate.dateKey > day.dateKey && candidate.status !== 'rest' && candidate.plannedExercises.length > 0
   );
 
   return (
@@ -390,7 +491,15 @@ function RestCard({ today, weekDays }: { today: TrainingDay; weekDays: TrainingD
   );
 }
 
-function WeekStrip({ weekDays, todayKey }: { weekDays: TrainingDay[]; todayKey: string }) {
+function WeekStrip({
+  weekDays,
+  selectedDateKey,
+  onSelect,
+}: {
+  weekDays: TrainingDay[];
+  selectedDateKey: string;
+  onSelect: (dateKey: string) => void;
+}) {
   const colors = useGymColors();
 
   return (
@@ -399,26 +508,31 @@ function WeekStrip({ weekDays, todayKey }: { weekDays: TrainingDay[]; todayKey: 
       <View style={styles.weekRow}>
         {weekDays.map((day) => {
           const visual = getStatusVisual(day.status, colors);
-          const isToday = day.dateKey === todayKey;
+          const selected = day.dateKey === selectedDateKey;
           return (
-            <View
+            <Pressable
               key={day.dateKey}
+              onPress={() => onSelect(day.dateKey)}
               style={[
                 styles.weekChip,
                 {
-                  borderColor: isToday ? colors.accent : colors.border,
-                  backgroundColor: isToday ? colors.accentSoft : colors.bgSurface,
-                  borderWidth: isToday ? 1.5 : 1,
+                  borderColor: selected ? colors.accent : colors.border,
+                  backgroundColor: selected ? colors.accentSoft : colors.bgSurface,
+                  borderWidth: selected ? 1.5 : 1,
                 },
               ]}>
-              <Text style={[styles.weekChipDay, { color: colors.textMuted }]}>
-                {day.dayLabel.slice(0, 3).toUpperCase()}
+              <Text
+                style={[
+                  styles.weekChipDay,
+                  { color: day.isToday ? colors.accent : colors.textMuted },
+                ]}>
+                {day.isToday ? 'HOY' : day.dayLabel.slice(0, 3).toUpperCase()}
               </Text>
               <Ionicons name={visual.icon} size={16} color={visual.color} />
               <Text style={[styles.weekChipDate, { color: colors.textSecondary }]}>
                 {day.shortDateLabel.split(' ')[0]}
               </Text>
-            </View>
+            </Pressable>
           );
         })}
       </View>
@@ -427,7 +541,6 @@ function WeekStrip({ weekDays, todayKey }: { weekDays: TrainingDay[]; todayKey: 
 }
 
 function StatusBadge({ status }: { status: TrainingDay['status'] }) {
-  const colors = useGymColors();
   const map = {
     completed: { variant: 'success' as const, label: 'Completada' },
     partial: { variant: 'warning' as const, label: 'En progreso' },
@@ -487,16 +600,6 @@ function handleFailure(
   else show('Solo podes registrar ejercicios del dia actual.', 'warning');
 }
 
-const longDateFormatter = new Intl.DateTimeFormat('es-ES', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'short',
-});
-
-function formatTodayLabel(date: Date) {
-  return longDateFormatter.format(date);
-}
-
 // =============================================================
 // Estilos
 // =============================================================
@@ -541,6 +644,9 @@ const styles = StyleSheet.create({
   header: {
     gap: 8,
     marginTop: 12,
+  },
+  dayContent: {
+    gap: 24,
   },
   eyebrow: {
     fontFamily: Fonts.bodySemiBold,
@@ -682,7 +788,6 @@ const styles = StyleSheet.create({
   },
   weekStrip: {
     gap: 12,
-    marginTop: 4,
   },
   weekRow: {
     flexDirection: 'row',

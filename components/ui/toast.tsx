@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -48,7 +48,7 @@ export function Toast({ visible, message, variant = 'error', onHide, duration = 
       );
       opacity.value = withDelay(duration, withTiming(0, { duration: 250 }));
     }
-  }, [visible]);
+  }, [duration, onHide, opacity, translateY, visible]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

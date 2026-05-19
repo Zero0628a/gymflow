@@ -41,7 +41,7 @@ export default function HistorialScreen() {
         const exercise = getExerciseById(eid);
         return log ? { name: exercise?.name ?? eid, sets: log.sets } : null;
       })
-      .filter(Boolean) as { name: string; sets: { weight: number; reps: number }[] }[];
+      .filter(Boolean) as { name: string; sets: { reps: number }[] }[];
 
     return (
       <ListItem
@@ -67,10 +67,7 @@ export default function HistorialScreen() {
         {loggedExercises.length > 0 && (
           <View style={[styles.logsBlock, { borderColor: colors.border }]}>
             {loggedExercises.map((entry) => {
-              const totalVolume = entry.sets.reduce((acc, s) => acc + s.weight * s.reps, 0);
-              const setsStr = entry.sets
-                .map((s) => `${s.weight > 0 ? `${s.weight}kg` : '–'} × ${s.reps}`)
-                .join('  ');
+              const setsStr = entry.sets.map((s) => `${s.reps} reps`).join('  ·  ');
               return (
                 <View key={entry.name} style={styles.logRow}>
                   <Text style={[styles.logName, { color: colors.textPrimary }]} numberOfLines={1}>
@@ -79,11 +76,6 @@ export default function HistorialScreen() {
                   <Text style={[styles.logSets, { color: colors.textSecondary }]} numberOfLines={1}>
                     {setsStr}
                   </Text>
-                  {totalVolume > 0 && (
-                    <Text style={[styles.logVolume, { color: colors.textMuted }]}>
-                      {totalVolume % 1 === 0 ? totalVolume : totalVolume.toFixed(1)} kg vol.
-                    </Text>
-                  )}
                 </View>
               );
             })}
@@ -273,11 +265,5 @@ const styles = StyleSheet.create({
   logSets: {
     fontFamily: Fonts.monoRegular,
     fontSize: 12,
-  },
-  logVolume: {
-    fontFamily: Fonts.monoRegular,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
 });

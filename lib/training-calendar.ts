@@ -5,6 +5,7 @@ import type {
   TrainingDay,
   TrainingDayStatus,
 } from '@/types';
+import { getTrainingWeekdays } from '@/lib/routine-planner';
 
 // Estado persistido por dia. dateKey = 'YYYY-MM-DD' local.
 export type PersistedTrainingDay = {
@@ -75,31 +76,13 @@ export function createEmptyTrainingStore(): TrainingCalendarStore {
 }
 
 // =============================================================
-// Patrones de dias de entrenamiento dentro de una semana de 7 dias.
-// El indice 0 = primer dia del ciclo (NO es lunes; es el dia de activacion).
-// true = dia de entrenamiento, false = descanso.
+// Patrones de entrenamiento anclados a la semana calendario.
+// `Date.getDay()` usa 0 = domingo, 1 = lunes, ... 6 = sabado.
 // =============================================================
 
-const TRAINING_PATTERN: Record<number, boolean[]> = {
-  3: [true, false, true, false, true, false, false],
-  4: [true, true, false, true, true, false, false],
-  5: [true, true, true, true, true, false, false],
-  6: [true, true, true, true, true, true, false],
-  7: [true, true, true, true, true, true, true],
-};
-
-function getPatternForDays(daysPerWeek: number): boolean[] {
-  if (TRAINING_PATTERN[daysPerWeek]) {
-    return TRAINING_PATTERN[daysPerWeek];
-  }
-  // Fallback razonable: si daysPerWeek < 3, entrenar dias seguidos al inicio.
-  return Array.from({ length: 7 }, (_, i) => i < Math.max(1, Math.min(daysPerWeek, 7)));
-}
-
-// =============================================================
 // Para una fecha dada, dado el cycleStartedAt, devolvemos:
-//   - cycleDayIndex (1-based) dentro de la semana actual (1..7)
-//   - sessionIndex en weeklyPlan (rotando con modulo) o null si descanso
+//   - cycleDayIndex (1-based) dentro de la semana calendario actual (lunes..domingo)
+//   - sessionIndex en weeklyPlan segun el orden de los dias entrenables de esa semana
 // =============================================================
 
 export type RoutineSessionInfo = {
@@ -110,53 +93,47 @@ export type RoutineSessionInfo = {
 
 export function getRoutineSessionInfo(
   date: Date,
-  routine: Routine | null
+  routine: Routine | null,
+  sessionOffset = 0
 ): RoutineSessionInfo | null {
   if (!routine || !routine.cycleStartedAt) {
     return null;
   }
 
-  const start = fromLocalDateKey(toLocalDateKey(new Date(routine.cycleStartedAt)));
-  const daysSinceStart = diffInDays(start, date);
-  if (daysSinceStart < 0) {
-    // Fecha anterior al inicio del ciclo: no aplicamos rutina.
+  const activationDate = fromLocalDateKey(toLocalDateKey(new Date(routine.cycleStartedAt)));
+  if (date < activationDate) {
     return null;
   }
 
   const daysPerWeek = routine.daysPerWeek ?? Math.max(routine.weeklyPlan?.length ?? 3, 1);
-  const pattern = getPatternForDays(daysPerWeek);
-
-  const weekday = daysSinceStart % 7;
-  const isTrainingDay = pattern[weekday];
+  const trainingWeekdays = getTrainingWeekdays(daysPerWeek);
+  const weekday = date.getDay();
+  const isTrainingDay = trainingWeekdays.includes(weekday);
+  const cycleDayIndex = ((weekday + 6) % 7) + 1;
 
   if (!isTrainingDay) {
     return {
-      cycleDayIndex: weekday + 1,
+      cycleDayIndex,
       sessionIndex: null,
       isTrainingDay: false,
     };
-  }
-
-  // Cuantos dias de entrenamiento hubo desde el inicio hasta este dia (inclusive).
-  let trainingCount = 0;
-  for (let i = 0; i <= weekday; i += 1) {
-    if (pattern[i]) trainingCount += 1;
   }
 
   // Mapeamos a sessionIndex del weeklyPlan con modulo.
   const planLength = routine.weeklyPlan?.length ?? 0;
   if (planLength === 0) {
     return {
-      cycleDayIndex: weekday + 1,
+      cycleDayIndex,
       sessionIndex: null,
       isTrainingDay: true,
     };
   }
 
-  const sessionIndex = (trainingCount - 1) % planLength;
+  const baseSessionIndex = trainingWeekdays.indexOf(weekday);
+  const sessionIndex = ((baseSessionIndex - sessionOffset) % planLength + planLength) % planLength;
 
   return {
-    cycleDayIndex: weekday + 1,
+    cycleDayIndex,
     sessionIndex,
     isTrainingDay: true,
   };
@@ -171,10 +148,11 @@ export function resolveTrainingDay(input: {
   todayKey: string;
   activeRoutine: Routine | null;
   persisted?: PersistedTrainingDay;
+  sessionOffset?: number;
 }): TrainingDay {
-  const { date, todayKey, activeRoutine, persisted } = input;
+  const { date, todayKey, activeRoutine, persisted, sessionOffset = 0 } = input;
   const dateKey = toLocalDateKey(date);
-  const session = getRoutineSessionInfo(date, activeRoutine);
+  const session = getRoutineSessionInfo(date, activeRoutine, sessionOffset);
 
   const dayLabel = capitalize(dayNameFormatter.format(date));
   const shortDateLabel = capitalize(shortDateFormatter.format(date));

@@ -152,13 +152,23 @@ export function RoutinesProvider({ children }: PropsWithChildren) {
       },
       async updateRoutine(routineId: string, input: UpdateRoutineInput) {
         if (!user) throw new Error('Usuario no autenticado');
+
+        const currentRoutine = routines.find((routine) => routine.id === routineId);
+        const nextUpdatedAt = new Date().toISOString();
+        const isActiveRoutine = currentRoutine?.status === 'active';
+
+        if (isActiveRoutine) {
+          await resetTrainingDaysForUser(user.uid);
+        }
+
         await updateDoc(doc(db, 'users', user.uid, 'routines', routineId), {
           name: input.name.trim(),
           exerciseIds: input.exerciseIds,
           ...(input.daysPerWeek != null && { daysPerWeek: input.daysPerWeek }),
           ...(input.focusLabel != null && { focusLabel: input.focusLabel }),
           ...(input.weeklyPlan != null && { weeklyPlan: sanitizeWeeklyPlan(input.weeklyPlan) }),
-          updatedAt: new Date().toISOString(),
+          ...(isActiveRoutine && { cycleStartedAt: nextUpdatedAt, lastUsedAt: nextUpdatedAt }),
+          updatedAt: nextUpdatedAt,
         });
       },
       async activateRoutine(routineId: string) {

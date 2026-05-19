@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, { Easing, LinearTransition } from 'react-native-reanimated';
 
 import { ActionSheet, type ActionSheetOption } from '@/components/ui/action-sheet';
 import { Button } from '@/components/ui/button';
@@ -83,6 +84,13 @@ export default function RutinasScreen() {
     }
   }
 
+  function openRoutineEditor(routine: Routine) {
+    router.push({
+      pathname: '/editar-rutina/[id]' as any,
+      params: { id: routine.id },
+    });
+  }
+
   function buildSheetOptions(routine: Routine): ActionSheetOption[] {
     const options: ActionSheetOption[] = [];
 
@@ -99,11 +107,7 @@ export default function RutinasScreen() {
       icon: 'pencil-outline',
       onPress: () => {
         setSheetRoutine(null);
-        router.push({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          pathname: '/editar-rutina/[id]' as any,
-          params: { id: routine.id },
-        });
+        openRoutineEditor(routine);
       },
     });
 
@@ -211,9 +215,12 @@ export default function RutinasScreen() {
                 routine={routine}
                 busy={busyId === routine.id}
                 onPress={() => {
-                  if (routine.status !== 'active') {
-                    void runRoutineAction(routine.id, () => activateRoutine(routine.id));
+                  if (routine.status === 'active') {
+                    openRoutineEditor(routine);
+                    return;
                   }
+
+                  void runRoutineAction(routine.id, () => activateRoutine(routine.id));
                 }}
                 onMorePress={() => setSheetRoutine(routine)}
               />
@@ -261,17 +268,20 @@ function RoutineCard({
   const meta = `${routine.focusLabel ?? 'Rutina personalizada'} · ${routine.exerciseIds.length} ejercicios`;
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        {
-          backgroundColor: colors.bgSurface,
-          borderColor: routine.status === 'active' ? colors.accent : colors.border,
-          opacity: routine.status === 'archived' ? 0.64 : 1,
-        },
-        pressed && styles.cardPressed,
-      ]}>
+    <Animated.View
+      style={styles.cardWrap}
+      layout={LinearTransition.duration(320).easing(Easing.inOut(Easing.cubic))}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            backgroundColor: colors.bgSurface,
+            borderColor: routine.status === 'active' ? colors.accent : colors.border,
+            opacity: routine.status === 'archived' ? 0.64 : 1,
+          },
+          pressed && styles.cardPressed,
+        ]}>
       {routine.status === 'active' && (
         <View style={[styles.accentBar, { backgroundColor: colors.accent }]} />
       )}
@@ -279,7 +289,6 @@ function RoutineCard({
       <View style={styles.cardTop}>
         <View style={styles.chipRow}>
           <StatusChip status={routine.status} />
-          {busy && <Text style={[styles.busy, { color: colors.textMuted }]}>Guardando</Text>}
         </View>
         <Pressable onPress={onMorePress} hitSlop={8} style={styles.moreButton}>
           <Ionicons name="ellipsis-horizontal" size={18} color={colors.textSecondary} />
@@ -299,7 +308,8 @@ function RoutineCard({
       <Text style={[styles.cardFooter, { color: colors.textMuted }]}>
         {getRoutineFooter(routine)}
       </Text>
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -451,9 +461,13 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 16,
   },
-  card: {
+  cardWrap: {
     width: '48%',
-    minHeight: 210,
+    height: 210,
+  },
+  card: {
+    width: '100%',
+    height: '100%',
     borderRadius: 20,
     borderWidth: 1,
     padding: 16,
@@ -479,11 +493,6 @@ const styles = StyleSheet.create({
   chipRow: {
     gap: 6,
     maxWidth: '80%',
-  },
-  busy: {
-    fontFamily: Fonts.monoRegular,
-    fontSize: 11,
-    textTransform: 'uppercase',
   },
   moreButton: {
     paddingLeft: 8,

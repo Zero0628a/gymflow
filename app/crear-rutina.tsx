@@ -18,14 +18,12 @@ import { Screen } from '@/components/ui/screen';
 import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
+import { buildFocusLabel, buildWeeklyPlan } from '@/lib/routine-planner';
 import { useCatalog } from '@/providers/catalog-provider';
 import { useRoutines } from '@/providers/routines-provider';
-import type { Exercise, PlannedDay } from '@/types';
+import type { Exercise, Muscle } from '@/types';
 
 const DAYS_OPTIONS = [3, 4, 5, 6];
-const DEFAULT_SETS = 3;
-const DEFAULT_REPS = '10';
-const DEFAULT_REST = '60s';
 
 export default function CrearRutinaScreen() {
   const colors = useGymColors();
@@ -316,7 +314,7 @@ function PlanPreview({
 }: {
   exercises: Exercise[];
   daysPerWeek: number;
-  muscles: { id: string; name: string }[];
+  muscles: Muscle[];
 }) {
   const colors = useGymColors();
   const plan = buildWeeklyPlan(exercises, daysPerWeek, muscles);
@@ -343,61 +341,6 @@ function PlanPreview({
       ))}
     </View>
   );
-}
-
-// =============================================================
-// Helper — auto-distribute exercises across training days
-// =============================================================
-
-function buildWeeklyPlan(
-  exercises: Exercise[],
-  daysPerWeek: number,
-  muscles: { id: string; name: string }[]
-): import('@/types').PlannedDay[] {
-  if (exercises.length === 0) return [];
-
-  const days = Math.max(1, daysPerWeek);
-
-  // Group exercises into `days` buckets, round-robin by muscle group first
-  const buckets: Exercise[][] = Array.from({ length: days }, () => []);
-
-  // Sort exercises by muscleId so the same muscles cluster together
-  const sorted = [...exercises].sort((a, b) => a.muscleId.localeCompare(b.muscleId));
-
-  sorted.forEach((exercise, i) => {
-    buckets[i % days].push(exercise);
-  });
-
-  return buckets.map((bucket, i) => {
-    const focusMuscles = [...new Set(bucket.map((e) => e.muscleId))]
-      .slice(0, 2)
-      .map((mId) => muscles.find((m) => m.id === mId)?.name ?? mId);
-    const focus = focusMuscles.join(' + ') || 'Entrenamiento';
-
-    return {
-      label: `Sesión ${i + 1}`,
-      focus,
-      exercises: bucket.map((e) => ({
-        exerciseId: e.id,
-        sets: DEFAULT_SETS,
-        reps: DEFAULT_REPS,
-        rest: DEFAULT_REST,
-      })) as PlannedDay['exercises'],
-    };
-  });
-}
-
-function buildFocusLabel(
-  exercises: Exercise[],
-  muscles: { id: string; name: string }[]
-): string | undefined {
-  if (exercises.length === 0) return undefined;
-  const counts = new Map<string, number>();
-  for (const e of exercises) {
-    counts.set(e.muscleId, (counts.get(e.muscleId) ?? 0) + 1);
-  }
-  const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
-  return top.map(([mId]) => muscles.find((m) => m.id === mId)?.name ?? mId).join(' · ');
 }
 
 // =============================================================
