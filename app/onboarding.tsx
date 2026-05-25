@@ -24,6 +24,7 @@ import {
   LEVEL_LABEL,
   pickRoutinesForProfile,
 } from '@/lib/routine-matching';
+import { getTrainingWeekdays } from '@/lib/routine-planner';
 import type {
   Routine,
   RoutineEquipmentSetup,
@@ -49,7 +50,16 @@ const LEVEL_OPTIONS: { value: RoutineLevel; title: string; description: string }
   { value: 'advanced', title: 'Avanzado', description: '2+ anos consistentes, busco progresion fina.' },
 ];
 
-const DAY_OPTIONS = [3, 4, 5, 6];
+const DEFAULT_TRAINING_WEEKDAYS = getTrainingWeekdays(3);
+const WEEKDAY_OPTIONS = [
+  { value: 1, label: 'Lun' },
+  { value: 2, label: 'Mar' },
+  { value: 3, label: 'Mié' },
+  { value: 4, label: 'Jue' },
+  { value: 5, label: 'Vie' },
+  { value: 6, label: 'Sáb' },
+  { value: 0, label: 'Dom' },
+];
 
 const EQUIPMENT_OPTIONS: { value: RoutineEquipmentSetup; title: string; description: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { value: 'gym', title: 'Gimnasio', description: 'Tengo acceso a maquinas, barras y mancuernas.', icon: 'business' },
@@ -60,13 +70,13 @@ export default function OnboardingScreen() {
   const colors = useGymColors();
   const insets = useSafeAreaInsets();
   const { routineTemplates } = useCatalog();
-  const { saveProfile, markOnboardingComplete } = useProfile();
+  const { saveOnboardingProfile, markOnboardingComplete } = useProfile();
   const { createRoutine } = useRoutines();
 
   const [stepIndex, setStepIndex] = useState(0);
   const [goal, setGoal] = useState<RoutineGoal | null>(null);
   const [level, setLevel] = useState<RoutineLevel | null>(null);
-  const [daysPerWeek, setDaysPerWeek] = useState<number | null>(null);
+  const [trainingWeekdays, setTrainingWeekdays] = useState<number[]>(DEFAULT_TRAINING_WEEKDAYS);
   const [equipment, setEquipment] = useState<RoutineEquipmentSetup | null>(null);
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -74,15 +84,16 @@ export default function OnboardingScreen() {
 
   const currentStep = STEPS[stepIndex];
   const profileDraft: UserProfile | null = useMemo(() => {
-    if (!goal || !level || !daysPerWeek || !equipment) return null;
+    if (!goal || !level || trainingWeekdays.length === 0 || !equipment) return null;
     return {
       goal,
       level,
-      daysPerWeek,
+      daysPerWeek: trainingWeekdays.length,
+      trainingWeekdays,
       equipment,
       completedOnboarding: false,
     };
-  }, [goal, level, daysPerWeek, equipment]);
+  }, [goal, level, trainingWeekdays, equipment]);
 
   const suggestions = useMemo(() => {
     if (!profileDraft) return [];
@@ -93,7 +104,7 @@ export default function OnboardingScreen() {
     switch (currentStep) {
       case 'goal': return !!goal;
       case 'level': return !!level;
-      case 'days': return !!daysPerWeek;
+      case 'days': return trainingWeekdays.length > 0;
       case 'equipment': return !!equipment;
       case 'pick': return !!selectedRoutineId;
     }
@@ -120,10 +131,11 @@ export default function OnboardingScreen() {
     setSaving(true);
 
     try {
-      await saveProfile({
+      await saveOnboardingProfile({
         goal: profileDraft.goal,
         level: profileDraft.level,
         daysPerWeek: profileDraft.daysPerWeek,
+        trainingWeekdays: profileDraft.trainingWeekdays,
         equipment: profileDraft.equipment,
       });
 
@@ -195,7 +207,7 @@ export default function OnboardingScreen() {
           <StepLevel value={level} onChange={setLevel} />
         )}
         {currentStep === 'days' && (
-          <StepDays value={daysPerWeek} onChange={setDaysPerWeek} />
+          <StepDays value={trainingWeekdays} onChange={setTrainingWeekdays} />
         )}
         {currentStep === 'equipment' && (
           <StepEquipment value={equipment} onChange={setEquipment} />
@@ -296,20 +308,35 @@ function StepDays({
   value,
   onChange,
 }: {
-  value: number | null;
-  onChange: (next: number) => void;
+  value: number[];
+  onChange: (next: number[]) => void;
 }) {
   const colors = useGymColors();
+  function toggleDay(day: number) {
+    if (value.includes(day)) {
+      if (value.length === 1) return;
+      onChange(value.filter((item) => item !== day));
+      return;
+    }
+
+    onChange(
+      [...value, day].sort((left, right) => {
+        const orderLeft = left === 0 ? 7 : left;
+        const orderRight = right === 0 ? 7 : right;
+        return orderLeft - orderRight;
+      })
+    );
+  }
 
   return (
-    <Section eyebrow="Paso 3 de 5" title="Cuantos dias por semana" body="Sé honesto. Una rutina de 6 dias no sirve si vas a hacer 3.">
+    <Section eyebrow="Paso 3 de 5" title="Qué días puedes entrenar" body="Marca los días reales que tienes disponibles. Puedes elegir 1, 2, 3 o más.">
       <View style={styles.daysGrid}>
-        {DAY_OPTIONS.map((day) => {
-          const selected = value === day;
+        {WEEKDAY_OPTIONS.map((day) => {
+          const selected = value.includes(day.value);
           return (
             <Pressable
-              key={day}
-              onPress={() => onChange(day)}
+              key={day.value}
+              onPress={() => toggleDay(day.value)}
               style={({ pressed }) => [
                 styles.dayBox,
                 {
@@ -319,13 +346,15 @@ function StepDays({
                 pressed && styles.pressed,
               ]}>
               <Text style={[styles.dayValue, { color: selected ? colors.accent : colors.textPrimary }]}>
-                {day}
+                {day.label}
               </Text>
-              <Text style={[styles.dayLabel, { color: colors.textSecondary }]}>dias</Text>
             </Pressable>
           );
         })}
       </View>
+      <Text style={[styles.daysHint, { color: colors.textMuted }]}>
+        {value.length} {value.length === 1 ? 'día seleccionado' : 'días seleccionados'}
+      </Text>
     </Section>
   );
 }
@@ -646,25 +675,24 @@ const styles = StyleSheet.create({
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
   },
   dayBox: {
-    width: '48%',
+    width: '30.8%',
     borderWidth: 1.5,
-    borderRadius: 18,
-    paddingVertical: 24,
+    borderRadius: 14,
+    paddingVertical: 16,
     alignItems: 'center',
-    gap: 4,
   },
   dayValue: {
-    fontFamily: Fonts.display,
-    fontSize: 48,
-    lineHeight: 50,
+    fontFamily: Fonts.bodyBold,
+    fontSize: 15,
+    fontWeight: '700',
   },
-  dayLabel: {
-    fontFamily: Fonts.bodySemiBold,
+  daysHint: {
+    fontFamily: Fonts.monoRegular,
     fontSize: 12,
-    letterSpacing: 1,
+    marginTop: 12,
     textTransform: 'uppercase',
   },
   routineCard: {

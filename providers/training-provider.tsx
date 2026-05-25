@@ -18,6 +18,7 @@ import {
 } from 'react';
 
 import { db } from '@/lib/firebase';
+import { adaptWeeklyPlanToWeekdays } from '@/lib/routine-planner';
 import {
   addLocalDays,
   createEmptyTrainingStore,
@@ -30,6 +31,7 @@ import {
   type TrainingCalendarStore,
 } from '@/lib/training-calendar';
 import { useAuth } from '@/providers/auth-provider';
+import { useProfile } from '@/providers/profile-provider';
 import { useRoutines } from '@/providers/routines-provider';
 import type { ExerciseLog, PlannedExercise, Routine, TrainingActionFailure, TrainingDay } from '@/types';
 
@@ -56,6 +58,7 @@ const TrainingContext = createContext<TrainingContextValue | null>(null);
 export function TrainingProvider({ children }: PropsWithChildren) {
   const { loading: authLoading, user } = useAuth();
   const { loading: routinesLoading, routines } = useRoutines();
+  const { profile } = useProfile();
   const [loading, setLoading] = useState(true);
   const [store, setStore] = useState<TrainingCalendarStore>(createEmptyTrainingStore());
   const [todayKey, setTodayKey] = useState(() => toLocalDateKey(new Date()));
@@ -65,6 +68,23 @@ export function TrainingProvider({ children }: PropsWithChildren) {
     () => routines.find((routine) => routine.status === 'active') ?? null,
     [routines]
   );
+
+  const scheduledRoutine = useMemo(() => {
+    if (!activeRoutine) {
+      return null;
+    }
+
+    const trainingWeekdays = profile?.trainingWeekdays;
+    if (!trainingWeekdays?.length) {
+      return activeRoutine;
+    }
+
+    return {
+      ...activeRoutine,
+      daysPerWeek: trainingWeekdays.length,
+      weeklyPlan: adaptWeeklyPlanToWeekdays(activeRoutine.weeklyPlan, trainingWeekdays),
+    };
+  }, [activeRoutine, profile?.trainingWeekdays]);
 
   useEffect(() => {
     if (authLoading || routinesLoading) {
@@ -139,9 +159,10 @@ export function TrainingProvider({ children }: PropsWithChildren) {
       return resolveTrainingDay({
         date,
         todayKey: currentTodayKey,
-        activeRoutine,
+        activeRoutine: scheduledRoutine,
         persisted: store.days[dateKey],
-        sessionOffset: getPostponedSessionOffset(dateKey, activeRoutine, store.days),
+        sessionOffset: getPostponedSessionOffset(dateKey, scheduledRoutine, store.days),
+        trainingWeekdays: profile?.trainingWeekdays,
       });
     };
 
@@ -169,7 +190,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
     });
 
     // Si hay rutina activa: incluir dias de la semana activa que esten en el pasado y no marcados
-    if (activeRoutine?.cycleStartedAt) {
+    if (scheduledRoutine?.cycleStartedAt) {
       for (let index = 0; index < 7; index += 1) {
         const date = addLocalDays(weekStart, index);
         const dateKey = toLocalDateKey(date);
@@ -193,7 +214,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
       loading,
       todayKey: currentTodayKey,
       today,
-      activeRoutine,
+      activeRoutine: scheduledRoutine,
       weekLabel: getWeekLabel(now),
       weekDays,
       postponedCount,
@@ -244,7 +265,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: nextExerciseIds,
             completedAt: nextStatus === 'completed' ? new Date().toISOString() : null,
             postponedAt: null,
-            ...buildTrainingDaySnapshot(dayResolved, activeRoutine),
+            ...buildTrainingDaySnapshot(dayResolved, scheduledRoutine),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -271,7 +292,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: [],
             completedAt: null,
             postponedAt: new Date().toISOString(),
-            ...buildTrainingDaySnapshot(dayResolved, activeRoutine),
+            ...buildTrainingDaySnapshot(dayResolved, scheduledRoutine),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -294,7 +315,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: [],
             completedAt: null,
             postponedAt: null,
-            ...buildTrainingDaySnapshot(resolveDay(now), activeRoutine),
+            ...buildTrainingDaySnapshot(resolveDay(now), scheduledRoutine),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -310,7 +331,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
         await Promise.all(snapshot.docs.map((item) => deleteDoc(item.ref)));
       },
     };
-  }, [activeRoutine, exerciseLogs, loading, store, todayKey, user]);
+  }, [exerciseLogs, loading, profile?.trainingWeekdays, scheduledRoutine, store, todayKey, user]);
 
   return <TrainingContext.Provider value={value}>{children}</TrainingContext.Provider>;
 }

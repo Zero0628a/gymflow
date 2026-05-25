@@ -16,6 +16,7 @@ import {
 } from 'firebase/auth';
 
 import { auth } from '@/lib/firebase';
+import { signOutFromGoogle } from '@/lib/google-auth';
 
 type RegisterInput = {
   email: string;
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
       },
       async logout() {
+        await signOutFromGoogle();
         await signOut(auth);
       },
     }),

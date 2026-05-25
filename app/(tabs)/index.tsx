@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import Animated, {
   Easing,
   LinearTransition,
@@ -15,6 +15,7 @@ import Animated, {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
@@ -32,7 +33,6 @@ const MISSED_MESSAGE = 'Este dia ya cerro. Enfocate en tu rutina de hoy para no 
 
 export default function HomeScreen() {
   const colors = useGymColors();
-  const { logout } = useAuth();
   const { getExerciseById } = useCatalog();
   const {
     activeRoutine,
@@ -151,7 +151,7 @@ export default function HomeScreen() {
     return (
       <Screen>
         <Toast visible={!!toast} message={toast?.message ?? ''} variant={toast?.variant} onHide={() => setToast(null)} />
-        <TopBar onLogout={() => logout()} />
+        <TopBar />
         <View style={styles.loading}>
           <Ionicons name="barbell-outline" size={26} color={colors.textMuted} />
           <Text style={[styles.loadingText, { color: colors.textMuted }]}>
@@ -166,7 +166,7 @@ export default function HomeScreen() {
     return (
       <Screen>
         <Toast visible={!!toast} message={toast?.message ?? ''} variant={toast?.variant} onHide={() => setToast(null)} />
-        <TopBar onLogout={() => logout()} />
+        <TopBar />
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <NoRoutineState />
         </ScrollView>
@@ -177,7 +177,7 @@ export default function HomeScreen() {
   if (!today || !selectedDay) {
     return (
       <Screen>
-        <TopBar onLogout={() => logout()} />
+        <TopBar />
       </Screen>
     );
   }
@@ -185,7 +185,7 @@ export default function HomeScreen() {
   return (
     <Screen>
       <Toast visible={!!toast} message={toast?.message ?? ''} variant={toast?.variant} onHide={() => setToast(null)} />
-      <TopBar onLogout={() => logout()} />
+      <TopBar />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Animated.View style={[styles.dayContent, dayTransitionStyle]}>
@@ -221,33 +221,30 @@ export default function HomeScreen() {
 // Subcomponentes
 // =============================================================
 
-function TopBar({ onLogout }: { onLogout: () => void }) {
+function TopBar() {
   const colors = useGymColors();
-  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+  const firstName = displayName.trim().split(/\s+/)[0] || 'Usuario';
 
   return (
-    <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-      <View style={styles.topActions}>
+    <ScreenHeader
+      title={`Hola, ${firstName}`}
+      subtitle="Tu plan de hoy"
+      right={
         <Pressable
           onPress={() => router.push('/configuracion')}
-          style={({ pressed }) => [
-            styles.iconBtn,
-            { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
-            pressed && styles.pressed,
-          ]}>
-          <Ionicons name="settings-outline" size={18} color={colors.textPrimary} />
+          style={({ pressed }) => [styles.avatarButton, pressed && styles.pressed]}>
+          {user?.photoURL ? (
+            <Image source={{ uri: user.photoURL }} style={styles.avatarImage} contentFit="cover" />
+          ) : (
+            <View style={[styles.avatarFallback, { backgroundColor: colors.accentSoft }]}>
+              <Ionicons name="person" size={18} color={colors.accent} />
+            </View>
+          )}
         </Pressable>
-        <Pressable
-          onPress={onLogout}
-          style={({ pressed }) => [
-            styles.iconBtn,
-            { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
-            pressed && styles.pressed,
-          ]}>
-          <Ionicons name="log-out-outline" size={18} color={colors.textPrimary} />
-        </Pressable>
-      </View>
-    </View>
+      }
+    />
   );
 }
 
@@ -605,20 +602,20 @@ function handleFailure(
 // =============================================================
 
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 20,
+  avatarButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
   },
-  topActions: {
-    flexDirection: 'row',
-    gap: 8,
+  avatarImage: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
   },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    borderWidth: 1.5,
+  avatarFallback: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
   },

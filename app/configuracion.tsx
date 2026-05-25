@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/ui/button';
 import { Screen } from '@/components/ui/screen';
 import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
+import { getTrainingWeekdays } from '@/lib/routine-planner';
 import { useAuth } from '@/providers/auth-provider';
 import { useProfile } from '@/providers/profile-provider';
 import type { RoutineEquipmentSetup, RoutineGoal, RoutineLevel } from '@/types';
@@ -26,7 +27,16 @@ const LEVEL_OPTIONS: { value: RoutineLevel; label: string }[] = [
   { value: 'advanced', label: 'Avanzado' },
 ];
 
-const DAYS_OPTIONS = [3, 4, 5, 6];
+const DEFAULT_TRAINING_WEEKDAYS = getTrainingWeekdays(3);
+const WEEKDAY_OPTIONS = [
+  { value: 1, label: 'Lun' },
+  { value: 2, label: 'Mar' },
+  { value: 3, label: 'Mié' },
+  { value: 4, label: 'Jue' },
+  { value: 5, label: 'Vie' },
+  { value: 6, label: 'Sáb' },
+  { value: 0, label: 'Dom' },
+];
 
 const EQUIPMENT_OPTIONS: { value: RoutineEquipmentSetup; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
   { value: 'gym', label: 'Gimnasio', icon: 'barbell-outline' },
@@ -36,29 +46,69 @@ const EQUIPMENT_OPTIONS: { value: RoutineEquipmentSetup; label: string; icon: ke
 export default function ConfiguracionScreen() {
   const colors = useGymColors();
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { profile, saveProfile } = useProfile();
+  const hasHydratedProfile = useRef(false);
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+  const email = user?.email ?? 'Sin correo registrado';
 
   const [goal, setGoal] = useState<RoutineGoal>(profile?.goal ?? 'general');
   const [level, setLevel] = useState<RoutineLevel>(profile?.level ?? 'beginner');
-  const [daysPerWeek, setDaysPerWeek] = useState<number>(profile?.daysPerWeek ?? 3);
+  const [trainingWeekdays, setTrainingWeekdays] = useState<number[]>(
+    profile?.trainingWeekdays?.length ? profile.trainingWeekdays : DEFAULT_TRAINING_WEEKDAYS
+  );
   const [equipment, setEquipment] = useState<RoutineEquipmentSetup>(profile?.equipment ?? 'gym');
-  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [toastVariant, setToastVariant] = useState<'error' | 'info'>('info');
 
-  async function handleSave() {
-    setSaving(true);
-    try {
-      await saveProfile({ goal, level, daysPerWeek, equipment });
-      setToastVariant('info');
-      setToast('Perfil actualizado');
-    } catch {
-      setToastVariant('error');
-      setToast('No se pudo guardar. Intentá de nuevo.');
-    } finally {
-      setSaving(false);
+  useEffect(() => {
+    if (!profile || hasHydratedProfile.current) {
+      return;
     }
+
+    setGoal(profile.goal);
+    setLevel(profile.level);
+    setTrainingWeekdays(profile.trainingWeekdays?.length ? profile.trainingWeekdays : getTrainingWeekdays(profile.daysPerWeek));
+    setEquipment(profile.equipment);
+    hasHydratedProfile.current = true;
+  }, [profile]);
+
+  useEffect(() => {
+    if (!hasHydratedProfile.current) {
+      return;
+    }
+
+    let cancelled = false;
+    const timeoutId = setTimeout(() => {
+      saveProfile({ goal, level, daysPerWeek: trainingWeekdays.length, trainingWeekdays, equipment })
+        .catch(() => {
+          if (cancelled) return;
+          setToastVariant('error');
+          setToast('No se pudo guardar. Intentá de nuevo.');
+        });
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [equipment, goal, level, saveProfile, trainingWeekdays]);
+
+  function toggleTrainingWeekday(day: number) {
+    setTrainingWeekdays((current) => {
+      if (current.includes(day)) {
+        if (current.length === 1) {
+          return current;
+        }
+        return current.filter((item) => item !== day);
+      }
+
+      return [...current, day].sort((left, right) => {
+        const orderLeft = left === 0 ? 7 : left;
+        const orderRight = right === 0 ? 7 : right;
+        return orderLeft - orderRight;
+      });
+    });
   }
 
   return (
@@ -75,15 +125,35 @@ export default function ConfiguracionScreen() {
           ]}>
           <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Configuración</Text>
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Perfil</Text>
         <View style={styles.backBtn} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.profileHero}>
+          <View style={[styles.profilePhotoFrame, { borderColor: colors.border, backgroundColor: colors.bgSurface }]}>
+            {user?.photoURL ? (
+              <Image source={{ uri: user.photoURL }} style={styles.profilePhoto} contentFit="cover" />
+            ) : (
+              <View style={[styles.profilePhotoFallback, { backgroundColor: colors.accentSoft }]}>
+                <Ionicons name="person" size={34} color={colors.accent} />
+              </View>
+            )}
+          </View>
+          <View style={styles.profileInfo}>
+            <Text style={[styles.profileName, { color: colors.textPrimary }]} numberOfLines={1}>
+              {displayName}
+            </Text>
+            <Text style={[styles.profileEmail, { color: colors.textSecondary }]} numberOfLines={1}>
+              {email}
+            </Text>
+          </View>
+        </View>
 
         {/* Objetivo */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Objetivo</Text>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Mi configuración</Text>
+          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Objetivo</Text>
           <View style={styles.optionGrid}>
             {GOAL_OPTIONS.map((opt) => {
               const active = goal === opt.value;
@@ -111,7 +181,7 @@ export default function ConfiguracionScreen() {
 
         {/* Nivel */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Nivel</Text>
+          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Nivel</Text>
           <View style={styles.rowOptions}>
             {LEVEL_OPTIONS.map((opt) => {
               const active = level === opt.value;
@@ -137,27 +207,31 @@ export default function ConfiguracionScreen() {
           </View>
         </View>
 
-        {/* Días por semana */}
+        {/* Días disponibles */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Días por semana</Text>
-          <View style={styles.rowOptions}>
-            {DAYS_OPTIONS.map((d) => {
-              const active = daysPerWeek === d;
+          <View style={styles.sectionHeaderRow}>
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Días disponibles</Text>
+            <Text style={[styles.weekdayCounter, { color: colors.textMuted }]}>
+              {trainingWeekdays.length} por semana
+            </Text>
+          </View>
+          <View style={styles.weekdayGrid}>
+            {WEEKDAY_OPTIONS.map((day) => {
+              const active = trainingWeekdays.includes(day.value);
               return (
                 <Pressable
-                  key={d}
-                  onPress={() => setDaysPerWeek(d)}
+                  key={day.value}
+                  onPress={() => toggleTrainingWeekday(day.value)}
                   style={({ pressed }) => [
-                    styles.rowChip,
+                    styles.weekdayChip,
                     {
                       borderColor: active ? colors.accent : colors.border,
                       backgroundColor: active ? colors.accentSoft : colors.bgSurface,
-                      flex: 1,
                     },
                     pressed && styles.pressed,
                   ]}>
-                  <Text style={[styles.chipLabelLarge, { color: active ? colors.accent : colors.textPrimary }]}>
-                    {d}
+                  <Text style={[styles.weekdayLabel, { color: active ? colors.accent : colors.textPrimary }]}>
+                    {day.label}
                   </Text>
                 </Pressable>
               );
@@ -167,7 +241,7 @@ export default function ConfiguracionScreen() {
 
         {/* Equipo */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Equipamiento</Text>
+          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>Equipamiento</Text>
           <View style={styles.rowOptions}>
             {EQUIPMENT_OPTIONS.map((opt) => {
               const active = equipment === opt.value;
@@ -195,15 +269,17 @@ export default function ConfiguracionScreen() {
           </View>
         </View>
 
-        <Button onPress={() => void handleSave()} loading={saving} icon="checkmark-circle-outline">
-          Guardar cambios
-        </Button>
-
         {/* Cerrar sesión */}
-        <View style={[styles.divider, { borderTopColor: colors.border }]} />
-        <Button onPress={() => void logout()} variant="outline" icon="log-out-outline">
-          Cerrar sesión
-        </Button>
+        <Pressable
+          onPress={() => void logout()}
+          style={({ pressed }) => [
+            styles.logoutRow,
+            { borderColor: colors.danger + '55', backgroundColor: colors.danger + '10' },
+            pressed && styles.pressed,
+          ]}>
+          <Ionicons name="log-out-outline" size={19} color={colors.danger} />
+          <Text style={[styles.logoutTitle, { color: colors.danger }]}>Cerrar sesión</Text>
+        </Pressable>
 
       </ScrollView>
     </Screen>
@@ -234,15 +310,63 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingBottom: 60,
-    gap: 28,
+    gap: 18,
+  },
+  profileHero: {
+    alignItems: 'center',
+    paddingTop: 4,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  profilePhotoFrame: {
+    width: 82,
+    height: 82,
+    borderRadius: 41,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profilePhoto: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+  },
+  profilePhotoFallback: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfo: {
+    alignItems: 'center',
+    gap: 3,
+  },
+  profileName: {
+    fontFamily: Fonts.display,
+    fontSize: 22,
+    lineHeight: 24,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  profileEmail: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 12,
+    textAlign: 'center',
   },
   section: {
-    gap: 12,
+    gap: 9,
   },
   sectionLabel: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 12,
     letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  fieldLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
   optionGrid: {
@@ -253,14 +377,14 @@ const styles = StyleSheet.create({
   optionCard: {
     width: '47%',
     borderWidth: 1.5,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 12,
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
   },
   rowOptions: {
@@ -269,8 +393,8 @@ const styles = StyleSheet.create({
   },
   rowChip: {
     borderWidth: 1.5,
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: 12,
+    paddingVertical: 10,
     paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -281,14 +405,47 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
   },
-  chipLabelLarge: {
-    fontFamily: Fonts.display,
-    fontSize: 22,
-    textAlign: 'center',
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  divider: {
-    borderTopWidth: 1,
-    marginTop: 4,
+  weekdayCounter: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 11,
+    textTransform: 'uppercase',
+  },
+  weekdayGrid: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  weekdayChip: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekdayLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+  },
+  logoutRow: {
+    borderWidth: 1.5,
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  logoutTitle: {
+    fontFamily: Fonts.bodyBold,
+    fontSize: 14,
+    fontWeight: '700',
   },
   pressed: {
     opacity: 0.82,
