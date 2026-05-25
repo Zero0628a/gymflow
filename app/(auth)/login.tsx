@@ -187,10 +187,12 @@ export default function LoginScreen() {
 
         <Pressable
           onPress={handleGoogleLogin}
+          disabled={loading}
           style={({ pressed }) => [
             styles.googleButton,
             { borderColor: colors.borderStrong, backgroundColor: colors.bgSurface },
             pressed && styles.pressed,
+            loading && styles.disabled,
           ]}>
           <GoogleMark />
           <Text style={[styles.googleLabel, { color: colors.textPrimary }]}>Continuar con Google</Text>
@@ -294,5 +296,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.86,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });

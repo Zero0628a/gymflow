@@ -75,7 +75,9 @@ export default function RutinasScreen() {
         split: template.split,
         weeklyPlan: template.weeklyPlan,
         source: 'template',
+        status: 'active',
       });
+      router.replace('/(tabs)');
     } catch (error) {
       console.error('No se pudo guardar rutina sugerida:', error);
       setToast('No se pudo guardar. Intentá de nuevo.');
@@ -341,7 +343,7 @@ function SuggestedCard({
       </Text>
 
       <Button onPress={onUse} size="sm" variant="outline" loading={busy} style={styles.suggestedButton}>
-        Guardar
+        Usar
       </Button>
     </View>
   );

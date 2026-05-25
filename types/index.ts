@@ -90,6 +90,7 @@ export interface UserProfile {
   goal: RoutineGoal;
   level: RoutineLevel;
   daysPerWeek: number;
+  trainingWeekdays?: number[];
   equipment: RoutineEquipmentSetup;
   completedOnboarding: boolean;
   updatedAt?: string;

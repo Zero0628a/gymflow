@@ -99,7 +99,8 @@ export type RoutineSessionInfo = {
 export function getRoutineSessionInfo(
   date: Date,
   routine: Routine | null,
-  sessionOffset = 0
+  sessionOffset = 0,
+  preferredTrainingWeekdays?: number[]
 ): RoutineSessionInfo | null {
   if (!routine || !routine.cycleStartedAt) {
     return null;
@@ -110,9 +111,24 @@ export function getRoutineSessionInfo(
     return null;
   }
 
+  const dateKey = toLocalDateKey(date);
+  const activationKey = toLocalDateKey(activationDate);
   const daysPerWeek = routine.daysPerWeek ?? Math.max(routine.weeklyPlan?.length ?? 3, 1);
-  const trainingWeekdays = getTrainingWeekdays(daysPerWeek);
+  const trainingWeekdays =
+    preferredTrainingWeekdays && preferredTrainingWeekdays.length > 0
+      ? preferredTrainingWeekdays
+      : getTrainingWeekdays(daysPerWeek);
   const weekday = date.getDay();
+  const planLength = routine.weeklyPlan?.length ?? 0;
+
+  if (dateKey === activationKey && planLength > 0) {
+    return {
+      cycleDayIndex: ((weekday + 6) % 7) + 1,
+      sessionIndex: 0,
+      isTrainingDay: true,
+    };
+  }
+
   const isTrainingDay = trainingWeekdays.includes(weekday);
   const cycleDayIndex = ((weekday + 6) % 7) + 1;
 
@@ -125,7 +141,6 @@ export function getRoutineSessionInfo(
   }
 
   // Mapeamos a sessionIndex del weeklyPlan con modulo.
-  const planLength = routine.weeklyPlan?.length ?? 0;
   if (planLength === 0) {
     return {
       cycleDayIndex,
@@ -154,10 +169,11 @@ export function resolveTrainingDay(input: {
   activeRoutine: Routine | null;
   persisted?: PersistedTrainingDay;
   sessionOffset?: number;
+  trainingWeekdays?: number[];
 }): TrainingDay {
-  const { date, todayKey, activeRoutine, persisted, sessionOffset = 0 } = input;
+  const { date, todayKey, activeRoutine, persisted, sessionOffset = 0, trainingWeekdays } = input;
   const dateKey = toLocalDateKey(date);
-  const session = getRoutineSessionInfo(date, activeRoutine, sessionOffset);
+  const session = getRoutineSessionInfo(date, activeRoutine, sessionOffset, trainingWeekdays);
 
   const dayLabel = capitalize(dayNameFormatter.format(date));
   const shortDateLabel = capitalize(shortDateFormatter.format(date));

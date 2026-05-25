@@ -21,6 +21,7 @@ type ProfileContextValue = {
   loading: boolean;
   profile: UserProfile | null;
   saveProfile: (input: Omit<UserProfile, 'completedOnboarding' | 'updatedAt'>) => Promise<void>;
+  saveOnboardingProfile: (input: Omit<UserProfile, 'completedOnboarding' | 'updatedAt'>) => Promise<void>;
   markOnboardingComplete: () => Promise<void>;
   resetProfile: () => Promise<void>;
 };
@@ -30,6 +31,7 @@ const ProfileContext = createContext<ProfileContextValue | null>(null);
 const LEVELS: ReadonlyArray<RoutineLevel> = ['beginner', 'intermediate', 'advanced'];
 const GOALS: ReadonlyArray<RoutineGoal> = ['strength', 'hypertrophy', 'endurance', 'general'];
 const EQUIPMENT: ReadonlyArray<RoutineEquipmentSetup> = ['home', 'gym'];
+const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 function parseEnum<T extends string>(value: unknown, allowed: ReadonlyArray<T>): T | undefined {
   return typeof value === 'string' && (allowed as ReadonlyArray<string>).includes(value)
@@ -46,6 +48,9 @@ function fromProfileDoc(data: Record<string, unknown> | undefined): UserProfile 
   const level = parseEnum(data.level, LEVELS);
   const equipment = parseEnum(data.equipment, EQUIPMENT);
   const daysPerWeek = typeof data.daysPerWeek === 'number' ? data.daysPerWeek : undefined;
+  const trainingWeekdays = Array.isArray(data.trainingWeekdays)
+    ? data.trainingWeekdays.filter((day): day is number => typeof day === 'number' && WEEKDAYS.includes(day as typeof WEEKDAYS[number]))
+    : undefined;
 
   if (!goal || !level || !equipment || !daysPerWeek) {
     return null;
@@ -56,6 +61,7 @@ function fromProfileDoc(data: Record<string, unknown> | undefined): UserProfile 
     level,
     equipment,
     daysPerWeek,
+    trainingWeekdays: trainingWeekdays && trainingWeekdays.length > 0 ? [...new Set(trainingWeekdays)] : undefined,
     completedOnboarding: data.completedOnboarding === true,
     updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : undefined,
   };
@@ -112,6 +118,26 @@ export function ProfileProvider({ children }: PropsWithChildren) {
             goal: input.goal,
             level: input.level,
             daysPerWeek: input.daysPerWeek,
+            trainingWeekdays: input.trainingWeekdays ?? null,
+            equipment: input.equipment,
+            updatedAt: now,
+          },
+          { merge: true }
+        );
+      },
+      async saveOnboardingProfile(input) {
+        if (!user) {
+          throw new Error('Usuario no autenticado');
+        }
+
+        const now = new Date().toISOString();
+        await setDoc(
+          doc(db, 'users', user.uid, 'profile', 'main'),
+          {
+            goal: input.goal,
+            level: input.level,
+            daysPerWeek: input.daysPerWeek,
+            trainingWeekdays: input.trainingWeekdays ?? null,
             equipment: input.equipment,
             completedOnboarding: false,
             updatedAt: now,

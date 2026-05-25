@@ -48,6 +48,51 @@ export function getWeekdayLabel(weekday: number): string {
   return WEEKDAY_LABEL[weekday] ?? `Sesión ${weekday + 1}`;
 }
 
+export function adaptWeeklyPlanToWeekdays(
+  weeklyPlan: PlannedDay[] | undefined,
+  trainingWeekdays: number[] | undefined
+): PlannedDay[] | undefined {
+  if (!weeklyPlan?.length || !trainingWeekdays?.length) {
+    return weeklyPlan;
+  }
+
+  const orderedWeekdays = sortWeekdays(trainingWeekdays);
+
+  if (weeklyPlan.length === orderedWeekdays.length) {
+    return weeklyPlan.map((day, index) => ({
+      ...day,
+      label: getWeekdayLabel(orderedWeekdays[index]),
+    }));
+  }
+
+  const sourceExercises = weeklyPlan.flatMap((day) =>
+    day.exercises.map((exercise) => ({
+      exercise,
+      focus: day.focus,
+    }))
+  );
+
+  if (sourceExercises.length === 0) {
+    return orderedWeekdays.map((weekday) => ({
+      label: getWeekdayLabel(weekday),
+      focus: 'Entrenamiento',
+      exercises: [],
+    }));
+  }
+
+  return orderedWeekdays.map((weekday, index) => {
+    const slice = getBalancedSlice(sourceExercises, index, orderedWeekdays.length);
+    const exercises = slice.map((entry) => entry.exercise);
+    const focus = summarizeFocus(slice.map((entry) => entry.focus));
+
+    return {
+      label: getWeekdayLabel(weekday),
+      focus,
+      exercises,
+    };
+  });
+}
+
 export function buildWeeklyPlan(
   exercises: Exercise[],
   daysPerWeek: number,
@@ -183,4 +228,35 @@ function groupExercisesByMuscle(exercises: Exercise[]): Map<string, Exercise[]> 
 
 function getSessionExerciseCount(session: SessionDraft, groupedExercises: Map<string, Exercise[]>): number {
   return session.muscleIds.reduce((total, muscleId) => total + (groupedExercises.get(muscleId)?.length ?? 0), 0);
+}
+
+function sortWeekdays(weekdays: number[]) {
+  return [...new Set(weekdays)].sort((left, right) => {
+    const normalizedLeft = left === 0 ? 7 : left;
+    const normalizedRight = right === 0 ? 7 : right;
+    return normalizedLeft - normalizedRight;
+  });
+}
+
+function summarizeFocus(focuses: string[]) {
+  const unique = focuses
+    .map((focus) => focus.trim())
+    .filter(Boolean)
+    .filter((focus, index, list) => list.indexOf(focus) === index);
+
+  if (unique.length === 0) {
+    return 'Entrenamiento';
+  }
+
+  return unique.slice(0, 2).join(' + ');
+}
+
+function getBalancedSlice<T>(items: T[], bucketIndex: number, bucketCount: number) {
+  if (items.length <= bucketCount) {
+    return [items[bucketIndex % items.length]];
+  }
+
+  const start = Math.floor((bucketIndex * items.length) / bucketCount);
+  const end = Math.floor(((bucketIndex + 1) * items.length) / bucketCount);
+  return items.slice(start, Math.max(start + 1, end));
 }
