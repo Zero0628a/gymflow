@@ -14,6 +14,11 @@ export type PersistedTrainingDay = {
   completedExerciseIds: string[];
   completedAt?: string;
   postponedAt?: string;
+  routineId?: string;
+  routineName?: string;
+  sessionLabel?: string;
+  sessionFocus?: string;
+  plannedExercises?: PlannedExercise[];
 };
 
 export type TrainingCalendarStore = {
@@ -162,20 +167,26 @@ export function resolveTrainingDay(input: {
 
   // Sin rutina activa: el dia no entra al sistema, lo tratamos como descanso "sin rutina".
   if (!session) {
+    const persistedStatus = persisted?.status === 'completed' || persisted?.status === 'partial' || persisted?.status === 'postponed'
+      ? persisted.status
+      : 'rest';
+
     return {
       dateKey,
       dayLabel,
       shortDateLabel,
-      status: persisted?.status === 'postponed' ? 'postponed' : 'rest',
+      status: persistedStatus,
       isToday,
       isPast,
       isFuture,
       cycleDayIndex: 0,
       sessionIndex: null,
+      routineId: persisted?.routineId,
+      routineName: persisted?.routineName,
       sessionLabel: 'Sin rutina activa',
       sessionFocus: '',
-      plannedExercises: [],
-      completedExerciseIds: [],
+      plannedExercises: persisted?.plannedExercises ?? [],
+      completedExerciseIds: persisted?.completedExerciseIds ?? [],
       accentColor: '#2F6BFF',
     };
   }
@@ -192,6 +203,8 @@ export function resolveTrainingDay(input: {
       isFuture,
       cycleDayIndex: session.cycleDayIndex,
       sessionIndex: null,
+      routineId: activeRoutine?.id,
+      routineName: activeRoutine?.name,
       sessionLabel: 'Descanso',
       sessionFocus: 'Dia de recuperacion',
       plannedExercises: [],
@@ -206,7 +219,7 @@ export function resolveTrainingDay(input: {
       ? activeRoutine.weeklyPlan[session.sessionIndex]
       : undefined;
 
-  const plannedExercises: PlannedExercise[] = planDay?.exercises ?? [];
+  const plannedExercises: PlannedExercise[] = persisted?.plannedExercises ?? planDay?.exercises ?? [];
   const completedExerciseIds = persisted?.completedExerciseIds ?? [];
 
   // Status:
@@ -241,8 +254,10 @@ export function resolveTrainingDay(input: {
     isFuture,
     cycleDayIndex: session.cycleDayIndex,
     sessionIndex: session.sessionIndex,
-    sessionLabel: planDay?.label ?? `Sesion ${(session.sessionIndex ?? 0) + 1}`,
-    sessionFocus: planDay?.focus ?? '',
+    routineId: persisted?.routineId ?? activeRoutine?.id,
+    routineName: persisted?.routineName ?? activeRoutine?.name,
+    sessionLabel: persisted?.sessionLabel ?? planDay?.label ?? `Sesion ${(session.sessionIndex ?? 0) + 1}`,
+    sessionFocus: persisted?.sessionFocus ?? planDay?.focus ?? '',
     plannedExercises,
     completedExerciseIds,
     accentColor: '#2F6BFF',

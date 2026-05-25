@@ -31,7 +31,7 @@ import {
 } from '@/lib/training-calendar';
 import { useAuth } from '@/providers/auth-provider';
 import { useRoutines } from '@/providers/routines-provider';
-import type { ExerciseLog, Routine, TrainingActionFailure, TrainingDay } from '@/types';
+import type { ExerciseLog, PlannedExercise, Routine, TrainingActionFailure, TrainingDay } from '@/types';
 
 type TrainingContextValue = {
   loading: boolean;
@@ -244,6 +244,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: nextExerciseIds,
             completedAt: nextStatus === 'completed' ? new Date().toISOString() : null,
             postponedAt: null,
+            ...buildTrainingDaySnapshot(dayResolved, activeRoutine),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -270,6 +271,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: [],
             completedAt: null,
             postponedAt: new Date().toISOString(),
+            ...buildTrainingDaySnapshot(dayResolved, activeRoutine),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -292,6 +294,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             completedExerciseIds: [],
             completedAt: null,
             postponedAt: null,
+            ...buildTrainingDaySnapshot(resolveDay(now), activeRoutine),
             updatedAt: new Date().toISOString(),
           },
           { merge: true }
@@ -336,7 +339,56 @@ function fromTrainingDayDoc(snapshot: QueryDocumentSnapshot) {
     completedExerciseIds: Array.isArray(data.completedExerciseIds) ? data.completedExerciseIds : [],
     completedAt: typeof data.completedAt === 'string' ? data.completedAt : undefined,
     postponedAt: typeof data.postponedAt === 'string' ? data.postponedAt : undefined,
+    routineId: typeof data.routineId === 'string' ? data.routineId : undefined,
+    routineName: typeof data.routineName === 'string' ? data.routineName : undefined,
+    sessionLabel: typeof data.sessionLabel === 'string' ? data.sessionLabel : undefined,
+    sessionFocus: typeof data.sessionFocus === 'string' ? data.sessionFocus : undefined,
+    plannedExercises: parsePlannedExercises(data.plannedExercises),
   } satisfies PersistedTrainingDay;
+}
+
+function buildTrainingDaySnapshot(day: TrainingDay, activeRoutine: Routine | null) {
+  return {
+    routineId: activeRoutine?.id ?? day.routineId ?? null,
+    routineName: activeRoutine?.name ?? day.routineName ?? null,
+    sessionLabel: day.sessionLabel,
+    sessionFocus: day.sessionFocus,
+    plannedExercises: sanitizePlannedExercises(day.plannedExercises),
+  };
+}
+
+function parsePlannedExercises(value: unknown): PlannedExercise[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const exercises = value
+    .map((item): PlannedExercise | null => {
+      if (!item || typeof item !== 'object') return null;
+      const candidate = item as Partial<PlannedExercise>;
+      if (typeof candidate.exerciseId !== 'string') return null;
+
+      return {
+        exerciseId: candidate.exerciseId,
+        sets: typeof candidate.sets === 'number' ? candidate.sets : 3,
+        reps: typeof candidate.reps === 'string' ? candidate.reps : '10',
+        rest: typeof candidate.rest === 'string' ? candidate.rest : undefined,
+        note: typeof candidate.note === 'string' ? candidate.note : undefined,
+      };
+    })
+    .filter((item): item is PlannedExercise => item !== null);
+
+  return exercises.length > 0 ? exercises : undefined;
+}
+
+function sanitizePlannedExercises(exercises: PlannedExercise[]): PlannedExercise[] {
+  return exercises.map((exercise) => ({
+    exerciseId: exercise.exerciseId,
+    sets: exercise.sets,
+    reps: exercise.reps,
+    ...(exercise.rest ? { rest: exercise.rest } : {}),
+    ...(exercise.note ? { note: exercise.note } : {}),
+  }));
 }
 
 function getPostponedSessionOffset(

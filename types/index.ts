@@ -121,6 +121,8 @@ export interface TrainingDay {
   // Indice del dia dentro del ciclo (1-based) y la sesion del weeklyPlan asignada (si entrena).
   cycleDayIndex: number;
   sessionIndex: number | null;
+  routineId?: string;
+  routineName?: string;
   sessionLabel: string;
   sessionFocus: string;
   // Solo presente si NO es dia de descanso. Lista de ejercicios planificados.

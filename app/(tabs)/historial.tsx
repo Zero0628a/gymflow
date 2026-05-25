@@ -57,6 +57,15 @@ export default function HistorialScreen() {
         <View style={styles.meta}>
           <Ionicons name="calendar-outline" size={12} color={colors.textMuted} />
           <Text style={[styles.metaText, { color: colors.textMuted }]}>{item.historyLabel}</Text>
+          {item.routineName ? (
+            <>
+              <Text style={[styles.dot, { color: colors.textMuted }]}>·</Text>
+              <Ionicons name="albums-outline" size={12} color={colors.textMuted} />
+              <Text style={[styles.metaText, { color: colors.textMuted }]} numberOfLines={1}>
+                {item.routineName}
+              </Text>
+            </>
+          ) : null}
           <Text style={[styles.dot, { color: colors.textMuted }]}>·</Text>
           <Ionicons name="barbell-outline" size={12} color={colors.textMuted} />
           <Text style={[styles.metaText, { color: colors.textMuted }]}>
@@ -219,6 +228,7 @@ const styles = StyleSheet.create({
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 4,
   },
   metaText: {
