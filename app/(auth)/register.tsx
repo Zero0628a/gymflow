@@ -90,20 +90,20 @@ export default function RegisterScreen() {
   }
 
   return (
-    <AuthScreen>
+    <AuthScreen topPadding={16} contentStyle={styles.screen}>
       <Pressable style={styles.back} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={22} color={colors.primary} />
         <Text style={[styles.backText, { color: colors.primary }]}>Acceso</Text>
       </Pressable>
 
       <View style={styles.titleBlock}>
-        <Text style={[styles.title, { color: colors.primaryDark }]}>Crear cuenta</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Crear cuenta</Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Configura tu acceso
         </Text>
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.white, borderColor: colors.border }]}>
+      <View style={styles.formBlock}>
         <Input
           label="Nombre completo"
           placeholder="Tu nombre"
@@ -148,11 +148,16 @@ export default function RegisterScreen() {
 
         <FormError message={submitError} style={styles.formError} />
 
-        <Button onPress={handleRegister} size="lg" style={styles.btn} loading={loading}>
+        <Button onPress={handleRegister} size="md" style={styles.btn} loading={loading} icon="person-add-outline">
           Crear cuenta
         </Button>
 
-        <Pressable style={styles.loginLink} onPress={() => router.back()}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.loginLink,
+            pressed && styles.pressed,
+          ]}
+          onPress={() => router.back()}>
           <Text style={[styles.loginText, { color: colors.textSecondary }]}>
             ¿Ya tienes acceso?{' '}
             <Text style={{ color: colors.primary, fontWeight: '700', fontFamily: Fonts.bodyBold }}>
@@ -166,11 +171,14 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    justifyContent: 'center',
+  },
   back: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   backText: {
     fontFamily: Fonts.bodySemiBold,
@@ -180,12 +188,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   titleBlock: {
-    marginBottom: 28,
+    marginBottom: 18,
   },
   title: {
     fontFamily: Fonts.display,
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 34,
+    lineHeight: 36,
+    letterSpacing: 0,
     textTransform: 'uppercase',
   },
   subtitle: {
@@ -193,26 +202,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
-  card: {
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 1,
+  formBlock: {
+    gap: 12,
   },
   field: {
-    marginBottom: 16,
+    marginBottom: 0,
   },
   formError: {
-    marginBottom: 8,
+    marginTop: -4,
   },
   btn: {
-    marginTop: 8,
+    marginTop: 2,
   },
   loginLink: {
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    marginTop: 4,
+    paddingVertical: 8,
   },
   loginText: {
     fontFamily: Fonts.bodyRegular,
     fontSize: 14,
+  },
+  pressed: {
+    opacity: 0.86,
   },
 });

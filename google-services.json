@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "445050648801",
+    "project_id": "gymflow-7d764",
+    "storage_bucket": "gymflow-7d764.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445050648801:android:12e3f2b0e91242d82b5fa0",
+        "android_client_info": {
+          "package_name": "com.gymflow.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "445050648801-piib6f9t9ooi0u23q7g757asduvgto6n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt9nkJBDaKaUXMtiO5xt2GbBi9njpEKs8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "445050648801-piib6f9t9ooi0u23q7g757asduvgto6n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
