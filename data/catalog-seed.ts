@@ -104,39 +104,39 @@ export const seedExercises: Exercise[] = [
 ];
 
 export const seedVariants: Variant[] = [
-  { id: 'v-press-manc', exerciseId: 'press-banca', name: 'Press con mancuernas', description: 'Mayor rango de movimiento.', sortOrder: 1 },
-  { id: 'v-flexiones', exerciseId: 'press-banca', name: 'Flexiones', description: 'Sin equipamiento, mismo patron de empuje.', sortOrder: 2 },
-  { id: 'v-press-incl', exerciseId: 'press-banca', name: 'Press inclinado', description: 'Enfasis en pecho superior.', sortOrder: 3 },
+  { id: 'v-press-manc', exerciseId: 'press-banca', replacementExerciseId: 'press-banca-mancuernas', name: 'Press con mancuernas', description: 'Mayor rango de movimiento.', sortOrder: 1 },
+  { id: 'v-flexiones', exerciseId: 'press-banca', replacementExerciseId: 'flexiones', name: 'Flexiones', description: 'Sin equipamiento, mismo patron de empuje.', sortOrder: 2 },
+  { id: 'v-press-incl', exerciseId: 'press-banca', replacementExerciseId: 'press-inclinado', name: 'Press inclinado', description: 'Enfasis en pecho superior.', sortOrder: 3 },
 
-  { id: 'v-prensa', exerciseId: 'sentadilla', name: 'Prensa de piernas', description: 'Menor carga en la espalda.', sortOrder: 1 },
-  { id: 'v-sentadilla-g', exerciseId: 'sentadilla', name: 'Sentadilla goblet', description: 'Con mancuerna, buena tecnica.', sortOrder: 2 },
-  { id: 'v-zancadas', exerciseId: 'sentadilla', name: 'Zancadas', description: 'Unilateral, equilibrio y fuerza.', sortOrder: 3 },
+  { id: 'v-prensa', exerciseId: 'sentadilla', replacementExerciseId: 'prensa', name: 'Prensa de piernas', description: 'Menor carga en la espalda.', sortOrder: 1 },
+  { id: 'v-sentadilla-g', exerciseId: 'sentadilla', replacementExerciseId: 'sentadilla-goblet', name: 'Sentadilla goblet', description: 'Con mancuerna, buena tecnica.', sortOrder: 2 },
+  { id: 'v-zancadas', exerciseId: 'sentadilla', replacementExerciseId: 'zancadas', name: 'Zancadas', description: 'Unilateral, equilibrio y fuerza.', sortOrder: 3 },
 
-  { id: 'v-jalones', exerciseId: 'dominadas', name: 'Jalones en polea', description: 'Mismo patron con carga ajustable.', sortOrder: 1 },
-  { id: 'v-remo-manc', exerciseId: 'dominadas', name: 'Remo con mancuerna', description: 'Traccion horizontal complementaria.', sortOrder: 2 },
-  { id: 'v-dominadas-a', exerciseId: 'dominadas', name: 'Dominadas asistidas', description: 'Con banda para reducir peso corporal.', sortOrder: 3 },
+  { id: 'v-jalones', exerciseId: 'dominadas', replacementExerciseId: 'jalon-polea', name: 'Jalones en polea', description: 'Mismo patron con carga ajustable.', sortOrder: 1 },
+  { id: 'v-remo-manc', exerciseId: 'dominadas', replacementExerciseId: 'remo-mancuerna', name: 'Remo con mancuerna', description: 'Traccion horizontal complementaria.', sortOrder: 2 },
+  { id: 'v-dominadas-a', exerciseId: 'dominadas', replacementExerciseId: 'dominadas-asistidas', name: 'Dominadas asistidas', description: 'Con banda para reducir peso corporal.', sortOrder: 3 },
 
-  { id: 'v-curl-manc', exerciseId: 'curl-barra', name: 'Curl con mancuernas', description: 'Movimiento independiente por brazo.', sortOrder: 1 },
-  { id: 'v-curl-mart', exerciseId: 'curl-barra', name: 'Curl martillo', description: 'Agarre neutro, biceps y braquial.', sortOrder: 2 },
-  { id: 'v-curl-polea', exerciseId: 'curl-barra', name: 'Curl en polea', description: 'Tension constante.', sortOrder: 3 },
+  { id: 'v-curl-manc', exerciseId: 'curl-barra', replacementExerciseId: 'curl-mancuernas', name: 'Curl con mancuernas', description: 'Movimiento independiente por brazo.', sortOrder: 1 },
+  { id: 'v-curl-mart', exerciseId: 'curl-barra', replacementExerciseId: 'curl-martillo', name: 'Curl martillo', description: 'Agarre neutro, biceps y braquial.', sortOrder: 2 },
+  { id: 'v-curl-polea', exerciseId: 'curl-barra', replacementExerciseId: 'curl-polea', name: 'Curl en polea', description: 'Tension constante.', sortOrder: 3 },
 
-  { id: 'v-ext-polea', exerciseId: 'press-frances', name: 'Extension en polea', description: 'Control mas estable.', sortOrder: 1 },
-  { id: 'v-fondos', exerciseId: 'press-frances', name: 'Fondos en paralelas', description: 'Peso corporal, alta intensidad.', sortOrder: 2 },
-  { id: 'v-patada', exerciseId: 'press-frances', name: 'Patada de triceps', description: 'Unilateral, pico del musculo.', sortOrder: 3 },
+  { id: 'v-ext-polea', exerciseId: 'press-frances', replacementExerciseId: 'extension-polea', name: 'Extension en polea', description: 'Control mas estable.', sortOrder: 1 },
+  { id: 'v-fondos', exerciseId: 'press-frances', replacementExerciseId: 'fondos-paralelas', name: 'Fondos en paralelas', description: 'Peso corporal, alta intensidad.', sortOrder: 2 },
+  { id: 'v-patada', exerciseId: 'press-frances', replacementExerciseId: 'patada-triceps', name: 'Patada de triceps', description: 'Unilateral, pico del musculo.', sortOrder: 3 },
 
-  { id: 'v-press-manc-h', exerciseId: 'press-militar', name: 'Press con mancuernas', description: 'Mayor rango, trabajo unilateral.', sortOrder: 1 },
-  { id: 'v-elev-lat', exerciseId: 'press-militar', name: 'Elevaciones laterales', description: 'Aisla deltoides lateral.', sortOrder: 2 },
-  { id: 'v-press-arnold', exerciseId: 'press-militar', name: 'Press Arnold', description: 'Con rotacion, todos los deltoides.', sortOrder: 3 },
+  { id: 'v-press-manc-h', exerciseId: 'press-militar', replacementExerciseId: 'press-mancuernas-h', name: 'Press con mancuernas', description: 'Mayor rango, trabajo unilateral.', sortOrder: 1 },
+  { id: 'v-elev-lat', exerciseId: 'press-militar', replacementExerciseId: 'elev-laterales', name: 'Elevaciones laterales', description: 'Aisla deltoides lateral.', sortOrder: 2 },
+  { id: 'v-press-arnold', exerciseId: 'press-militar', replacementExerciseId: 'press-arnold', name: 'Press Arnold', description: 'Con rotacion, todos los deltoides.', sortOrder: 3 },
 
-  { id: 'v-plancha', exerciseId: 'crunch', name: 'Plancha', description: 'Isometrico completo para el core.', sortOrder: 1 },
-  { id: 'v-elevacion', exerciseId: 'crunch', name: 'Elevacion de piernas', description: 'Abdomen inferior.', sortOrder: 2 },
-  { id: 'v-crunch-polea', exerciseId: 'crunch', name: 'Crunch en polea', description: 'Mayor resistencia.', sortOrder: 3 },
+  { id: 'v-plancha', exerciseId: 'crunch', replacementExerciseId: 'plancha', name: 'Plancha', description: 'Isometrico completo para el core.', sortOrder: 1 },
+  { id: 'v-elevacion', exerciseId: 'crunch', replacementExerciseId: 'elevacion-piernas', name: 'Elevacion de piernas', description: 'Abdomen inferior.', sortOrder: 2 },
+  { id: 'v-crunch-polea', exerciseId: 'crunch', replacementExerciseId: 'crunch-polea', name: 'Crunch en polea', description: 'Mayor resistencia.', sortOrder: 3 },
 
-  { id: 'v-pm-rumano', exerciseId: 'peso-muerto', name: 'Peso muerto rumano', description: 'Bisagra de cadera, foco femorales.', sortOrder: 1 },
+  { id: 'v-pm-rumano', exerciseId: 'peso-muerto', replacementExerciseId: 'peso-muerto-rumano', name: 'Peso muerto rumano', description: 'Bisagra de cadera, foco femorales.', sortOrder: 1 },
   { id: 'v-pm-sumo', exerciseId: 'peso-muerto', name: 'Peso muerto sumo', description: 'Postura ancha, mas gluteos y aductores.', sortOrder: 2 },
 
-  { id: 'v-ht-glute-bridge', exerciseId: 'hip-thrust', name: 'Puente de gluteos', description: 'Variante en piso sin banco.', sortOrder: 1 },
-  { id: 'v-ht-step-up', exerciseId: 'hip-thrust', name: 'Step up', description: 'Subida a banco unilateral.', sortOrder: 2 },
+  { id: 'v-ht-glute-bridge', exerciseId: 'hip-thrust', replacementExerciseId: 'glute-bridge', name: 'Puente de gluteos', description: 'Variante en piso sin banco.', sortOrder: 1 },
+  { id: 'v-ht-step-up', exerciseId: 'hip-thrust', replacementExerciseId: 'step-up', name: 'Step up', description: 'Subida a banco unilateral.', sortOrder: 2 },
 ];
 
 // =============================================================

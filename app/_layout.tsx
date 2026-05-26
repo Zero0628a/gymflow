@@ -19,9 +19,11 @@ import { JetBrainsMono_400Regular, JetBrainsMono_500Medium } from '@expo-google-
 
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
 import { CatalogProvider } from '@/providers/catalog-provider';
+import { NetworkProvider } from '@/providers/network-provider';
 import { ProfileProvider, useProfile } from '@/providers/profile-provider';
 import { RoutinesProvider } from '@/providers/routines-provider';
 import { TrainingProvider } from '@/providers/training-provider';
+import { OfflineBanner } from '@/components/ui/offline-banner';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { GymFlowColors, GymFlowDarkColors, NavigationThemes } from '@/constants/theme';
 
@@ -122,17 +124,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AuthProvider>
-          <ProfileProvider>
-            <CatalogProvider>
-              <RoutinesProvider>
-                <TrainingProvider>
-                  <RootNavigator />
-                </TrainingProvider>
-              </RoutinesProvider>
-            </CatalogProvider>
-          </ProfileProvider>
-        </AuthProvider>
+        <NetworkProvider>
+          <AuthProvider>
+            <ProfileProvider>
+              <CatalogProvider>
+                <RoutinesProvider>
+                  <TrainingProvider>
+                    <RootNavigator />
+                    <OfflineBanner />
+                  </TrainingProvider>
+                </RoutinesProvider>
+              </CatalogProvider>
+            </ProfileProvider>
+          </AuthProvider>
+        </NetworkProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

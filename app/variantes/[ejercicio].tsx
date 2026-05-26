@@ -21,8 +21,8 @@ export default function VariantesScreen() {
   return (
     <Screen>
       <ScreenHeader
-        title="Variantes"
-        subtitle={loading ? 'Cargando alternativas' : `Base para ${exercise?.name ?? 'ejercicio'}`}
+        title={exercise?.name ?? 'Variantes'}
+        subtitle={loading ? 'Cargando alternativas' : `${lista.length} alternativas disponibles`}
         left={
           <Pressable onPress={() => router.back()} hitSlop={8}>
             <Ionicons name="chevron-back" size={24} color={colors.textPrimary} />

@@ -39,9 +39,13 @@ export default function HistorialScreen() {
       .map((eid) => {
         const log = getExerciseLog(item.dateKey, eid);
         const exercise = getExerciseById(eid);
-        return log ? { name: exercise?.name ?? eid, sets: log.sets } : null;
+        return log ? { name: exercise?.name ?? eid, sets: log.sets, note: log.note } : null;
       })
-      .filter(Boolean) as { name: string; sets: { reps: number }[] }[];
+      .filter(Boolean) as {
+        name: string;
+        sets: { reps: number; weight?: number; rpe?: number }[];
+        note?: string;
+      }[];
 
     return (
       <ListItem
@@ -76,7 +80,16 @@ export default function HistorialScreen() {
         {loggedExercises.length > 0 && (
           <View style={[styles.logsBlock, { borderColor: colors.border }]}>
             {loggedExercises.map((entry) => {
-              const setsStr = entry.sets.map((s) => `${s.reps} reps`).join('  ·  ');
+              const setsStr = entry.sets
+                .map((set) => {
+                  const parts = [
+                    typeof set.weight === 'number' ? `${set.weight} kg` : null,
+                    `${set.reps} reps`,
+                    typeof set.rpe === 'number' ? `RPE ${set.rpe}` : null,
+                  ].filter(Boolean);
+                  return parts.join(' · ');
+                })
+                .join('  |  ');
               return (
                 <View key={entry.name} style={styles.logRow}>
                   <Text style={[styles.logName, { color: colors.textPrimary }]} numberOfLines={1}>
@@ -85,6 +98,11 @@ export default function HistorialScreen() {
                   <Text style={[styles.logSets, { color: colors.textSecondary }]} numberOfLines={1}>
                     {setsStr}
                   </Text>
+                  {entry.note ? (
+                    <Text style={[styles.logNote, { color: colors.textMuted }]} numberOfLines={2}>
+                      {entry.note}
+                    </Text>
+                  ) : null}
                 </View>
               );
             })}
@@ -275,5 +293,10 @@ const styles = StyleSheet.create({
   logSets: {
     fontFamily: Fonts.monoRegular,
     fontSize: 12,
+  },
+  logNote: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 12,
+    lineHeight: 16,
   },
 });

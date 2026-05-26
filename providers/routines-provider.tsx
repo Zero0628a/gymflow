@@ -21,6 +21,7 @@ import {
 } from 'react';
 
 import { db } from '@/lib/firebase';
+import { CACHE_SCOPES, loadCache, saveCache } from '@/lib/offline-cache';
 import { useAuth } from '@/providers/auth-provider';
 import type {
   PlannedDay,
@@ -87,21 +88,36 @@ export function RoutinesProvider({ children }: PropsWithChildren) {
 
     setLoading(true);
 
+    // Pre-hidratacion desde cache local por usuario. Da algo visible al instante
+    // y mientras tanto Firestore sincroniza.
+    let cancelled = false;
+    loadCache<Routine[]>(CACHE_SCOPES.routines, user.uid).then((cached) => {
+      if (!cancelled && cached?.length) {
+        setRoutines(cached);
+        setLoading(false);
+      }
+    });
+
     const routinesRef = collection(db, 'users', user.uid, 'routines');
     const unsubscribe = onSnapshot(
       query(routinesRef, orderBy('createdAt', 'desc')),
       (snapshot) => {
-        setRoutines(snapshot.docs.map(fromRoutineDoc));
+        const fresh = snapshot.docs.map(fromRoutineDoc);
+        setRoutines(fresh);
         setLoading(false);
+        void saveCache(CACHE_SCOPES.routines, user.uid, fresh);
       },
       (error) => {
         console.error('No se pudo cargar routines:', error);
-        setRoutines([]);
+        // Si Firestore falla y no hubo cache previa, no pisamos lo que ya esta.
         setLoading(false);
       }
     );
 
-    return unsubscribe;
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [authLoading, user]);
 
   const value = useMemo<RoutinesContextValue>(
@@ -304,7 +320,32 @@ async function resetTrainingDaysForUser(uid: string) {
   if (snapshot.empty) return;
 
   const batch = writeBatch(db);
-  snapshot.docs.forEach((item) => batch.delete(item.ref));
+  snapshot.docs.forEach((item) => {
+    const data = item.data();
+    const status = data.status;
+
+    if (status === 'completed' || status === 'partial' || status === 'postponed') {
+      batch.set(
+        doc(db, 'users', uid, 'workout_sessions', item.id),
+        {
+          dateKey: typeof data.dateKey === 'string' ? data.dateKey : item.id,
+          status,
+          completedExerciseIds: Array.isArray(data.completedExerciseIds) ? data.completedExerciseIds : [],
+          completedAt: typeof data.completedAt === 'string' ? data.completedAt : null,
+          postponedAt: typeof data.postponedAt === 'string' ? data.postponedAt : null,
+          routineId: typeof data.routineId === 'string' ? data.routineId : null,
+          routineName: typeof data.routineName === 'string' ? data.routineName : null,
+          sessionLabel: typeof data.sessionLabel === 'string' ? data.sessionLabel : null,
+          sessionFocus: typeof data.sessionFocus === 'string' ? data.sessionFocus : null,
+          plannedExercises: Array.isArray(data.plannedExercises) ? data.plannedExercises : [],
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    }
+
+    batch.delete(item.ref);
+  });
   await batch.commit();
 }
 
