@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
@@ -20,14 +20,12 @@ import { ScreenHeader } from '@/components/ui/screen-header';
 import { Toast } from '@/components/ui/toast';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
+import { openExerciseVideoSearch } from '@/lib/exercise-video';
 import { useAuth } from '@/providers/auth-provider';
 import { useCatalog } from '@/providers/catalog-provider';
 import { useTraining } from '@/providers/training-provider';
 import type {
   PlannedExercise,
-  ExerciseLog,
-  LoggedSet,
-  Routine,
   TrainingActionFailure,
   TrainingDay,
   Variant,
@@ -43,16 +41,14 @@ export default function HomeScreen() {
     today,
     todayKey,
     loading,
-    getExerciseLog,
     postponeDay,
     replaceExercise,
-    saveExerciseLog,
-    toggleExercise,
+    revertExerciseReplacement,
+    toggleSet,
     undoPostponeDay,
     weekDays,
   } = useTraining();
   const [toast, setToast] = useState<{ message: string; variant: 'error' | 'warning' | 'info' } | null>(null);
-  const [logTarget, setLogTarget] = useState<{ dateKey: string; exerciseId: string; name: string } | null>(null);
   const [variantTarget, setVariantTarget] = useState<{ dateKey: string; exerciseId: string; name: string } | null>(null);
   // `selectedDateKey` = lo que el usuario tocó (resalta el chip al instante).
   // `visibleDateKey` = lo que realmente se renderiza; solo cambia a mitad de la
@@ -138,9 +134,9 @@ export default function HomeScreen() {
     setToast({ message, variant });
   }
 
-  async function onExercisePress(exerciseId: string) {
+  async function onSetPress(exerciseId: string, setIndex: number) {
     if (!today) return;
-    const failure = await toggleExercise(today.dateKey, exerciseId);
+    const failure = await toggleSet(today.dateKey, exerciseId, setIndex);
     if (failure) handleFailure(failure, showToast);
   }
 
@@ -172,14 +168,14 @@ export default function HomeScreen() {
     if (failure) handleFailure(failure, showToast);
   }
 
-  async function onSaveExerciseLog(exerciseId: string, sets: LoggedSet[], note?: string) {
+  async function onRevertExercise(exerciseId: string) {
     if (!today) return;
-    const failure = await saveExerciseLog(today.dateKey, exerciseId, { sets, note });
+    const failure = await revertExerciseReplacement(today.dateKey, exerciseId);
     if (failure) {
       handleFailure(failure, showToast);
       return;
     }
-    showToast('Series guardadas.', 'info');
+    showToast('Sustitucion revertida.', 'info');
   }
 
   if (loading) {
@@ -227,37 +223,23 @@ export default function HomeScreen() {
         options={buildVariantOptions(variantTarget?.exerciseId, getVariantsByExercise, onReplaceExercise)}
         onClose={() => setVariantTarget(null)}
       />
-      <ExerciseLogModal
-        visible={!!logTarget}
-        title={logTarget?.name ?? ''}
-        log={logTarget ? getExerciseLog(logTarget.dateKey, logTarget.exerciseId) : null}
-        onClose={() => setLogTarget(null)}
-        onSave={(sets, note) => {
-          if (!logTarget) return;
-          void onSaveExerciseLog(logTarget.exerciseId, sets, note);
-          setLogTarget(null);
-        }}
-      />
       <TopBar />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Animated.View style={[styles.dayContent, dayTransitionStyle]}>
-          <Header
-            routine={activeRoutine}
-            day={selectedDay}
-          />
+          <Header day={selectedDay} />
 
           {selectedDay.status === 'rest' ? (
             <RestCard day={selectedDay} weekDays={weekDays} />
           ) : (
             <SessionCard
               day={selectedDay}
-              onExercisePress={onExercisePress}
+              onSetPress={onSetPress}
               getExerciseById={getExerciseById}
               getVariantsByExercise={getVariantsByExercise}
-              getExerciseLog={getExerciseLog}
-              onLogPress={(exerciseId, name) => setLogTarget({ dateKey: selectedDay.dateKey, exerciseId, name })}
               onVariantPress={(exerciseId, name) => setVariantTarget({ dateKey: selectedDay.dateKey, exerciseId, name })}
+              onVariantLocked={() => showToast('Desmarca las series antes de cambiar variante.', 'warning')}
+              onRevertPress={(exerciseId) => void onRevertExercise(exerciseId)}
               onPostpone={() => void onPostpone()}
               onUndoPostpone={() => void onUndoPostpone()}
             />
@@ -306,20 +288,17 @@ function TopBar() {
 }
 
 function Header({
-  routine,
   day,
 }: {
-  routine: Routine;
   day: TrainingDay;
 }) {
   const colors = useGymColors();
 
-  const totalSessions = routine.weeklyPlan?.length ?? routine.daysPerWeek ?? 0;
   const sessionNumber = (day.sessionIndex ?? 0) + 1;
   const eyebrow =
     day.status === 'rest' || day.sessionIndex === null
       ? `${day.dayLabel.toUpperCase()} · ${day.shortDateLabel.toUpperCase()}`
-      : `${day.dayLabel.toUpperCase()} · ${day.shortDateLabel.toUpperCase()} · SESION ${sessionNumber}${totalSessions ? ` / ${totalSessions}` : ''}`;
+      : `${day.dayLabel.toUpperCase()} · ${day.shortDateLabel.toUpperCase()} · SESION ${sessionNumber}`;
 
   // Si la sesion no tiene focus, usar el label como fallback. Si tiene focus,
   // usar focus como titulo (mas descriptivo: "EMPUJE" vs "LUNES").
@@ -327,11 +306,6 @@ function Header({
     day.status === 'rest'
       ? 'DESCANSO'
       : (day.sessionFocus || day.sessionLabel || 'SESION').toUpperCase();
-
-  const showSubtitle =
-    day.status !== 'rest' &&
-    day.sessionLabel &&
-    day.sessionLabel.toUpperCase() !== heroTitle;
 
   // El heroTitle puede ser corto ("EMPUJE") o largo ("EMPUJE · TRACCION · PIERNA").
   // Bajamos el tamano por tramos para que entre prolijo sin desbordar.
@@ -354,36 +328,28 @@ function Header({
         minimumFontScale={0.7}>
         {heroTitle}
       </Text>
-      {showSubtitle ? (
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]} numberOfLines={2}>
-          {day.sessionLabel}
-        </Text>
-      ) : null}
-      <Text style={[styles.routineNote, { color: colors.textMuted }]} numberOfLines={1}>
-        {routine.name}
-      </Text>
     </View>
   );
 }
 
 function SessionCard({
   day,
-  onExercisePress,
+  onSetPress,
   getExerciseById,
   getVariantsByExercise,
-  getExerciseLog,
-  onLogPress,
   onVariantPress,
+  onVariantLocked,
+  onRevertPress,
   onPostpone,
   onUndoPostpone,
 }: {
   day: TrainingDay;
-  onExercisePress: (id: string) => void;
+  onSetPress: (exerciseId: string, setIndex: number) => void;
   getExerciseById: (id: string) => ReturnType<typeof useCatalog>['exercises'][number] | undefined;
   getVariantsByExercise: (id: string) => ReturnType<typeof useCatalog>['variants'];
-  getExerciseLog: (dateKey: string, exerciseId: string) => ExerciseLog | null;
-  onLogPress: (exerciseId: string, name: string) => void;
   onVariantPress: (exerciseId: string, name: string) => void;
+  onVariantLocked: () => void;
+  onRevertPress: (exerciseId: string) => void;
   onPostpone: () => void;
   onUndoPostpone: () => void;
 }) {
@@ -391,6 +357,7 @@ function SessionCard({
   const total = day.plannedExercises.length;
   const completed = day.completedExerciseIds.length;
   const toggleDisabled = day.status === 'missed' || day.status === 'postponed' || !day.isToday;
+  const variantChangeLocked = toggleDisabled || day.status === 'completed';
 
   return (
     <View style={styles.sessionSection}>
@@ -433,46 +400,73 @@ function SessionCard({
           const baseName = getExerciseById(planned.exerciseId)?.name ?? planned.replacementName ?? planned.exerciseId;
           const originalId = planned.originalExerciseId ?? planned.exerciseId;
           const variantCount = getVariantsByExercise(originalId).length;
-          const log = getExerciseLog(day.dateKey, planned.exerciseId);
+          const completedSetIndexes = day.completedSets[planned.exerciseId] ?? [];
 
           return (
             <ExerciseRow
               key={`${planned.exerciseId}-${index}`}
               index={index + 1}
               planned={planned}
-              checked={day.completedExerciseIds.includes(planned.exerciseId)}
+              completedSetIndexes={completedSetIndexes}
               toggleDisabled={toggleDisabled}
               exerciseName={baseName}
               variantCount={variantCount}
-              loggedSetCount={log?.sets.length ?? 0}
-              onToggle={() => onExercisePress(planned.exerciseId)}
-              onLogPress={() => onLogPress(planned.exerciseId, baseName)}
-              onVariantsPress={() => onVariantPress(originalId, baseName)}
+              onSetPress={(setIndex) => onSetPress(planned.exerciseId, setIndex)}
+              onVariantsPress={() => {
+                if (variantChangeLocked || completedSetIndexes.length > 0) {
+                  onVariantLocked();
+                  return;
+                }
+                onVariantPress(originalId, baseName);
+              }}
+              onRevertPress={() => onRevertPress(planned.exerciseId)}
+              variantLocked={variantChangeLocked || completedSetIndexes.length > 0}
             />
           );
         })}
       </View>
 
       {day.isToday && day.status === 'postponed' && (
-        <Button
+        <SessionActionButton
           onPress={onUndoPostpone}
-          variant="outline"
-          icon="play-circle-outline"
-          style={styles.postponeBtn}>
+          icon="play-circle-outline">
           Reanudar sesion
-        </Button>
+        </SessionActionButton>
       )}
 
       {day.isToday && day.status !== 'completed' && day.status !== 'postponed' && day.status !== 'missed' && (
-        <Button
+        <SessionActionButton
           onPress={onPostpone}
-          variant="outline"
-          icon="pause-circle-outline"
-          style={styles.postponeBtn}>
+          icon="pause-circle-outline">
           Posponer sesion
-        </Button>
+        </SessionActionButton>
       )}
     </View>
+  );
+}
+
+function SessionActionButton({
+  children,
+  icon,
+  onPress,
+}: {
+  children: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+}) {
+  const colors = useGymColors();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.sessionActionButton,
+        { borderColor: colors.borderStrong },
+        pressed && styles.pressed,
+      ]}>
+      <Ionicons name={icon} size={17} color={colors.textPrimary} style={styles.sessionActionIcon} />
+      <Text style={[styles.sessionActionText, { color: colors.textPrimary }]}>{children}</Text>
+    </Pressable>
   );
 }
 
@@ -480,272 +474,138 @@ function ExerciseRow({
   index,
   planned,
   exerciseName,
-  checked,
+  completedSetIndexes,
   toggleDisabled,
   variantCount,
-  loggedSetCount,
-  onToggle,
-  onLogPress,
+  onSetPress,
   onVariantsPress,
+  onRevertPress,
+  variantLocked,
 }: {
   index: number;
   planned: PlannedExercise;
   exerciseName: string;
-  checked: boolean;
+  completedSetIndexes: number[];
   toggleDisabled: boolean;
   variantCount: number;
-  loggedSetCount: number;
-  onToggle: () => void;
-  onLogPress: () => void;
+  onSetPress: (setIndex: number) => void;
   onVariantsPress: () => void;
+  onRevertPress: () => void;
+  variantLocked: boolean;
 }) {
   const colors = useGymColors();
-  const variantLabel = variantCount === 1 ? '1 variante' : `${variantCount} variantes`;
+
+  const totalSets = Math.max(planned.sets ?? 1, 1);
+  const completedSetCount = completedSetIndexes.length;
+  const allDone = completedSetCount >= totalSets;
 
   const meta = [
-    `${planned.sets} × ${planned.reps}`,
+    `${totalSets} × ${planned.reps}`,
     planned.rest ? `${planned.rest} desc.` : null,
   ]
     .filter(Boolean)
     .join('  ·  ');
 
   return (
-    <Pressable
-      onPress={() => {
-        if (toggleDisabled) return;
-        onLogPress();
-      }}
-      style={({ pressed }) => [
+    <View
+      style={[
         styles.exerciseRow,
         {
-          backgroundColor: checked ? colors.accentSoft : colors.bgSurfaceAlt,
-          borderColor: checked ? colors.accent : colors.border,
-          opacity: toggleDisabled ? 0.8 : 1,
+          backgroundColor: allDone ? colors.accentSoft : colors.bgSurface,
+          borderColor: allDone ? colors.accent : colors.border,
+          opacity: toggleDisabled ? 0.92 : 1,
         },
-        pressed && !toggleDisabled && styles.pressed,
       ]}>
-      <Text style={[styles.exerciseIndex, { color: checked ? colors.accent : colors.textMuted }]}>
-        {String(index).padStart(2, '0')}
-      </Text>
-      <View style={styles.exerciseInfo}>
-        <Text style={[styles.exerciseName, { color: colors.textPrimary }]} numberOfLines={1}>
-          {exerciseName}
+      <View style={styles.exerciseLeftRail}>
+        <Text style={[styles.exerciseIndex, { color: allDone ? colors.accent : colors.textMuted }]}>
+          {String(index).padStart(2, '0')}
         </Text>
-        {planned.originalExerciseId ? (
-          <Text style={[styles.replacementMeta, { color: colors.accent }]} numberOfLines={1}>
-            Sustitucion aplicada
-          </Text>
+        {variantCount > 0 ? (
+          <Pressable
+            onPress={onVariantsPress}
+            disabled={variantLocked}
+            hitSlop={10}
+            style={({ pressed }) => [
+              styles.variantIconBtn,
+              { backgroundColor: colors.accentSoft, opacity: variantLocked ? 0.45 : 1 },
+              pressed && !variantLocked && styles.pressed,
+            ]}>
+            <Ionicons
+              name="swap-horizontal-outline"
+              size={18}
+              color={colors.accent}
+            />
+          </Pressable>
         ) : null}
+      </View>
+      <View style={styles.exerciseInfo}>
+        {/* Fila 1: nombre del ejercicio (tocar abre Youtube con la tecnica) */}
+        <Pressable
+          onPress={() => void openExerciseVideoSearch(exerciseName)}
+          hitSlop={6}
+          style={({ pressed }) => [styles.nameWrap, pressed && styles.pressed]}>
+          <Text style={[styles.exerciseName, { color: colors.textPrimary }]} numberOfLines={2}>
+            {exerciseName}
+          </Text>
+          <Ionicons name="logo-youtube" size={16} color={colors.danger} />
+        </Pressable>
+
+        {/* Fila 2: meta + (si aplica) revertir */}
         <View style={styles.exerciseMetaRow}>
           <Text style={[styles.exerciseMeta, { color: colors.textSecondary }]} numberOfLines={1}>
             {meta}
           </Text>
-          {loggedSetCount > 0 ? (
-            <View style={[styles.logPill, { backgroundColor: colors.bgSurface }]}>
-              <Ionicons name="document-text-outline" size={13} color={colors.textSecondary} />
-              <Text style={[styles.logPillText, { color: colors.textSecondary }]} numberOfLines={1}>
-                {loggedSetCount} series
-              </Text>
-            </View>
-          ) : null}
-          {variantCount > 0 ? (
-            <Pressable
-              onPress={(e) => {
-                e.stopPropagation();
-                onVariantsPress();
-              }}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.variantLink,
-                { backgroundColor: colors.accentSoft },
-                pressed && styles.pressed,
-              ]}>
-              <Ionicons name="swap-horizontal-outline" size={13} color={colors.accent} />
-              <Text style={[styles.variantLinkText, { color: colors.accent }]} numberOfLines={1}>
-                {variantLabel}
-              </Text>
-            </Pressable>
+          {planned.originalExerciseId ? (
+            <Text
+              onPress={onRevertPress}
+              suppressHighlighting
+              style={[styles.revertInline, { color: colors.accent }]}
+              numberOfLines={1}>
+              · Revertir
+            </Text>
           ) : null}
         </View>
+
+        {/* Fila 3: pildoritas a la izquierda + chip de variantes a la derecha */}
+        <View style={styles.setChipsRow}>
+          {Array.from({ length: totalSets }, (_, setIndex) => {
+            const isDone = completedSetIndexes.includes(setIndex);
+            return (
+              <Pressable
+                key={setIndex}
+                onPress={() => {
+                  if (toggleDisabled) return;
+                  onSetPress(setIndex);
+                }}
+                hitSlop={6}
+                style={({ pressed }) => [
+                  styles.setChip,
+                  {
+                    backgroundColor: isDone ? colors.accent : colors.bgSurface,
+                    borderColor: isDone ? colors.accent : colors.border,
+                  },
+                  pressed && !toggleDisabled && styles.pressed,
+                ]}>
+                <Text
+                  style={[
+                    styles.setChipText,
+                    { color: isDone ? colors.bgCanvas : colors.textSecondary },
+                  ]}>
+                  {setIndex + 1}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
         {planned.note ? (
           <Text style={[styles.exerciseNote, { color: colors.textMuted }]} numberOfLines={2}>
             {planned.note}
           </Text>
         ) : null}
       </View>
-      <Pressable
-        onPress={(e) => {
-          e.stopPropagation();
-          if (toggleDisabled) return;
-          onToggle();
-        }}
-        hitSlop={10}
-        style={({ pressed }) => [pressed && !toggleDisabled && styles.pressed]}>
-        {toggleDisabled ? null : (
-          <Ionicons
-            name={checked ? 'checkmark-circle' : 'ellipse-outline'}
-            size={26}
-            color={checked ? colors.accent : colors.textMuted}
-          />
-        )}
-      </Pressable>
-    </Pressable>
+    </View>
   );
-}
-
-function ExerciseLogModal({
-  visible,
-  title,
-  log,
-  onClose,
-  onSave,
-}: {
-  visible: boolean;
-  title: string;
-  log: ExerciseLog | null;
-  onClose: () => void;
-  onSave: (sets: LoggedSet[], note?: string) => void;
-}) {
-  const colors = useGymColors();
-  const [rows, setRows] = useState(() => toEditableSets(log));
-  const [note, setNote] = useState(log?.note ?? '');
-
-  useEffect(() => {
-    if (!visible) return;
-    setRows(toEditableSets(log));
-    setNote(log?.note ?? '');
-  }, [log, visible]);
-
-  function updateRow(index: number, field: 'weight' | 'reps' | 'rpe', value: string) {
-    setRows((current) => current.map((row, rowIndex) => (rowIndex === index ? { ...row, [field]: value } : row)));
-  }
-
-  function addRow() {
-    setRows((current) => [...current, { weight: '', reps: '', rpe: '' }]);
-  }
-
-  function removeRow(index: number) {
-    setRows((current) => current.filter((_, rowIndex) => rowIndex !== index));
-  }
-
-  function save() {
-    const sets = rows
-      .map((row, index): LoggedSet | null => {
-        const reps = Number(row.reps.replace(',', '.'));
-        const weight = row.weight.trim() ? Number(row.weight.replace(',', '.')) : undefined;
-        const rpe = row.rpe.trim() ? Number(row.rpe.replace(',', '.')) : undefined;
-
-        if (!Number.isFinite(reps) || reps <= 0) return null;
-
-        return {
-          setNumber: index + 1,
-          reps,
-          ...(typeof weight === 'number' && Number.isFinite(weight) ? { weight } : {}),
-          ...(typeof rpe === 'number' && Number.isFinite(rpe) ? { rpe } : {}),
-        };
-      })
-      .filter((set): set is LoggedSet => set !== null);
-
-    onSave(sets, note);
-  }
-
-  return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={onClose}>
-      <View style={styles.logModalOverlay}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={[styles.logModal, { backgroundColor: colors.bgSurface, borderColor: colors.border }]}>
-          <View style={styles.logHeader}>
-            <View style={styles.logHeaderCopy}>
-              <Text style={[styles.logEyebrow, { color: colors.textSecondary }]}>Registro</Text>
-              <Text style={[styles.logTitle, { color: colors.textPrimary }]} numberOfLines={2}>
-                {title}
-              </Text>
-            </View>
-            <Pressable onPress={onClose} hitSlop={10}>
-              <Ionicons name="close" size={22} color={colors.textSecondary} />
-            </Pressable>
-          </View>
-
-          <View style={styles.setHeaderRow}>
-            <Text style={[styles.setHeaderText, { color: colors.textMuted }]}>Peso</Text>
-            <Text style={[styles.setHeaderText, { color: colors.textMuted }]}>Reps</Text>
-            <Text style={[styles.setHeaderText, { color: colors.textMuted }]}>RPE</Text>
-            <View style={styles.setRemoveSpace} />
-          </View>
-
-          <ScrollView style={styles.setRows} contentContainerStyle={styles.setRowsContent} keyboardShouldPersistTaps="handled">
-            {rows.map((row, index) => (
-              <View key={index} style={styles.setRow}>
-                <TextInput
-                  value={row.weight}
-                  onChangeText={(value) => updateRow(index, 'weight', value)}
-                  keyboardType="decimal-pad"
-                  placeholder="kg"
-                  placeholderTextColor={colors.textMuted}
-                  style={[styles.setInput, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.bgSurfaceAlt }]}
-                />
-                <TextInput
-                  value={row.reps}
-                  onChangeText={(value) => updateRow(index, 'reps', value)}
-                  keyboardType="number-pad"
-                  placeholder="10"
-                  placeholderTextColor={colors.textMuted}
-                  style={[styles.setInput, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.bgSurfaceAlt }]}
-                />
-                <TextInput
-                  value={row.rpe}
-                  onChangeText={(value) => updateRow(index, 'rpe', value)}
-                  keyboardType="decimal-pad"
-                  placeholder="8"
-                  placeholderTextColor={colors.textMuted}
-                  style={[styles.setInput, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.bgSurfaceAlt }]}
-                />
-                <Pressable onPress={() => removeRow(index)} hitSlop={8} style={styles.setRemove}>
-                  <Ionicons name="remove-circle-outline" size={20} color={colors.danger} />
-                </Pressable>
-              </View>
-            ))}
-          </ScrollView>
-
-          <Pressable
-            onPress={addRow}
-            style={({ pressed }) => [styles.addSetButton, { borderColor: colors.border }, pressed && styles.pressed]}>
-            <Ionicons name="add" size={18} color={colors.textSecondary} />
-            <Text style={[styles.addSetText, { color: colors.textSecondary }]}>Agregar serie</Text>
-          </Pressable>
-
-          <TextInput
-            value={note}
-            onChangeText={setNote}
-            placeholder="Nota opcional"
-            placeholderTextColor={colors.textMuted}
-            multiline
-            style={[styles.noteInput, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.bgSurfaceAlt }]}
-          />
-
-          <Button onPress={save} icon="save-outline">
-            Guardar series
-          </Button>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function toEditableSets(log: ExerciseLog | null) {
-  if (!log?.sets.length) {
-    return [
-      { weight: '', reps: '', rpe: '' },
-      { weight: '', reps: '', rpe: '' },
-      { weight: '', reps: '', rpe: '' },
-    ];
-  }
-
-  return log.sets.map((set) => ({
-    weight: typeof set.weight === 'number' ? String(set.weight) : '',
-    reps: String(set.reps),
-    rpe: typeof set.rpe === 'number' ? String(set.rpe) : '',
-  }));
 }
 
 function buildVariantOptions(
@@ -923,6 +783,7 @@ function handleFailure(
   if (failure === 'closed_missed') show(MISSED_MESSAGE, 'error');
   else if (failure === 'closed_postponed') show('Esta sesion ya quedo cerrada por hoy.', 'warning');
   else if (failure === 'already_completed') show('Ya cerraste el dia. No hace falta posponer.', 'info');
+  else if (failure === 'exercise_already_started') show('Desmarca las series antes de cambiar variante.', 'warning');
   else show('Solo podes registrar ejercicios del dia actual.', 'warning');
 }
 
@@ -1040,29 +901,55 @@ const styles = StyleSheet.create({
   exerciseRow: {
     borderWidth: 1,
     borderRadius: 16,
-    padding: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    position: 'relative',
   },
   exerciseIndex: {
     fontFamily: Fonts.monoData,
     fontSize: 13,
-    width: 24,
+    width: 34,
     textAlign: 'center',
+  },
+  exerciseLeftRail: {
+    width: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
   },
   exerciseInfo: {
     flex: 1,
-    gap: 2,
+    gap: 6,
+    alignSelf: 'stretch',
   },
   exerciseName: {
     fontFamily: Fonts.bodyBold,
     fontSize: 15,
     fontWeight: '700',
+    lineHeight: 19,
+    textAlign: 'left',
+    flexShrink: 1,
+  },
+  nameWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 6,
+    alignSelf: 'stretch',
+  },
+  revertInline: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   exerciseMeta: {
     fontFamily: Fonts.monoRegular,
     fontSize: 12,
+    textAlign: 'left',
     flexShrink: 1,
   },
   replacementMeta: {
@@ -1071,23 +958,18 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  revertText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   exerciseMetaRow: {
     flexDirection: 'row',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     gap: 8,
     flexWrap: 'wrap',
-  },
-  logPill: {
-    minHeight: 26,
-    borderRadius: 13,
-    paddingHorizontal: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  logPillText: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
   },
   variantLink: {
     minHeight: 26,
@@ -1101,112 +983,78 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodySemiBold,
     fontSize: 11,
   },
+  variantIconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  techniqueLink: {
+    minHeight: 26,
+    borderRadius: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  techniqueLinkText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 11,
+  },
   exerciseNote: {
     fontFamily: Fonts.bodyRegular,
     fontSize: 12,
     lineHeight: 16,
     marginTop: 2,
   },
-  logModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+  setChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'flex-end',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginTop: 4,
+    alignSelf: 'stretch',
   },
-  logModal: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+  setChip: {
+    minWidth: 34,
+    height: 34,
+    borderRadius: 10,
     borderWidth: 1,
-    padding: 18,
-    gap: 14,
-    maxHeight: '88%',
-  },
-  logHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  logHeaderCopy: {
-    flex: 1,
-    gap: 3,
-  },
-  logEyebrow: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-  },
-  logTitle: {
-    fontFamily: Fonts.display,
-    fontSize: 24,
-    lineHeight: 26,
-    textTransform: 'uppercase',
-  },
-  setHeaderRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingRight: 28,
-  },
-  setHeaderText: {
-    flex: 1,
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-  },
-  setRemoveSpace: {
-    width: 24,
-  },
-  setRows: {
-    maxHeight: 220,
-  },
-  setRowsContent: {
-    gap: 8,
-  },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  setInput: {
-    flex: 1,
-    minHeight: 44,
-    borderWidth: 1,
-    borderRadius: 12,
     paddingHorizontal: 10,
-    fontFamily: Fonts.monoRegular,
-    fontSize: 14,
-  },
-  setRemove: {
-    width: 24,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  addSetButton: {
-    minHeight: 44,
-    borderWidth: 1,
+  setChipText: {
+    fontFamily: Fonts.bodyBold,
+    fontSize: 13,
+  },
+  setProgressText: {
+    fontFamily: Fonts.monoRegular,
+    fontSize: 11,
+    marginLeft: 4,
+  },
+  sessionActionButton: {
+    marginTop: 4,
+    alignSelf: 'stretch',
+    height: 44,
+    borderWidth: 1.5,
     borderRadius: 12,
-    borderStyle: 'dashed',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
   },
-  addSetText: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 13,
+  sessionActionIcon: {
+    // El layout flex de sessionActionButton ya posiciona el icono al lado del
+    // texto sin colisiones. No necesita estilos propios.
   },
-  noteInput: {
-    minHeight: 74,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    textAlignVertical: 'top',
-    fontFamily: Fonts.bodyRegular,
-    fontSize: 14,
-  },
-  postponeBtn: {
-    marginTop: 4,
+  sessionActionText: {
+    fontFamily: Fonts.bodyBold,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   restCard: {
     borderWidth: 1,

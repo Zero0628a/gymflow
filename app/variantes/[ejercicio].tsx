@@ -7,6 +7,7 @@ import { Screen } from '@/components/ui/screen';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { Fonts } from '@/constants/theme';
 import { useGymColors } from '@/hooks/use-gym-colors';
+import { openExerciseVideoSearch } from '@/lib/exercise-video';
 import { useCatalog } from '@/providers/catalog-provider';
 import type { Variant } from '@/types';
 
@@ -35,6 +36,16 @@ export default function VariantesScreen() {
           <Text style={[styles.originLabel, { color: colors.accent }]}>Ejercicio original</Text>
           <Text style={[styles.originTitle, { color: colors.textPrimary }]}>{exercise.name}</Text>
           <Text style={[styles.originBody, { color: colors.textSecondary }]}>{exercise.description}</Text>
+          <Pressable
+            onPress={() => void openExerciseVideoSearch(exercise.name)}
+            style={({ pressed }) => [
+              styles.videoButton,
+              { borderColor: colors.border, backgroundColor: colors.bgSurfaceAlt },
+              pressed && styles.pressed,
+            ]}>
+            <Ionicons name="logo-youtube" size={18} color={colors.danger} />
+            <Text style={[styles.videoButtonText, { color: colors.textPrimary }]}>Ver tecnica</Text>
+          </Pressable>
         </View>
       ) : null}
 
@@ -77,6 +88,12 @@ function VariantRow({ item }: { item: Variant }) {
       <View style={styles.rowContent}>
         <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>{item.name}</Text>
         <Text style={[styles.rowBody, { color: colors.textSecondary }]}>{item.description}</Text>
+        <Pressable
+          onPress={() => void openExerciseVideoSearch(item.name)}
+          style={({ pressed }) => [styles.variantVideoLink, pressed && styles.pressed]}>
+          <Ionicons name="logo-youtube" size={15} color={colors.danger} />
+          <Text style={[styles.variantVideoText, { color: colors.textSecondary }]}>Ver tecnica</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -107,6 +124,24 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyRegular,
     fontSize: 14,
     lineHeight: 20,
+  },
+  videoButton: {
+    marginTop: 10,
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  videoButtonText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 14,
+  },
+  pressed: {
+    opacity: 0.82,
   },
   list: {
     paddingHorizontal: 20,
@@ -140,5 +175,17 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyRegular,
     fontSize: 13,
     lineHeight: 18,
+  },
+  variantVideoLink: {
+    marginTop: 4,
+    minHeight: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+  },
+  variantVideoText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
   },
 });

@@ -131,8 +131,11 @@ export interface TrainingDay {
   sessionFocus: string;
   // Solo presente si NO es dia de descanso. Lista de ejercicios planificados.
   plannedExercises: PlannedExercise[];
-  // Solo presente si NO es dia de descanso. Ids de los ejercicios completados.
+  // Ids de ejercicios cuyos sets estan TODOS marcados. Derivado de completedSets.
   completedExerciseIds: string[];
+  // Sets marcados por ejercicio. Las claves son exerciseId; el valor es un
+  // array de indices 0-based de los sets completados. Permite marcar serie a serie.
+  completedSets: Record<string, number[]>;
   // Color asociado (lo derivamos de la sesion). Se mantiene por compatibilidad visual.
   accentColor: string;
 }
@@ -141,7 +144,8 @@ export type TrainingActionFailure =
   | 'closed_missed'
   | 'closed_postponed'
   | 'not_today'
-  | 'already_completed';
+  | 'already_completed'
+  | 'exercise_already_started';
 
 // Un set registrado por el usuario durante la sesion
 export interface LoggedSet {

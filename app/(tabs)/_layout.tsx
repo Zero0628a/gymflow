@@ -96,7 +96,9 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                 styles.label,
                 { color },
               ]}
-              numberOfLines={1}>
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}>
               {label.toUpperCase()}
             </Text>
           </Pressable>
@@ -162,14 +164,19 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     flex: 1,
+    minWidth: 0,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    paddingHorizontal: 0,
   },
   label: {
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
+    width: '100%',
+    textAlign: 'center',
+    includeFontPadding: false,
   },
 });
