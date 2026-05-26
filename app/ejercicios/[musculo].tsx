@@ -14,7 +14,7 @@ import type { Exercise } from '@/types';
 export default function EjerciciosScreen() {
   const { musculo } = useLocalSearchParams<{ musculo: string }>();
   const colors = useGymColors();
-  const { getExercisesByMuscle, getMuscleById, loading } = useCatalog();
+  const { getExercisesByMuscle, getMuscleById, getVariantsByExercise, loading } = useCatalog();
 
   const muscle = getMuscleById(musculo ?? '');
   const lista = getExercisesByMuscle(musculo ?? '');
@@ -54,7 +54,9 @@ export default function EjerciciosScreen() {
       <FlatList
         data={lista}
         keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => <ExerciseRow item={item} index={index} />}
+        renderItem={({ item, index }) => (
+          <ExerciseRow item={item} index={index} variantCount={getVariantsByExercise(item.id).length} />
+        )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -71,8 +73,9 @@ export default function EjerciciosScreen() {
   );
 }
 
-function ExerciseRow({ item, index }: { item: Exercise; index: number }) {
+function ExerciseRow({ item, index, variantCount }: { item: Exercise; index: number; variantCount: number }) {
   const colors = useGymColors();
+  const variantLabel = variantCount === 1 ? '1 variante' : `${variantCount} variantes`;
 
   return (
     <Pressable
@@ -92,6 +95,10 @@ function ExerciseRow({ item, index }: { item: Exercise; index: number }) {
       <View style={styles.rowContent}>
         <Text style={[styles.rowTitle, { color: colors.textPrimary }]}>{item.name}</Text>
         <Text style={[styles.rowBody, { color: colors.textSecondary }]}>{item.description}</Text>
+        <View style={styles.rowMeta}>
+          <Text style={[styles.variantCount, { color: colors.accent }]}>{variantLabel}</Text>
+          <Text style={[styles.variantAction, { color: colors.textSecondary }]}>Ver alternativas</Text>
+        </View>
       </View>
 
       <Ionicons name="arrow-forward-outline" size={18} color={colors.textSecondary} />
@@ -161,7 +168,7 @@ const styles = StyleSheet.create({
   },
   rowContent: {
     flex: 1,
-    gap: 3,
+    gap: 5,
   },
   rowTitle: {
     fontFamily: Fonts.bodySemiBold,
@@ -171,5 +178,20 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodyRegular,
     fontSize: 13,
     lineHeight: 18,
+  },
+  rowMeta: {
+    marginTop: 3,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+  },
+  variantCount: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+  },
+  variantAction: {
+    fontFamily: Fonts.bodyRegular,
+    fontSize: 12,
   },
 });

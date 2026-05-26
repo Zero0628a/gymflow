@@ -16,6 +16,7 @@ import {
 
 import { db } from '@/lib/firebase';
 import { getMuscleImage } from '@/lib/catalog-assets';
+import { CACHE_SCOPES, loadCache, saveCache } from '@/lib/offline-cache';
 import {
   seedExercises,
   seedMuscles,
@@ -72,17 +73,36 @@ export function CatalogProvider({ children }: PropsWithChildren) {
       }
     }
 
+    // Pre-hidratacion: leer caches locales para mostrar contenido apenas se
+    // monta el provider. Si Firestore tiene datos frescos, sobreescriben al
+    // primer snapshot. Si no hay red, el usuario igual ve lo ultimo conocido.
+    let cancelled = false;
+    Promise.all([
+      loadCache<Muscle[]>(CACHE_SCOPES.muscles, null),
+      loadCache<Exercise[]>(CACHE_SCOPES.exercises, null),
+      loadCache<Variant[]>(CACHE_SCOPES.variants, null),
+      loadCache<Routine[]>(CACHE_SCOPES.routineTemplates, null),
+    ]).then(([cachedMuscles, cachedExercises, cachedVariants, cachedTemplates]) => {
+      if (cancelled) return;
+      if (cachedMuscles?.length) setMuscles(withMuscleImages(cachedMuscles));
+      if (cachedExercises?.length) setExercises(cachedExercises);
+      if (cachedVariants?.length) setVariants(cachedVariants);
+      if (cachedTemplates?.length) setRoutineTemplates(cachedTemplates);
+    });
+
     const unsubscribes = [
       onSnapshot(
         collection(db, 'muscles'),
         (snapshot) => {
           const remote = snapshot.docs.map(fromMuscleDoc).sort(bySortOrderThenName);
-          setMuscles(remote.length > 0 ? remote : withMuscleImages(seedMuscles));
+          const next = remote.length > 0 ? remote : withMuscleImages(seedMuscles);
+          setMuscles(next);
+          if (remote.length > 0) void saveCache(CACHE_SCOPES.muscles, null, remote);
           markReady('muscles');
         },
         (error) => {
           console.error('No se pudo cargar muscles:', error);
-          setMuscles(withMuscleImages(seedMuscles));
+          setMuscles((prev) => (prev.length > 0 ? prev : withMuscleImages(seedMuscles)));
           markReady('muscles');
         }
       ),
@@ -90,12 +110,14 @@ export function CatalogProvider({ children }: PropsWithChildren) {
         collection(db, 'exercises'),
         (snapshot) => {
           const remote = snapshot.docs.map(fromExerciseDoc).sort(bySortOrderThenName);
-          setExercises(remote.length > 0 ? remote : seedExercises);
+          const next = remote.length > 0 ? remote : seedExercises;
+          setExercises(next);
+          if (remote.length > 0) void saveCache(CACHE_SCOPES.exercises, null, remote);
           markReady('exercises');
         },
         (error) => {
           console.error('No se pudo cargar exercises:', error);
-          setExercises(seedExercises);
+          setExercises((prev) => (prev.length > 0 ? prev : seedExercises));
           markReady('exercises');
         }
       ),
@@ -103,12 +125,14 @@ export function CatalogProvider({ children }: PropsWithChildren) {
         collection(db, 'variants'),
         (snapshot) => {
           const remote = snapshot.docs.map(fromVariantDoc).sort(bySortOrderThenName);
-          setVariants(remote.length > 0 ? remote : seedVariants);
+          const next = remote.length > 0 ? remote : seedVariants;
+          setVariants(next);
+          if (remote.length > 0) void saveCache(CACHE_SCOPES.variants, null, remote);
           markReady('variants');
         },
         (error) => {
           console.error('No se pudo cargar variants:', error);
-          setVariants(seedVariants);
+          setVariants((prev) => (prev.length > 0 ? prev : seedVariants));
           markReady('variants');
         }
       ),
@@ -118,18 +142,21 @@ export function CatalogProvider({ children }: PropsWithChildren) {
           const remote = snapshot.docs.map(fromRoutineTemplateDoc).sort(bySortOrderThenName);
           // Fallback a seed local cuando Firestore no esta poblada todavia.
           // Garantiza que el onboarding tenga rutinas que ofrecer al primer usuario.
-          setRoutineTemplates(remote.length > 0 ? remote : seedRoutineTemplates);
+          const next = remote.length > 0 ? remote : seedRoutineTemplates;
+          setRoutineTemplates(next);
+          if (remote.length > 0) void saveCache(CACHE_SCOPES.routineTemplates, null, remote);
           markReady('templates');
         },
         (error) => {
           console.error('No se pudo cargar routine_templates:', error);
-          setRoutineTemplates(seedRoutineTemplates);
+          setRoutineTemplates((prev) => (prev.length > 0 ? prev : seedRoutineTemplates));
           markReady('templates');
         }
       ),
     ];
 
     return () => {
+      cancelled = true;
       unsubscribes.forEach((unsubscribe) => unsubscribe());
     };
   }, []);
@@ -151,7 +178,44 @@ export function CatalogProvider({ children }: PropsWithChildren) {
         return exercises.find((exercise) => exercise.id === exerciseId);
       },
       getVariantsByExercise(exerciseId: string) {
-        return variants.filter((variant) => variant.exerciseId === exerciseId);
+        const explicit = variants.filter((variant) => variant.exerciseId === exerciseId);
+        if (explicit.length > 0) return explicit;
+
+        // Fallback: si el ejercicio no tiene variantes propias, ofrecer otros
+        // ejercicios del mismo musculo como sustitutos (ej: si no hay maquina,
+        // mostrar alternativas con otro equipamiento que trabajen lo mismo).
+        const origin = exercises.find((exercise) => exercise.id === exerciseId);
+        if (!origin) return [];
+
+        const originEquipment = new Set(origin.equipment ?? []);
+        const sameMuscle = exercises.filter(
+          (exercise) => exercise.muscleId === origin.muscleId && exercise.id !== exerciseId
+        );
+
+        // Priorizamos los que tienen al menos un equipamiento distinto (mayor
+        // chance de servir como sustituto real cuando falta la maquina).
+        const ranked = sameMuscle
+          .map((exercise) => {
+            const equipment = exercise.equipment ?? [];
+            const hasAlternativeEquipment =
+              equipment.length === 0 ||
+              equipment.some((tag) => !originEquipment.has(tag));
+            return { exercise, hasAlternativeEquipment };
+          })
+          .sort((left, right) => {
+            if (left.hasAlternativeEquipment !== right.hasAlternativeEquipment) {
+              return left.hasAlternativeEquipment ? -1 : 1;
+            }
+            return (left.exercise.sortOrder ?? 0) - (right.exercise.sortOrder ?? 0);
+          });
+
+        return ranked.slice(0, 5).map(({ exercise }) => ({
+          id: `auto-${exercise.id}`,
+          exerciseId,
+          name: exercise.name,
+          description: exercise.description,
+          sortOrder: exercise.sortOrder,
+        }));
       },
       async seedCatalog() {
         const batch = writeBatch(db);
@@ -181,6 +245,7 @@ export function CatalogProvider({ children }: PropsWithChildren) {
             exerciseId: variant.exerciseId,
             name: variant.name,
             description: variant.description,
+            replacementExerciseId: variant.replacementExerciseId ?? null,
             sortOrder: variant.sortOrder ?? 0,
           });
         });
@@ -273,6 +338,7 @@ function fromVariantDoc(snapshot: QueryDocumentSnapshot): Variant {
     exerciseId: typeof data.exerciseId === 'string' ? data.exerciseId : '',
     name: typeof data.name === 'string' ? data.name : 'Variante',
     description: typeof data.description === 'string' ? data.description : '',
+    replacementExerciseId: typeof data.replacementExerciseId === 'string' ? data.replacementExerciseId : undefined,
     sortOrder: typeof data.sortOrder === 'number' ? data.sortOrder : undefined,
   };
 }

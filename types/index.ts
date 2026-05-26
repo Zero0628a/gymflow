@@ -33,6 +33,7 @@ export interface Variant {
   exerciseId: string;
   name: string;
   description: string;
+  replacementExerciseId?: string;
   sortOrder?: number;
 }
 
@@ -51,6 +52,8 @@ export type RoutineSplit =
 
 export interface PlannedExercise {
   exerciseId: string;
+  originalExerciseId?: string;
+  replacementName?: string;
   sets: number;
   reps: string;
   rest?: string;
@@ -145,6 +148,7 @@ export interface LoggedSet {
   setNumber: number;
   weight?: number;
   reps: number;
+  rpe?: number;
 }
 
 // Todos los sets de un ejercicio en un dia dado
@@ -152,5 +156,21 @@ export interface ExerciseLog {
   exerciseId: string;
   dateKey: string;
   sets: LoggedSet[];
+  note?: string;
   updatedAt: string;
+}
+
+export interface WorkoutSession {
+  id: string;
+  dateKey: string;
+  status: Extract<TrainingDayStatus, 'partial' | 'completed' | 'postponed' | 'missed'>;
+  completedExerciseIds: string[];
+  completedAt?: string;
+  postponedAt?: string;
+  routineId?: string;
+  routineName?: string;
+  sessionLabel?: string;
+  sessionFocus?: string;
+  plannedExercises: PlannedExercise[];
+  updatedAt?: string;
 }

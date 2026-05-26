@@ -21,6 +21,20 @@ export type PersistedTrainingDay = {
   plannedExercises?: PlannedExercise[];
 };
 
+export type PersistedWorkoutSession = {
+  dateKey: string;
+  status: Extract<TrainingDayStatus, 'partial' | 'completed' | 'postponed' | 'missed'>;
+  completedExerciseIds: string[];
+  completedAt?: string;
+  postponedAt?: string;
+  routineId?: string;
+  routineName?: string;
+  sessionLabel?: string;
+  sessionFocus?: string;
+  plannedExercises?: PlannedExercise[];
+  updatedAt?: string;
+};
+
 export type TrainingCalendarStore = {
   version: 1;
   days: Record<string, PersistedTrainingDay>;
