@@ -49,10 +49,19 @@ type TrainingContextValue = {
   exerciseLogs: Record<string, ExerciseLog>;
   getTrainingDay: (dateKey: string) => TrainingDay | null;
   toggleExercise: (dateKey: string, exerciseId: string) => Promise<TrainingActionFailure | null>;
+  toggleSet: (
+    dateKey: string,
+    exerciseId: string,
+    setIndex: number
+  ) => Promise<TrainingActionFailure | null>;
   replaceExercise: (
     dateKey: string,
     currentExerciseId: string,
     replacement: { exerciseId: string; name: string }
+  ) => Promise<TrainingActionFailure | null>;
+  revertExerciseReplacement: (
+    dateKey: string,
+    currentExerciseId: string
   ) => Promise<TrainingActionFailure | null>;
   saveExerciseLog: (
     dateKey: string,
@@ -299,56 +308,67 @@ export function TrainingProvider({ children }: PropsWithChildren) {
         if (!user) return 'not_today';
         if (dateKey !== currentTodayKey) return 'not_today';
 
-        // Resuelvo el dia de hoy con la rutina activa para validar
         const dayResolved = resolveDay(now);
 
         if (dayResolved.status === 'rest') return 'not_today';
         if (dayResolved.status === 'postponed') return 'closed_postponed';
         if (dayResolved.status === 'missed') return 'closed_missed';
 
-        // Validar que el exerciseId pertenezca al plan del dia
-        const isPlanned = dayResolved.plannedExercises.some((ex) => ex.exerciseId === exerciseId);
-        if (!isPlanned) return 'not_today';
+        const planned = dayResolved.plannedExercises.find((ex) => ex.exerciseId === exerciseId);
+        if (!planned) return 'not_today';
 
-        const existing = store.days[dateKey];
-        const completedExerciseIds = existing?.completedExerciseIds ?? [];
-        const nextExerciseIds = completedExerciseIds.includes(exerciseId)
-          ? completedExerciseIds.filter((id) => id !== exerciseId)
-          : [...completedExerciseIds, exerciseId];
+        // toggleExercise marca/desmarca TODOS los sets de un ejercicio de una.
+        // Sigue funcionando como atajo (ej. tap en el icono de checkmark global).
+        const totalSets = Math.max(planned.sets ?? 1, 1);
+        const currentSets = dayResolved.completedSets[exerciseId] ?? [];
+        const allDone = currentSets.length >= totalSets;
+        const nextSetsForExercise = allDone
+          ? []
+          : Array.from({ length: totalSets }, (_, index) => index);
 
-        const totalPlanned = dayResolved.plannedExercises.length;
-        const nextStatus =
-          nextExerciseIds.length === 0
-            ? 'pending'
-            : nextExerciseIds.length >= totalPlanned
-              ? 'completed'
-              : 'partial';
-
-        await setDoc(
-          doc(db, 'users', user.uid, 'training_days', dateKey),
-          {
-            dateKey,
-            status: nextStatus,
-            completedExerciseIds: nextExerciseIds,
-            completedAt: nextStatus === 'completed' ? new Date().toISOString() : null,
-            postponedAt: null,
-            ...buildTrainingDaySnapshot(dayResolved, scheduledRoutine),
-            updatedAt: new Date().toISOString(),
+        return persistDayUpdate({
+          uid: user.uid,
+          dateKey,
+          dayResolved,
+          activeRoutine: scheduledRoutine,
+          completedSets: {
+            ...dayResolved.completedSets,
+            [exerciseId]: nextSetsForExercise,
           },
-          { merge: true }
-        );
+        });
+      },
+      async toggleSet(dateKey, exerciseId, setIndex) {
+        if (!user) return 'not_today';
+        if (dateKey !== currentTodayKey) return 'not_today';
 
-        if (nextStatus === 'pending') {
-          await deleteDoc(doc(db, 'users', user.uid, 'workout_sessions', dateKey));
-        } else {
-          await upsertWorkoutSession(user.uid, {
-            ...dayResolved,
-            status: nextStatus,
-            completedExerciseIds: nextExerciseIds,
-          });
-        }
+        const dayResolved = resolveDay(now);
 
-        return null;
+        if (dayResolved.status === 'rest') return 'not_today';
+        if (dayResolved.status === 'postponed') return 'closed_postponed';
+        if (dayResolved.status === 'missed') return 'closed_missed';
+
+        const planned = dayResolved.plannedExercises.find((ex) => ex.exerciseId === exerciseId);
+        if (!planned) return 'not_today';
+
+        const totalSets = Math.max(planned.sets ?? 1, 1);
+        if (setIndex < 0 || setIndex >= totalSets) return 'not_today';
+
+        const currentSets = dayResolved.completedSets[exerciseId] ?? [];
+        const wasMarked = currentSets.includes(setIndex);
+        const nextSetsForExercise = wasMarked
+          ? currentSets.filter((value) => value !== setIndex)
+          : [...currentSets, setIndex].sort((a, b) => a - b);
+
+        return persistDayUpdate({
+          uid: user.uid,
+          dateKey,
+          dayResolved,
+          activeRoutine: scheduledRoutine,
+          completedSets: {
+            ...dayResolved.completedSets,
+            [exerciseId]: nextSetsForExercise,
+          },
+        });
       },
       async replaceExercise(dateKey, currentExerciseId, replacement) {
         if (!user) return 'not_today';
@@ -358,6 +378,8 @@ export function TrainingProvider({ children }: PropsWithChildren) {
         if (dayResolved.status === 'rest') return 'not_today';
         if (dayResolved.status === 'postponed') return 'closed_postponed';
         if (dayResolved.status === 'missed') return 'closed_missed';
+        if (dayResolved.status === 'completed') return 'already_completed';
+        if ((dayResolved.completedSets[currentExerciseId] ?? []).length > 0) return 'exercise_already_started';
 
         const plannedExercises = dayResolved.plannedExercises.map((exercise) => {
           if (exercise.exerciseId !== currentExerciseId) return exercise;
@@ -370,42 +392,63 @@ export function TrainingProvider({ children }: PropsWithChildren) {
           };
         });
 
-        const wasCompleted = dayResolved.completedExerciseIds.includes(currentExerciseId);
-        const completedExerciseIds = dayResolved.completedExerciseIds.map((id) =>
-          id === currentExerciseId ? replacement.exerciseId : id
-        );
-
-        const nextStatus =
-          completedExerciseIds.length === 0
-            ? 'pending'
-            : completedExerciseIds.length >= plannedExercises.length
-              ? 'completed'
-              : 'partial';
-
-        await setDoc(
-          doc(db, 'users', user.uid, 'training_days', dateKey),
-          {
-            dateKey,
-            status: nextStatus,
-            completedExerciseIds,
-            completedAt: nextStatus === 'completed' ? new Date().toISOString() : null,
-            postponedAt: null,
-            ...buildTrainingDaySnapshot({ ...dayResolved, plannedExercises, completedExerciseIds }, scheduledRoutine),
-            updatedAt: new Date().toISOString(),
-          },
-          { merge: true }
-        );
-
-        if (wasCompleted && nextStatus !== 'pending') {
-          await upsertWorkoutSession(user.uid, {
-            ...dayResolved,
-            status: nextStatus,
-            plannedExercises,
-            completedExerciseIds,
-          });
+        // Renombrar la clave de completedSets para que siga apuntando al
+        // mismo ejercicio (preservamos los sets ya marcados aunque se reemplace).
+        const nextCompletedSets: Record<string, number[]> = {};
+        for (const [exerciseId, marks] of Object.entries(dayResolved.completedSets)) {
+          const key = exerciseId === currentExerciseId ? replacement.exerciseId : exerciseId;
+          nextCompletedSets[key] = marks;
         }
 
-        return null;
+        return persistDayUpdate({
+          uid: user.uid,
+          dateKey,
+          dayResolved: { ...dayResolved, plannedExercises },
+          activeRoutine: scheduledRoutine,
+          completedSets: nextCompletedSets,
+        });
+      },
+      async revertExerciseReplacement(dateKey, currentExerciseId) {
+        if (!user) return 'not_today';
+        if (dateKey !== currentTodayKey) return 'not_today';
+
+        const dayResolved = resolveDay(now);
+        if (dayResolved.status === 'rest') return 'not_today';
+        if (dayResolved.status === 'postponed') return 'closed_postponed';
+        if (dayResolved.status === 'missed') return 'closed_missed';
+        if (dayResolved.status === 'completed') return 'already_completed';
+        if ((dayResolved.completedSets[currentExerciseId] ?? []).length > 0) return 'exercise_already_started';
+
+        const replacement = dayResolved.plannedExercises.find(
+          (exercise) => exercise.exerciseId === currentExerciseId && exercise.originalExerciseId
+        );
+        const originalExerciseId = replacement?.originalExerciseId;
+        if (!originalExerciseId) return null;
+
+        const plannedExercises = dayResolved.plannedExercises.map((exercise) => {
+          if (exercise.exerciseId !== currentExerciseId) return exercise;
+
+          const { originalExerciseId: _original, replacementName: _replacement, ...rest } = exercise;
+          return {
+            ...rest,
+            exerciseId: originalExerciseId,
+          };
+        });
+
+        const nextCompletedSets: Record<string, number[]> = {};
+        for (const [exerciseId, marks] of Object.entries(dayResolved.completedSets)) {
+          const key = exerciseId === currentExerciseId ? originalExerciseId : exerciseId;
+          const existing = nextCompletedSets[key] ?? [];
+          nextCompletedSets[key] = [...new Set([...existing, ...marks])].sort((a, b) => a - b);
+        }
+
+        return persistDayUpdate({
+          uid: user.uid,
+          dateKey,
+          dayResolved: { ...dayResolved, plannedExercises },
+          activeRoutine: scheduledRoutine,
+          completedSets: nextCompletedSets,
+        });
       },
       async saveExerciseLog(dateKey, exerciseId, input) {
         if (!user) return 'not_today';
@@ -437,30 +480,22 @@ export function TrainingProvider({ children }: PropsWithChildren) {
           { merge: true }
         );
 
-        const isPlanned = dayResolved.plannedExercises.some((exercise) => exercise.exerciseId === exerciseId);
-        if (isPlanned && !dayResolved.completedExerciseIds.includes(exerciseId)) {
-          const completedExerciseIds = [...dayResolved.completedExerciseIds, exerciseId];
-          const nextStatus =
-            completedExerciseIds.length >= dayResolved.plannedExercises.length ? 'completed' : 'partial';
+        const planned = dayResolved.plannedExercises.find((exercise) => exercise.exerciseId === exerciseId);
+        if (planned && !dayResolved.completedExerciseIds.includes(exerciseId)) {
+          // Guardar series implica que el ejercicio quedo cumplido: marcamos
+          // todos sus sets como completos en completedSets.
+          const totalSets = Math.max(planned.sets ?? 1, 1);
+          const nextSetsForExercise = Array.from({ length: totalSets }, (_, index) => index);
 
-          await setDoc(
-            doc(db, 'users', user.uid, 'training_days', dateKey),
-            {
-              dateKey,
-              status: nextStatus,
-              completedExerciseIds,
-              completedAt: nextStatus === 'completed' ? new Date().toISOString() : null,
-              postponedAt: null,
-              ...buildTrainingDaySnapshot(dayResolved, scheduledRoutine),
-              updatedAt: new Date().toISOString(),
+          await persistDayUpdate({
+            uid: user.uid,
+            dateKey,
+            dayResolved,
+            activeRoutine: scheduledRoutine,
+            completedSets: {
+              ...dayResolved.completedSets,
+              [exerciseId]: nextSetsForExercise,
             },
-            { merge: true }
-          );
-
-          await upsertWorkoutSession(user.uid, {
-            ...dayResolved,
-            status: nextStatus,
-            completedExerciseIds,
           });
         }
 
@@ -483,6 +518,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             dateKey,
             status: 'postponed',
             completedExerciseIds: [],
+            completedSets: {},
             completedAt: null,
             postponedAt: new Date().toISOString(),
             ...buildTrainingDaySnapshot(dayResolved, scheduledRoutine),
@@ -495,6 +531,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
           ...dayResolved,
           status: 'postponed',
           completedExerciseIds: [],
+          completedSets: {},
           postponedAt: new Date().toISOString(),
         });
 
@@ -513,6 +550,7 @@ export function TrainingProvider({ children }: PropsWithChildren) {
             dateKey,
             status: 'pending',
             completedExerciseIds: [],
+            completedSets: {},
             completedAt: null,
             postponedAt: null,
             ...buildTrainingDaySnapshot(resolveDay(now), scheduledRoutine),
@@ -558,6 +596,7 @@ function fromTrainingDayDoc(snapshot: QueryDocumentSnapshot) {
         ? data.status
         : 'pending',
     completedExerciseIds: Array.isArray(data.completedExerciseIds) ? data.completedExerciseIds : [],
+    completedSets: parseCompletedSets(data.completedSets),
     completedAt: typeof data.completedAt === 'string' ? data.completedAt : undefined,
     postponedAt: typeof data.postponedAt === 'string' ? data.postponedAt : undefined,
     routineId: typeof data.routineId === 'string' ? data.routineId : undefined,
@@ -582,6 +621,7 @@ function fromWorkoutSessionDoc(snapshot: QueryDocumentSnapshot): PersistedWorkou
     dateKey: typeof data.dateKey === 'string' ? data.dateKey : snapshot.id,
     status,
     completedExerciseIds: Array.isArray(data.completedExerciseIds) ? data.completedExerciseIds : [],
+    completedSets: parseCompletedSets(data.completedSets),
     completedAt: typeof data.completedAt === 'string' ? data.completedAt : undefined,
     postponedAt: typeof data.postponedAt === 'string' ? data.postponedAt : undefined,
     routineId: typeof data.routineId === 'string' ? data.routineId : undefined,
@@ -591,6 +631,19 @@ function fromWorkoutSessionDoc(snapshot: QueryDocumentSnapshot): PersistedWorkou
     plannedExercises: parsePlannedExercises(data.plannedExercises),
     updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : undefined,
   };
+}
+
+function parseCompletedSets(value: unknown): Record<string, number[]> | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const out: Record<string, number[]> = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!Array.isArray(raw)) continue;
+    const indexes = raw
+      .filter((entry): entry is number => typeof entry === 'number' && Number.isFinite(entry) && entry >= 0)
+      .map((entry) => Math.floor(entry));
+    out[key] = Array.from(new Set(indexes)).sort((a, b) => a - b);
+  }
+  return out;
 }
 
 function buildTrainingDaySnapshot(day: TrainingDay, activeRoutine: Routine | null) {
@@ -619,6 +672,7 @@ async function upsertWorkoutSession(
       dateKey: day.dateKey,
       status: day.status,
       completedExerciseIds: day.completedExerciseIds,
+      completedSets: day.completedSets ?? {},
       completedAt: day.status === 'completed' ? day.completedAt ?? now : null,
       postponedAt: day.status === 'postponed' ? day.postponedAt ?? now : null,
       routineId: day.routineId ?? null,
@@ -668,6 +722,66 @@ function sanitizePlannedExercises(exercises: PlannedExercise[]): PlannedExercise
     ...(exercise.rest ? { rest: exercise.rest } : {}),
     ...(exercise.note ? { note: exercise.note } : {}),
   }));
+}
+
+// Centraliza la escritura de un dia despues de modificar completedSets.
+// Calcula status nuevo, escribe training_days, y crea/borra workout_sessions
+// segun el caso. Devuelve null en exito, TrainingActionFailure si falla.
+async function persistDayUpdate(input: {
+  uid: string;
+  dateKey: string;
+  dayResolved: TrainingDay;
+  activeRoutine: Routine | null;
+  completedSets: Record<string, number[]>;
+}): Promise<TrainingActionFailure | null> {
+  const { uid, dateKey, dayResolved, activeRoutine, completedSets } = input;
+  const planned = dayResolved.plannedExercises;
+
+  const nextCompletedIds = planned
+    .filter((exercise) => {
+      const marked = completedSets[exercise.exerciseId];
+      if (!marked) return false;
+      return marked.length >= Math.max(exercise.sets ?? 1, 1);
+    })
+    .map((exercise) => exercise.exerciseId);
+
+  const anySetMarked = Object.values(completedSets).some((sets) => sets.length > 0);
+
+  const nextStatus: 'pending' | 'partial' | 'completed' = !anySetMarked
+    ? 'pending'
+    : planned.length > 0 && nextCompletedIds.length >= planned.length
+      ? 'completed'
+      : 'partial';
+
+  const now = new Date().toISOString();
+
+  await setDoc(
+    doc(db, 'users', uid, 'training_days', dateKey),
+    {
+      dateKey,
+      status: nextStatus,
+      completedExerciseIds: nextCompletedIds,
+      completedSets,
+      completedAt: nextStatus === 'completed' ? now : null,
+      postponedAt: null,
+      ...buildTrainingDaySnapshot(dayResolved, activeRoutine),
+      updatedAt: now,
+    },
+    { merge: true }
+  );
+
+  if (nextStatus === 'pending') {
+    await deleteDoc(doc(db, 'users', uid, 'workout_sessions', dateKey));
+  } else {
+    await upsertWorkoutSession(uid, {
+      ...dayResolved,
+      status: nextStatus,
+      completedExerciseIds: nextCompletedIds,
+      completedSets,
+    });
+  }
+
+  return null;
 }
 
 function getPostponedSessionOffset(

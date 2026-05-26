@@ -12,6 +12,9 @@ export type PersistedTrainingDay = {
   dateKey: string;
   status: Exclude<TrainingDayStatus, 'missed' | 'rest'> | 'pending';
   completedExerciseIds: string[];
+  // Sets marcados por ejercicio (exerciseId -> indices 0-based). Opcional para
+  // ser compatible con docs antiguos que solo guardaban completedExerciseIds.
+  completedSets?: Record<string, number[]>;
   completedAt?: string;
   postponedAt?: string;
   routineId?: string;
@@ -25,6 +28,7 @@ export type PersistedWorkoutSession = {
   dateKey: string;
   status: Extract<TrainingDayStatus, 'partial' | 'completed' | 'postponed' | 'missed'>;
   completedExerciseIds: string[];
+  completedSets?: Record<string, number[]>;
   completedAt?: string;
   postponedAt?: string;
   routineId?: string;
@@ -201,6 +205,9 @@ export function resolveTrainingDay(input: {
       ? persisted.status
       : 'rest';
 
+    const fallbackPlanned = persisted?.plannedExercises ?? [];
+    const fallbackSets = expandCompletedSets(persisted, fallbackPlanned);
+
     return {
       dateKey,
       dayLabel,
@@ -215,8 +222,9 @@ export function resolveTrainingDay(input: {
       routineName: persisted?.routineName,
       sessionLabel: 'Sin rutina activa',
       sessionFocus: '',
-      plannedExercises: persisted?.plannedExercises ?? [],
-      completedExerciseIds: persisted?.completedExerciseIds ?? [],
+      plannedExercises: fallbackPlanned,
+      completedExerciseIds: deriveCompletedExerciseIds(fallbackPlanned, fallbackSets),
+      completedSets: fallbackSets,
       accentColor: '#2F6BFF',
     };
   }
@@ -239,6 +247,7 @@ export function resolveTrainingDay(input: {
       sessionFocus: 'Dia de recuperacion',
       plannedExercises: [],
       completedExerciseIds: [],
+      completedSets: {},
       accentColor: '#2F6BFF',
     };
   }
@@ -250,21 +259,23 @@ export function resolveTrainingDay(input: {
       : undefined;
 
   const plannedExercises: PlannedExercise[] = persisted?.plannedExercises ?? planDay?.exercises ?? [];
-  const completedExerciseIds = persisted?.completedExerciseIds ?? [];
+  const completedSets = expandCompletedSets(persisted, plannedExercises);
+  const completedExerciseIds = deriveCompletedExerciseIds(plannedExercises, completedSets);
 
   // Status:
   //   - postponed se mantiene si esta persistido
-  //   - completed cuando completedExerciseIds.length === plannedExercises.length (TODOS)
-  //   - partial cuando hay algunos pero no todos
+  //   - completed cuando TODOS los ejercicios tienen todos sus sets marcados
+  //   - partial si hay al menos un set marcado pero no todo
   //   - pending por defecto
-  //   - missed solo si la fecha ya paso y no se complete ni se pospuso
+  //   - missed solo si la fecha ya paso y no se completo ni se pospuso
+  const anySetMarked = Object.values(completedSets).some((sets) => sets.length > 0);
   let status: TrainingDayStatus = 'pending';
 
   if (persisted?.status === 'postponed') {
     status = 'postponed';
   } else if (plannedExercises.length > 0 && completedExerciseIds.length >= plannedExercises.length) {
     status = 'completed';
-  } else if (completedExerciseIds.length > 0) {
+  } else if (anySetMarked) {
     status = 'partial';
   } else {
     status = 'pending';
@@ -290,8 +301,48 @@ export function resolveTrainingDay(input: {
     sessionFocus: persisted?.sessionFocus ?? planDay?.focus ?? '',
     plannedExercises,
     completedExerciseIds,
+    completedSets,
     accentColor: '#2F6BFF',
   };
+}
+
+// Reconstruye completedSets a partir del estado persistido. Si el doc viejo
+// tenia solo completedExerciseIds (sin completedSets), asumimos que todos los
+// sets de ese ejercicio estan marcados (compat con sesiones antiguas).
+function expandCompletedSets(
+  persisted: PersistedTrainingDay | PersistedWorkoutSession | undefined,
+  planned: PlannedExercise[]
+): Record<string, number[]> {
+  const out: Record<string, number[]> = {};
+
+  if (persisted?.completedSets) {
+    for (const [exerciseId, indexes] of Object.entries(persisted.completedSets)) {
+      out[exerciseId] = Array.isArray(indexes) ? [...indexes].sort((a, b) => a - b) : [];
+    }
+  }
+
+  const completedIds = persisted?.completedExerciseIds ?? [];
+  for (const exerciseId of completedIds) {
+    if (out[exerciseId] && out[exerciseId].length > 0) continue;
+    const plan = planned.find((exercise) => exercise.exerciseId === exerciseId);
+    const totalSets = plan?.sets ?? 1;
+    out[exerciseId] = Array.from({ length: totalSets }, (_, index) => index);
+  }
+
+  return out;
+}
+
+function deriveCompletedExerciseIds(
+  planned: PlannedExercise[],
+  completedSets: Record<string, number[]>
+): string[] {
+  return planned
+    .filter((exercise) => {
+      const marked = completedSets[exercise.exerciseId];
+      if (!marked) return false;
+      return marked.length >= (exercise.sets ?? 1);
+    })
+    .map((exercise) => exercise.exerciseId);
 }
 
 // =============================================================

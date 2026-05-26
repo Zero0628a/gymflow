@@ -30,7 +30,7 @@ export function Badge({ children, variant = 'default', style }: BadgeProps) {
       v.border ? { borderWidth: 1.5, borderColor: v.border } : undefined,
       style,
     ]}>
-      <Text style={[styles.text, { color: v.text }]}>{children}</Text>
+      <Text style={[styles.text, { color: v.text }]} numberOfLines={1}>{children}</Text>
     </View>
   );
 }
@@ -38,9 +38,12 @@ export function Badge({ children, variant = 'default', style }: BadgeProps) {
 const styles = StyleSheet.create({
   base: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
+    minWidth: 92,
+    paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 6,
+    flexShrink: 0,
+    alignItems: 'center',
   },
   text: {
     fontFamily: Fonts.bodyBold,

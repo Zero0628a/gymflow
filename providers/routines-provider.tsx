@@ -331,6 +331,7 @@ async function resetTrainingDaysForUser(uid: string) {
           dateKey: typeof data.dateKey === 'string' ? data.dateKey : item.id,
           status,
           completedExerciseIds: Array.isArray(data.completedExerciseIds) ? data.completedExerciseIds : [],
+          completedSets: data.completedSets && typeof data.completedSets === 'object' ? data.completedSets : {},
           completedAt: typeof data.completedAt === 'string' ? data.completedAt : null,
           postponedAt: typeof data.postponedAt === 'string' ? data.postponedAt : null,
           routineId: typeof data.routineId === 'string' ? data.routineId : null,
