@@ -547,7 +547,7 @@ function ExerciseRow({
           <Text style={[styles.exerciseName, { color: colors.textPrimary }]} numberOfLines={2}>
             {exerciseName}
           </Text>
-          <Ionicons name="logo-youtube" size={16} color={colors.danger} />
+          <Ionicons name="logo-youtube" size={16} color={colors.danger} style={styles.videoIcon} />
         </Pressable>
 
         {/* Fila 2: meta + (si aplica) revertir */}
@@ -931,14 +931,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     lineHeight: 19,
     textAlign: 'left',
+    minWidth: 0,
+    maxWidth: '88%',
     flexShrink: 1,
   },
   nameWrap: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
     gap: 6,
     alignSelf: 'stretch',
+  },
+  videoIcon: {
+    marginTop: 2,
+    flexShrink: 0,
   },
   revertInline: {
     fontFamily: Fonts.bodySemiBold,
