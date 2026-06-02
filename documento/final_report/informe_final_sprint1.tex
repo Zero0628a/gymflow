@@ -111,9 +111,44 @@ Funcionamiento sin conexión & Visualización de datos cacheados, aviso de ausen
 \label{tab:plan-pruebas}
 \end{table}
 
-\subsection{Resultados Obtenidos}
+Las pruebas confirmaron que las funcionalidades documentadas en las historias HU-01 a HU-26 se encuentran implementadas y operativas. Los resultados se analizan a continuación en términos de funcionalidad, rendimiento y escalabilidad.
 
-Las pruebas confirmaron que las funcionalidades documentadas en las historias HU-01 a HU-26 se encuentran implementadas y operativas. El flujo principal del producto ---consultar músculos, ejercicios y variantes para mantener la continuidad del entrenamiento--- funciona de forma coherente con el problema del dominio. La ejecución de sesiones, el registro de series y el cálculo automático del estado de cada día (pendiente, parcial o completado) respondieron correctamente a los criterios de aceptación. Asimismo, la aplicación mantuvo disponible la información principal del usuario en condiciones de ausencia de conexión, sincronizando los datos al restablecerse la red.
+\subsubsection{Funcionalidad}
+
+El flujo principal del producto ---consultar músculos, ejercicios y variantes para mantener la continuidad del entrenamiento--- funciona de forma coherente con el problema del dominio. La ejecución de sesiones, el registro de series y el cálculo automático del estado de cada día (pendiente, parcial o completado) respondieron correctamente a los criterios de aceptación. La Tabla \ref{tab:casos-prueba} resume algunos casos de prueba representativos y su resultado.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{0.9cm} Y L{2.1cm}}
+\toprule
+\gymtableheaderrow
+\gymth{Caso} & \gymth{Descripción de la prueba} & \gymth{Resultado} \\
+\midrule
+CP-01 & Registro e inicio de sesión con correo y con Google. & Satisfactorio \\
+CP-02 & Bloqueo de acceso con credenciales inválidas. & Satisfactorio \\
+CP-03 & Onboarding completo y sugerencia de rutina según el perfil. & Satisfactorio \\
+CP-04 & Consulta de variantes cuando el ejercicio no tiene alternativas propias. & Satisfactorio \\
+CP-05 & Creación, edición, activación y eliminación de rutinas. & Satisfactorio \\
+CP-06 & Marcado de series y cálculo del estado del día. & Satisfactorio \\
+CP-07 & Registro de peso, repeticiones y RPE por serie. & Satisfactorio \\
+CP-08 & Reemplazo y posposición de la sesión del día. & Satisfactorio \\
+CP-09 & Consulta de datos con la aplicación sin conexión. & Satisfactorio \\
+CP-10 & Sincronización de cambios al recuperar la conexión. & Satisfactorio \\
+\bottomrule
+\end{tabularx}
+\caption{Casos de prueba representativos y su resultado}
+\label{tab:casos-prueba}
+\end{table}
+
+\subsubsection{Rendimiento}
+
+La estrategia \textit{offline-first} permite que la información del usuario y el catálogo se muestren de inmediato desde la caché local al abrir la aplicación, mientras Firestore sincroniza los datos en segundo plano. Esto mantuvo los tiempos de respuesta de las consultas de músculos, ejercicios, variantes y rutinas por debajo del umbral establecido en los requerimientos no funcionales, incluso en condiciones de conexión inestable propias del entorno de un gimnasio.
+
+\subsubsection{Escalabilidad}
+
+El modelo de datos separa el catálogo global de la información personal de cada usuario, almacenada bajo su propio identificador. Esta organización permite incorporar nuevos músculos, ejercicios, variantes y rutinas prediseñadas, así como aumentar el número de usuarios, sin afectar la estructura ni el rendimiento de las consultas existentes, ya que cada usuario solo lee y escribe su propia información.
 
 \subsection{Mejoras Propuestas}
 
@@ -128,5 +163,19 @@ GymFlow alcanzó una versión funcional que cubre de extremo a extremo el proble
 \subsection{Recomendaciones}
 
 Se recomienda mantener la documentación alineada con la evolución del código, priorizando la incorporación de pruebas automatizadas y del panel de administración del catálogo. También se aconseja aprovechar la información ya registrada por los usuarios (series, pesos y RPE) para ofrecer análisis de progreso, dado que constituye un valor diferencial respecto de aplicaciones de fitness genéricas y refuerza el objetivo central del proyecto.
+
+\section{Bibliografía}
+
+\begin{itemize}[leftmargin=1.6em]
+\item Meta Platforms, Inc. (2026). \textit{React Native --- Learn once, write anywhere}. Recuperado de \url{https://reactnative.dev/}
+\item Expo. (2026). \textit{Expo Documentation}. Recuperado de \url{https://docs.expo.dev/}
+\item Expo. (2026). \textit{Expo Router --- File-based routing for React Native}. Recuperado de \url{https://docs.expo.dev/router/introduction/}
+\item Google LLC. (2026). \textit{Firebase Documentation}. Recuperado de \url{https://firebase.google.com/docs}
+\item Google LLC. (2026). \textit{Cloud Firestore --- Firebase}. Recuperado de \url{https://firebase.google.com/docs/firestore}
+\item Google LLC. (2026). \textit{Firebase Authentication}. Recuperado de \url{https://firebase.google.com/docs/auth}
+\item Schwaber, K., \& Sutherland, J. (2020). \textit{La Guía de Scrum}. Recuperado de \url{https://scrumguides.org/}
+\item Microsoft. (2026). \textit{TypeScript Documentation}. Recuperado de \url{https://www.typescriptlang.org/docs/}
+\item Git. (2026). \textit{Git --- Sistema de control de versiones distribuido}. Recuperado de \url{https://git-scm.com/doc}
+\end{itemize}
 
 \end{document}

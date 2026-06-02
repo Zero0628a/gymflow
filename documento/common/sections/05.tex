@@ -118,28 +118,6 @@ Sprint 4 & HU-11 a HU-26 & Consolidar el acceso con Google, el perfil personaliz
 \caption{Sprint Backlog resumido del proyecto GymFlow}
 \end{table}
 
-\subsection{Tecnologías utilizadas}
-
-\begin{table}[H]
-\centering
-\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
-\arrayrulecolor{gymblue}
-\begin{tabularx}{0.92\textwidth}{L{4.2cm} Y}
-\toprule
-\gymtableheaderrow
-\gymth{Componente} & \gymth{Tecnología utilizada} \\
-\midrule
-Frontend & React Native con Expo Router \\
-Servicios backend & Firebase \\
-Autenticación & Firebase Authentication \\
-Base de datos principal & Cloud Firestore \\
-Persistencia complementaria & Realtime Database \\
-Almacenamiento de archivos & Firebase Storage \\
-\bottomrule
-\end{tabularx}
-\caption{Tecnologías utilizadas en el sistema GymFlow}
-\end{table}
-
 \subsection{Herramientas de Gestión}
 
 Para la organización del proyecto se utilizan herramientas que permiten planificar el trabajo, coordinar tareas y documentar decisiones del equipo.
@@ -291,17 +269,17 @@ Con el fin de formalizar el backlog del proyecto, cada historia de usuario se do
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-01 \\
-Titulo & Registro de usuarios \\
+Título & Registro de usuarios \\
 Sprint & Sprint 1 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario nuevo, quiero registrarme mediante un formulario de creación de cuenta para comenzar a utilizar GymFlow. \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario nuevo, quiero registrarme mediante un formulario de creación de cuenta para comenzar a utilizar GymFlow. \\
 Tareas & \storyitems{\item Diseñar la pantalla de registro.\item Definir los campos obligatorios del formulario.\item Integrar el registro con Firebase Authentication.\item Mostrar mensajes de exito o error al usuario.} \\
-Criterios de aceptacion & \storyitems{\item El sistema debe permitir ingresar los datos minimos para crear una cuenta.\item Debe informarse al usuario si el registro fue exitoso o si ocurrio un error.\item La cuenta registrada debe quedar lista para autenticarse.} \\
+Criterios de aceptación & \storyitems{\item El sistema debe permitir ingresar los datos minimos para crear una cuenta.\item Debe informarse al usuario si el registro fue exitoso o si ocurrio un error.\item La cuenta registrada debe quedar lista para autenticarse.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-01}
@@ -314,7 +292,7 @@ Criterios de aceptacion & \storyitems{\item El sistema debe permitir ingresar lo
 \label{fig:hu01-mockup}
 \end{figure}
 
-\subsubsection{HU-02 Inicio de sesion}
+\subsubsection{HU-02 Inicio de sesión}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -325,17 +303,17 @@ Criterios de aceptacion & \storyitems{\item El sistema debe permitir ingresar lo
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-02 \\
-Titulo & Inicio de sesion \\
+Título & Inicio de sesión \\
 Sprint & Sprint 1 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario registrado, quiero iniciar sesion de forma segura con mi correo y contraseña para acceder a mi informacion personal. \\
-Tareas & \storyitems{\item Diseñar la pantalla de inicio de sesion.\item Integrar autenticacion con correo y contraseña.\item Validar credenciales y manejo de errores.\item Redirigir al usuario autenticado al flujo principal.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder iniciar sesion con credenciales validas.\item El sistema debe impedir el acceso con credenciales incorrectas.\item Tras autenticarse, el usuario debe acceder al flujo principal.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario registrado, quiero iniciar sesión de forma segura con mi correo y contraseña para acceder a mi información personal. \\
+Tareas & \storyitems{\item Diseñar la pantalla de inicio de sesión.\item Integrar autenticación con correo y contraseña.\item Validar credenciales y manejo de errores.\item Redirigir al usuario autenticado al flujo principal.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder iniciar sesión con credenciales validas.\item El sistema debe impedir el acceso con credenciales incorrectas.\item Tras autenticarse, el usuario debe acceder al flujo principal.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-02}
@@ -359,17 +337,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder iniciar sesion
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-03 \\
-Titulo & Acceso a pantalla principal \\
+Título & Acceso a pantalla principal \\
 Sprint & Sprint 1 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 2 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero ingresar a una pantalla principal clara despues del acceso para navegar rapidamente hacia las funciones de entrenamiento. \\
-Tareas & \storyitems{\item Diseñar la pantalla principal.\item Organizar accesos a los modulos clave.\item Conectar la navegacion inicial con login y registro.\item Validar coherencia con los mockups definidos.} \\
-Criterios de aceptacion & \storyitems{\item La pantalla posterior al acceso debe mostrar las opciones principales.\item La navegacion inicial debe ser clara y consistente con el diseño.\item El usuario debe poder avanzar hacia la consulta de musculos o rutinas sin pasos innecesarios.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero ingresar a una pantalla principal clara después del acceso para navegar rapidamente hacia las funciones de entrenamiento. \\
+Tareas & \storyitems{\item Diseñar la pantalla principal.\item Organizar accesos a los modulos clave.\item Conectar la navegación inicial con login y registro.\item Validar coherencia con los mockups definidos.} \\
+Criterios de aceptación & \storyitems{\item La pantalla posterior al acceso debe mostrar las opciones principales.\item La navegación inicial debe ser clara y consistente con el diseño.\item El usuario debe poder avanzar hacia la consulta de músculos o rutinas sin pasos innecesarios.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-03}
@@ -393,23 +371,23 @@ Criterios de aceptacion & \storyitems{\item La pantalla posterior al acceso debe
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-04 \\
-Titulo & Consulta de grupos musculares \\
+Título & Consulta de grupos musculares \\
 Sprint & Sprint 2 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero visualizar los principales grupos musculares para seleccionar con rapidez la zona que deseo entrenar. \\
-Tareas & \storyitems{\item Preparar el catalogo base de grupos musculares.\item Diseñar la pantalla de listado de musculos.\item Conectar la consulta con la fuente de datos.\item Validar claridad de la informacion presentada.} \\
-Criterios de aceptacion & \storyitems{\item La aplicacion debe mostrar una lista de grupos musculares disponibles.\item Cada grupo muscular debe poder seleccionarse desde la interfaz.\item La informacion mostrada debe ser comprensible para usuarios principiantes e intermedios.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero visualizar los principales grupos musculares para seleccionar con rapidez la zona que deseo entrenar. \\
+Tareas & \storyitems{\item Preparar el catalogo base de grupos musculares.\item Diseñar la pantalla de listado de músculos.\item Conectar la consulta con la fuente de datos.\item Validar claridad de la información presentada.} \\
+Criterios de aceptación & \storyitems{\item La aplicación debe mostrar una lista de grupos musculares disponibles.\item Cada grupo muscular debe poder seleccionarse desde la interfaz.\item La información mostrada debe ser comprensible para usuarios principiantes e intermedios.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-04}
 \end{table}
 
-\subsubsection{HU-05 Consulta de ejercicios por musculo}
+\subsubsection{HU-05 Consulta de ejercicios por músculo}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -420,17 +398,17 @@ Criterios de aceptacion & \storyitems{\item La aplicacion debe mostrar una lista
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-05 \\
-Titulo & Consulta de ejercicios por musculo \\
+Título & Consulta de ejercicios por músculo \\
 Sprint & Sprint 2 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero consultar los ejercicios asociados a un musculo especifico para organizar mejor mi sesion de entrenamiento. \\
-Tareas & \storyitems{\item Asociar ejercicios a cada grupo muscular.\item Diseñar la vista de ejercicios por musculo.\item Cargar datos segun la seleccion del usuario.\item Verificar correspondencia entre musculo y ejercicios.} \\
-Criterios de aceptacion & \storyitems{\item Al seleccionar un musculo, el sistema debe mostrar sus ejercicios asociados.\item La lista de ejercicios debe corresponder al grupo muscular elegido.\item El usuario debe poder continuar desde esa lista hacia la consulta de variantes.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero consultar los ejercicios asociados a un músculo especifico para organizar mejor mi sesión de entrenamiento. \\
+Tareas & \storyitems{\item Asociar ejercicios a cada grupo muscular.\item Diseñar la vista de ejercicios por músculo.\item Cargar datos segun la selección del usuario.\item Verificar correspondencia entre músculo y ejercicios.} \\
+Criterios de aceptación & \storyitems{\item Al seleccionar un músculo, el sistema debe mostrar sus ejercicios asociados.\item La lista de ejercicios debe corresponder al grupo muscular elegido.\item El usuario debe poder continuar desde esa lista hacia la consulta de variantes.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-05}
@@ -447,23 +425,23 @@ Criterios de aceptacion & \storyitems{\item Al seleccionar un musculo, el sistem
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-06 \\
-Titulo & Consulta de variantes \\
+Título & Consulta de variantes \\
 Sprint & Sprint 2 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 4 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero ver variantes o ejercicios alternativos cuando una maquina este ocupada para mantener la continuidad de mi rutina. \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero ver variantes o ejercicios alternativos cuando una máquina este ocupada para mantener la continuidad de mi rutina. \\
 Tareas & \storyitems{\item Definir variantes por ejercicio.\item Diseñar la pantalla de alternativas.\item Conectar el flujo desde ejercicios hacia variantes.\item Validar que las alternativas correspondan al mismo trabajo muscular.} \\
-Criterios de aceptacion & \storyitems{\item Al seleccionar un ejercicio, el sistema debe mostrar alternativas funcionales para el mismo musculo.\item Las variantes deben presentarse de forma clara y util.\item El flujo debe responder al problema principal de continuidad de la rutina.} \\
+Criterios de aceptación & \storyitems{\item Al seleccionar un ejercicio, el sistema debe mostrar alternativas funcionales para el mismo músculo.\item Las variantes deben presentarse de forma clara y util.\item El flujo debe responder al problema principal de continuidad de la rutina.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-06}
 \end{table}
 
-\subsubsection{HU-07 Creacion de rutinas personalizadas}
+\subsubsection{HU-07 Creación de rutinas personalizadas}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -474,17 +452,17 @@ Criterios de aceptacion & \storyitems{\item Al seleccionar un ejercicio, el sist
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-07 \\
-Titulo & Creacion de rutinas personalizadas \\
+Título & Creación de rutinas personalizadas \\
 Sprint & Sprint 3 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 5 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero crear rutinas de entrenamiento personalizadas seleccionando musculos y ejercicios para adaptar la aplicacion a mis objetivos. \\
-Tareas & \storyitems{\item Diseñar el flujo de creacion de rutina.\item Permitir seleccionar ejercicios.\item Permitir asignar nombre o referencia a la rutina.\item Validar usabilidad del proceso de creacion.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder seleccionar ejercicios para componer una rutina propia.\item La rutina debe permitir identificarse mediante un nombre o referencia.\item El flujo de creacion debe ser entendible y consistente con el diseño de la aplicacion.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero crear rutinas de entrenamiento personalizadas seleccionando músculos y ejercicios para adaptar la aplicación a mis objetivos. \\
+Tareas & \storyitems{\item Diseñar el flujo de creación de rutina.\item Permitir seleccionar ejercicios.\item Permitir asignar nombre o referencia a la rutina.\item Validar usabilidad del proceso de creación.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder seleccionar ejercicios para componer una rutina propia.\item La rutina debe permitir identificarse mediante un nombre o referencia.\item El flujo de creación debe ser entendible y consistente con el diseño de la aplicación.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-07}
@@ -501,23 +479,23 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder seleccionar ej
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-08 \\
-Titulo & Guardado de rutinas \\
+Título & Guardado de rutinas \\
 Sprint & Sprint 3 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero guardar mis rutinas para utilizarlas posteriormente sin tener que configurarlas nuevamente. \\
-Tareas & \storyitems{\item Definir la estructura de almacenamiento de rutinas.\item Persistir rutinas por usuario.\item Confirmar guardado exitoso.\item Verificar recuperacion posterior de la informacion.} \\
-Criterios de aceptacion & \storyitems{\item El sistema debe almacenar la rutina creada por el usuario.\item La rutina guardada debe permanecer asociada a la cuenta correspondiente.\item El usuario debe poder reutilizar esa rutina en un acceso posterior.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero guardar mis rutinas para utilizarlas posteriormente sin tener que configurarlas nuevamente. \\
+Tareas & \storyitems{\item Definir la estructura de almacenamiento de rutinas.\item Persistir rutinas por usuario.\item Confirmar guardado exitoso.\item Verificar recuperacion posterior de la información.} \\
+Criterios de aceptación & \storyitems{\item El sistema debe almacenar la rutina creada por el usuario.\item La rutina guardada debe permanecer asociada a la cuenta correspondiente.\item El usuario debe poder reutilizar esa rutina en un acceso posterior.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-08}
 \end{table}
 
-\subsubsection{HU-09 Gestion de rutinas guardadas}
+\subsubsection{HU-09 Gestión de rutinas guardadas}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -528,17 +506,17 @@ Criterios de aceptacion & \storyitems{\item El sistema debe almacenar la rutina 
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-09 \\
-Titulo & Gestion de rutinas guardadas \\
+Título & Gestión de rutinas guardadas \\
 Sprint & Sprint 3 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero consultar y gestionar mis rutinas guardadas para editar, reutilizar o reorganizar mi planificacion de entrenamiento. \\
-Tareas & \storyitems{\item Diseñar la pantalla de listado de rutinas.\item Mostrar detalle de cada rutina guardada.\item Permitir revision y reorganizacion de la informacion.\item Mantener trazabilidad de cambios por usuario.} \\
-Criterios de aceptacion & \storyitems{\item El sistema debe mostrar la lista de rutinas guardadas por el usuario.\item El usuario debe poder consultar los detalles de cada rutina almacenada.\item La gestion de rutinas debe permitir al menos revisar y reorganizar la informacion guardada.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero consultar y gestionar mis rutinas guardadas para editar, reutilizar o reorganizar mi planificación de entrenamiento. \\
+Tareas & \storyitems{\item Diseñar la pantalla de listado de rutinas.\item Mostrar detalle de cada rutina guardada.\item Permitir revision y reorganizacion de la información.\item Mantener trazabilidad de cambios por usuario.} \\
+Criterios de aceptación & \storyitems{\item El sistema debe mostrar la lista de rutinas guardadas por el usuario.\item El usuario debe poder consultar los detalles de cada rutina almacenada.\item La gestión de rutinas debe permitir al menos revisar y reorganizar la información guardada.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-09}
@@ -555,23 +533,23 @@ Criterios de aceptacion & \storyitems{\item El sistema debe mostrar la lista de 
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-10 \\
-Titulo & Rutinas prediseñadas \\
+Título & Rutinas prediseñadas \\
 Sprint & Sprint 3 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 2 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 14 de abril de 2026 \\
-Descripcion & Como usuario, quiero acceder a rutinas prediseñadas para disponer de una guia rapida cuando no tenga una rutina propia definida. \\
-Tareas & \storyitems{\item Definir un conjunto base de rutinas prediseñadas.\item Diseñar la vista de consulta de rutinas sugeridas.\item Relacionar las rutinas con musculos y ejercicios definidos.\item Permitir su seleccion como apoyo para el entrenamiento.} \\
-Criterios de aceptacion & \storyitems{\item La aplicacion debe ofrecer un conjunto basico de rutinas prediseñadas.\item El usuario debe poder visualizarlas y seleccionarlas como apoyo.\item Las rutinas prediseñadas deben ser coherentes con los grupos musculares y ejercicios definidos en el sistema.} \\
+Versión & 1.0.0 \\
+Última edición & 14 de abril de 2026 \\
+Descripción & Como usuario, quiero acceder a rutinas prediseñadas para disponer de una guía rápida cuando no tenga una rutina propia definida. \\
+Tareas & \storyitems{\item Definir un conjunto base de rutinas prediseñadas.\item Diseñar la vista de consulta de rutinas sugeridas.\item Relacionar las rutinas con músculos y ejercicios definidos.\item Permitir su selección como apoyo para el entrenamiento.} \\
+Criterios de aceptación & \storyitems{\item La aplicación debe ofrecer un conjunto basico de rutinas prediseñadas.\item El usuario debe poder visualizarlas y seleccionarlas como apoyo.\item Las rutinas prediseñadas deben ser coherentes con los grupos musculares y ejercicios definidos en el sistema.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-10}
 \end{table}
 
-\subsubsection{HU-11 Inicio de sesion con Google}
+\subsubsection{HU-11 Inicio de sesión con Google}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -582,17 +560,17 @@ Criterios de aceptacion & \storyitems{\item La aplicacion debe ofrecer un conjun
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-11 \\
-Titulo & Inicio de sesion con Google \\
+Título & Inicio de sesión con Google \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero iniciar sesion con mi cuenta de Google para acceder a la aplicacion de forma rapida sin recordar otra contraseña. \\
-Tareas & \storyitems{\item Integrar el inicio de sesion de Google con Firebase Authentication.\item Configurar el cliente de Google Sign-In con el identificador web.\item Convertir el token de Google en una credencial valida para Firebase.\item Manejar la cancelacion del usuario y los errores de acceso.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder autenticarse seleccionando una cuenta de Google.\item La sesion con Google debe quedar asociada al mismo flujo de usuario que el acceso con correo.\item Si el usuario cancela el acceso, el sistema no debe mostrar un error inesperado.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero iniciar sesión con mi cuenta de Google para acceder a la aplicación de forma rápida sin recordar otra contraseña. \\
+Tareas & \storyitems{\item Integrar el inicio de sesión de Google con Firebase Authentication.\item Configurar el cliente de Google Sign-In con el identificador web.\item Convertir el token de Google en una credencial valida para Firebase.\item Manejar la cancelación del usuario y los errores de acceso.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder autenticarse seleccionando una cuenta de Google.\item La sesión con Google debe quedar asociada al mismo flujo de usuario que el acceso con correo.\item Si el usuario cancela el acceso, el sistema no debe mostrar un error inesperado.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-11}
@@ -609,17 +587,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder autenticarse s
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-12 \\
-Titulo & Configuracion inicial del perfil (onboarding) \\
+Título & Configuracion inicial del perfil (onboarding) \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 5 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario nuevo, quiero responder unas pocas preguntas sobre mi objetivo, nivel, dias disponibles y equipamiento para recibir rutinas que se ajusten a mi situacion. \\
-Tareas & \storyitems{\item Diseñar el flujo guiado de cinco pasos (objetivo, nivel, dias, equipamiento y eleccion de rutina).\item Guardar el perfil del usuario con sus preferencias.\item Sugerir rutinas prediseñadas acordes al perfil indicado.\item Activar la rutina elegida y marcar el onboarding como completado.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder avanzar y retroceder entre los pasos del onboarding.\item Las rutinas sugeridas deben corresponder al objetivo, nivel, dias y equipamiento elegidos.\item Al finalizar, el perfil debe quedar guardado y la rutina seleccionada debe quedar activa.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario nuevo, quiero responder unas pocas preguntas sobre mi objetivo, nivel, días disponibles y equipamiento para recibir rutinas que se ajusten a mi situacion. \\
+Tareas & \storyitems{\item Diseñar el flujo guiado de cinco pasos (objetivo, nivel, días, equipamiento y eleccion de rutina).\item Guardar el perfil del usuario con sus preferencias.\item Sugerir rutinas prediseñadas acordes al perfil indicado.\item Activar la rutina elegida y marcar el onboarding como completado.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder avanzar y retroceder entre los pasos del onboarding.\item Las rutinas sugeridas deben corresponder al objetivo, nivel, días y equipamiento elegidos.\item Al finalizar, el perfil debe quedar guardado y la rutina seleccionada debe quedar activa.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-12}
@@ -636,23 +614,23 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder avanzar y retr
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-13 \\
-Titulo & Edicion del perfil y preferencias \\
+Título & Edicion del perfil y preferencias \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero modificar mi objetivo, nivel, dias disponibles y equipamiento desde la pantalla de perfil para mantener la aplicacion alineada con mis necesidades actuales. \\
-Tareas & \storyitems{\item Mostrar los datos del usuario (nombre, correo y foto) en la pantalla de perfil.\item Permitir editar objetivo, nivel, dias de entrenamiento y equipamiento.\item Guardar los cambios de forma automatica con retroalimentacion al usuario.\item Reflejar las preferencias actualizadas en la planificacion del entrenamiento.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder cambiar cualquiera de sus preferencias y verlas reflejadas.\item Los cambios deben guardarse sin requerir un boton de confirmacion explicito.\item Si el guardado falla, el sistema debe informarlo al usuario.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero modificar mi objetivo, nivel, días disponibles y equipamiento desde la pantalla de perfil para mantener la aplicación alineada con mis necesidades actuales. \\
+Tareas & \storyitems{\item Mostrar los datos del usuario (nombre, correo y foto) en la pantalla de perfil.\item Permitir editar objetivo, nivel, días de entrenamiento y equipamiento.\item Guardar los cambios de forma automatica con retroalimentación al usuario.\item Reflejar las preferencias actualizadas en la planificación del entrenamiento.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder cambiar cualquiera de sus preferencias y verlas reflejadas.\item Los cambios deben guardarse sin requerir un boton de confirmacion explicito.\item Si el guardado falla, el sistema debe informarlo al usuario.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-13}
 \end{table}
 
-\subsubsection{HU-14 Cierre de sesion}
+\subsubsection{HU-14 Cierre de sesión}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -663,17 +641,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder cambiar cualqu
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-14 \\
-Titulo & Cierre de sesion \\
+Título & Cierre de sesión \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 1 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero cerrar mi sesion desde la pantalla de perfil para proteger mi cuenta cuando dejo de usar la aplicacion. \\
-Tareas & \storyitems{\item Agregar la accion de cierre de sesion en la pantalla de perfil.\item Cerrar la sesion de Firebase y de Google al salir.\item Redirigir al usuario al flujo de acceso tras cerrar sesion.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder cerrar sesion desde la pantalla de perfil.\item Tras cerrar sesion, no debe poder accederse a la informacion personal sin volver a autenticarse.\item El cierre de sesion debe cubrir tanto el acceso con correo como el acceso con Google.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero cerrar mi sesión desde la pantalla de perfil para proteger mi cuenta cuando dejo de usar la aplicación. \\
+Tareas & \storyitems{\item Agregar la accion de cierre de sesión en la pantalla de perfil.\item Cerrar la sesión de Firebase y de Google al salir.\item Redirigir al usuario al flujo de acceso tras cerrar sesión.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder cerrar sesión desde la pantalla de perfil.\item Tras cerrar sesión, no debe poder accederse a la información personal sin volver a autenticarse.\item El cierre de sesión debe cubrir tanto el acceso con correo como el acceso con Google.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-14}
@@ -690,17 +668,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder cerrar sesion 
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-15 \\
-Titulo & Activacion de rutina y ciclo semanal \\
+Título & Activacion de rutina y ciclo semanal \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 4 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero activar una rutina para que se convierta en mi plan vigente y se inicie un nuevo ciclo semanal de entrenamiento. \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero activar una rutina para que se convierta en mi plan vigente y se inicie un nuevo ciclo semanal de entrenamiento. \\
 Tareas & \storyitems{\item Permitir marcar una rutina como activa.\item Asegurar que solo exista una rutina activa a la vez.\item Registrar la fecha de inicio del ciclo de la rutina activa.\item Reiniciar el calendario de la semana al activar una nueva rutina.} \\
-Criterios de aceptacion & \storyitems{\item Al activar una rutina, cualquier otra rutina activa debe dejar de estarlo.\item El sistema debe registrar el inicio del ciclo para calcular las sesiones de la semana.\item El calendario de entrenamiento debe reflejar la rutina recien activada.} \\
+Criterios de aceptación & \storyitems{\item Al activar una rutina, cualquier otra rutina activa debe dejar de estarlo.\item El sistema debe registrar el inicio del ciclo para calcular las sesiones de la semana.\item El calendario de entrenamiento debe reflejar la rutina recien activada.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-15}
@@ -717,17 +695,17 @@ Criterios de aceptacion & \storyitems{\item Al activar una rutina, cualquier otr
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-16 \\
-Titulo & Edicion de rutinas \\
+Título & Edicion de rutinas \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero editar una rutina existente para ajustar su nombre, ejercicios y dias de entrenamiento sin tener que crearla de nuevo. \\
-Tareas & \storyitems{\item Diseñar la pantalla de edicion de rutina.\item Permitir modificar nombre, ejercicios y dias por semana.\item Recalcular la planificacion semanal al guardar los cambios.\item Reiniciar el ciclo de la semana si la rutina editada estaba activa.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder modificar los datos de una rutina guardada.\item Los cambios deben persistir y reflejarse al volver a consultar la rutina.\item Si la rutina editada estaba activa, el calendario debe actualizarse en consecuencia.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero editar una rutina existente para ajustar su nombre, ejercicios y días de entrenamiento sin tener que crearla de nuevo. \\
+Tareas & \storyitems{\item Diseñar la pantalla de edición de rutina.\item Permitir modificar nombre, ejercicios y días por semana.\item Recalcular la planificación semanal al guardar los cambios.\item Reiniciar el ciclo de la semana si la rutina editada estaba activa.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder modificar los datos de una rutina guardada.\item Los cambios deben persistir y reflejarse al volver a consultar la rutina.\item Si la rutina editada estaba activa, el calendario debe actualizarse en consecuencia.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-16}
@@ -744,17 +722,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder modificar los 
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-17 \\
-Titulo & Duplicar, archivar y eliminar rutinas \\
+Título & Duplicar, archivar y eliminar rutinas \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero duplicar, archivar o eliminar mis rutinas para organizar mi coleccion de planes segun los uso. \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero duplicar, archivar o eliminar mis rutinas para organizar mi coleccion de planes segun los uso. \\
 Tareas & \storyitems{\item Permitir duplicar una rutina como copia editable.\item Permitir archivar rutinas que ya no se usan de forma activa.\item Permitir eliminar definitivamente una rutina.\item Mantener la consistencia del estado de la rutina activa al realizar estas acciones.} \\
-Criterios de aceptacion & \storyitems{\item Al duplicar una rutina se debe crear una copia independiente del original.\item Las rutinas archivadas deben dejar de aparecer como opciones activas.\item La eliminacion debe quitar la rutina del listado del usuario.} \\
+Criterios de aceptación & \storyitems{\item Al duplicar una rutina se debe crear una copia independiente del original.\item Las rutinas archivadas deben dejar de aparecer como opciones activas.\item La eliminacion debe quitar la rutina del listado del usuario.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-17}
@@ -771,17 +749,17 @@ Criterios de aceptacion & \storyitems{\item Al duplicar una rutina se debe crear
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-18 \\
-Titulo & Planificacion automatica de la rutina semanal \\
+Título & Planificacion automatica de la rutina semanal \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 5 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero que la aplicacion distribuya automaticamente los ejercicios de mi rutina en sesiones segun los dias que puedo entrenar para no tener que organizarlas manualmente. \\
-Tareas & \storyitems{\item Generar un plan semanal a partir de los ejercicios y los dias de entrenamiento.\item Asignar series, repeticiones y enfoque muscular a cada sesion.\item Adaptar el plan a los dias de la semana realmente seleccionados por el usuario.\item Mantener coherencia entre la rutina activa y la distribucion de sesiones.} \\
-Criterios de aceptacion & \storyitems{\item La rutina activa debe distribuirse en la cantidad de sesiones correspondiente a los dias elegidos.\item Cada sesion debe presentar sus ejercicios con series y repeticiones definidas.\item El plan debe ajustarse cuando el usuario cambia sus dias disponibles.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero que la aplicación distribuya automaticamente los ejercicios de mi rutina en sesiones segun los días que puedo entrenar para no tener que organizarlas manualmente. \\
+Tareas & \storyitems{\item Generar un plan semanal a partir de los ejercicios y los días de entrenamiento.\item Asignar series, repeticiones y enfoque muscular a cada sesión.\item Adaptar el plan a los días de la semana realmente seleccionados por el usuario.\item Mantener coherencia entre la rutina activa y la distribución de sesiones.} \\
+Criterios de aceptación & \storyitems{\item La rutina activa debe distribuirse en la cantidad de sesiones correspondiente a los días elegidos.\item Cada sesión debe presentar sus ejercicios con series y repeticiones definidas.\item El plan debe ajustarse cuando el usuario cambia sus días disponibles.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-18}
@@ -798,23 +776,23 @@ Criterios de aceptacion & \storyitems{\item La rutina activa debe distribuirse e
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-19 \\
-Titulo & Calendario semanal de entrenamiento \\
+Título & Calendario semanal de entrenamiento \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 4 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero ver mi semana de entrenamiento con los dias de sesion y de descanso para saber que me toca entrenar cada dia. \\
-Tareas & \storyitems{\item Construir la vista semanal de lunes a domingo.\item Diferenciar dias de sesion, de descanso, completados, parciales y no realizados.\item Resaltar el dia actual y la sesion correspondiente.\item Derivar el estado de cada dia a partir del ciclo de la rutina activa.} \\
-Criterios de aceptacion & \storyitems{\item El calendario debe mostrar claramente que dias son de entrenamiento y cuales de descanso.\item El dia actual debe identificarse de forma destacada.\item El estado de cada dia debe reflejar el avance real de la sesion.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero ver mi semana de entrenamiento con los días de sesión y de descanso para saber que me toca entrenar cada dia. \\
+Tareas & \storyitems{\item Construir la vista semanal de lunes a domingo.\item Diferenciar días de sesión, de descanso, completados, parciales y no realizados.\item Resaltar el dia actual y la sesión correspondiente.\item Derivar el estado de cada dia a partir del ciclo de la rutina activa.} \\
+Criterios de aceptación & \storyitems{\item El calendario debe mostrar claramente que días son de entrenamiento y cuales de descanso.\item El dia actual debe identificarse de forma destacada.\item El estado de cada dia debe reflejar el avance real de la sesión.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-19}
 \end{table}
 
-\subsubsection{HU-20 Ejecucion de la sesion: marcar series y ejercicios}
+\subsubsection{HU-20 Ejecucion de la sesión: marcar series y ejercicios}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -825,17 +803,17 @@ Criterios de aceptacion & \storyitems{\item El calendario debe mostrar clarament
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-20 \\
-Titulo & Ejecucion de la sesion: marcar series y ejercicios \\
+Título & Ejecucion de la sesión: marcar series y ejercicios \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 5 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero marcar mis series y ejercicios como realizados durante la sesion del dia para llevar el control de mi avance en tiempo real. \\
-Tareas & \storyitems{\item Permitir marcar y desmarcar series individuales por ejercicio.\item Permitir marcar un ejercicio completo de una sola accion.\item Calcular el estado del dia (pendiente, parcial o completado) segun las series marcadas.\item Restringir el marcado al dia actual y a dias no cerrados.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder marcar series una a una y ver el progreso del ejercicio.\item Un dia debe quedar completado cuando todos sus ejercicios estan marcados.\item No debe permitirse marcar series en dias de descanso, pospuestos o no realizados.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero marcar mis series y ejercicios como realizados durante la sesión del dia para llevar el control de mi avance en tiempo real. \\
+Tareas & \storyitems{\item Permitir marcar y desmarcar series individuales por ejercicio.\item Permitir marcar un ejercicio completo de una sola accion.\item Calcular el estado del dia (pendiente, parcial o completado) segun las series marcadas.\item Restringir el marcado al dia actual y a días no cerrados.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder marcar series una a una y ver el progreso del ejercicio.\item Un dia debe quedar completado cuando todos sus ejercicios estan marcados.\item No debe permitirse marcar series en días de descanso, pospuestos o no realizados.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-20}
@@ -852,23 +830,23 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder marcar series 
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-21 \\
-Titulo & Registro de series con peso, repeticiones y RPE \\
+Título & Registro de series con peso, repeticiones y RPE \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 4 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero registrar el peso, las repeticiones y el esfuerzo (RPE) de cada serie para llevar un seguimiento detallado de mi rendimiento. \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero registrar el peso, las repeticiones y el esfuerzo (RPE) de cada serie para llevar un seguimiento detallado de mi rendimiento. \\
 Tareas & \storyitems{\item Permitir capturar peso, repeticiones y RPE por serie.\item Validar y filtrar los datos invalidos antes de guardarlos.\item Asociar el registro al ejercicio y al dia correspondiente.\item Marcar el ejercicio como cumplido al guardar sus series.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder registrar las series de un ejercicio con sus datos numericos.\item Solo deben guardarse las series con repeticiones validas.\item Al guardar las series, el ejercicio debe quedar marcado como realizado.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder registrar las series de un ejercicio con sus datos numericos.\item Solo deben guardarse las series con repeticiones validas.\item Al guardar las series, el ejercicio debe quedar marcado como realizado.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-21}
 \end{table}
 
-\subsubsection{HU-22 Reemplazo de un ejercicio durante la sesion}
+\subsubsection{HU-22 Reemplazo de un ejercicio durante la sesión}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -879,17 +857,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder registrar las 
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-22 \\
-Titulo & Reemplazo de un ejercicio durante la sesion \\
+Título & Reemplazo de un ejercicio durante la sesión \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 4 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero reemplazar un ejercicio de la sesion del dia por una alternativa cuando la maquina esta ocupada para no detener mi entrenamiento, y poder revertir el cambio. \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero reemplazar un ejercicio de la sesión del dia por una alternativa cuando la máquina esta ocupada para no detener mi entrenamiento, y poder revertir el cambio. \\
 Tareas & \storyitems{\item Permitir sustituir un ejercicio planificado por una variante o alternativa.\item Conservar el ejercicio original para poder revertir el reemplazo.\item Impedir el reemplazo cuando el ejercicio ya fue iniciado o el dia esta cerrado.\item Preservar las series marcadas al cambiar de ejercicio.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder cambiar un ejercicio de la sesion por una alternativa valida.\item El sistema debe permitir volver al ejercicio original.\item No debe permitirse reemplazar ejercicios ya iniciados o en dias cerrados.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder cambiar un ejercicio de la sesión por una alternativa valida.\item El sistema debe permitir volver al ejercicio original.\item No debe permitirse reemplazar ejercicios ya iniciados o en días cerrados.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-22}
@@ -906,17 +884,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder cambiar un eje
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-23 \\
-Titulo & Posponer un dia de entrenamiento \\
+Título & Posponer un dia de entrenamiento \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero posponer la sesion del dia cuando no puedo entrenar para que mi planificacion semanal se reacomode sin perder la sesion. \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero posponer la sesión del dia cuando no puedo entrenar para que mi planificación semanal se reacomode sin perder la sesión. \\
 Tareas & \storyitems{\item Permitir marcar el dia actual como pospuesto.\item Desplazar las sesiones siguientes del ciclo al posponer un dia.\item Permitir deshacer la accion de posponer.\item Registrar el dia pospuesto en el seguimiento del usuario.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder posponer la sesion del dia actual.\item Al posponer, las sesiones posteriores deben reacomodarse en el ciclo.\item El usuario debe poder deshacer el posponer mientras corresponda.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder posponer la sesión del dia actual.\item Al posponer, las sesiones posteriores deben reacomodarse en el ciclo.\item El usuario debe poder deshacer el posponer mientras corresponda.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-23}
@@ -933,23 +911,23 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder posponer la se
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-24 \\
-Titulo & Historial detallado de entrenamientos \\
+Título & Historial detallado de entrenamientos \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero consultar el historial de mis sesiones con su estado y las series registradas para revisar mi progreso a lo largo del tiempo. \\
-Tareas & \storyitems{\item Construir la lista de sesiones realizadas, pospuestas y no realizadas.\item Mostrar el estado y la fecha de cada sesion.\item Incluir las series registradas (peso, repeticiones y notas) de cada ejercicio.\item Presentar un resumen de sesiones completadas, pospuestas y perdidas.} \\
-Criterios de aceptacion & \storyitems{\item El historial debe listar las sesiones con su estado y fecha.\item El usuario debe poder ver el detalle de las series registradas en cada sesion.\item El resumen debe reflejar las sesiones completadas, pospuestas y no realizadas.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero consultar el historial de mis sesiones con su estado y las series registradas para revisar mi progreso a lo largo del tiempo. \\
+Tareas & \storyitems{\item Construir la lista de sesiones realizadas, pospuestas y no realizadas.\item Mostrar el estado y la fecha de cada sesión.\item Incluir las series registradas (peso, repeticiones y notas) de cada ejercicio.\item Presentar un resumen de sesiones completadas, pospuestas y perdidas.} \\
+Criterios de aceptación & \storyitems{\item El historial debe listar las sesiones con su estado y fecha.\item El usuario debe poder ver el detalle de las series registradas en cada sesión.\item El resumen debe reflejar las sesiones completadas, pospuestas y no realizadas.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-24}
 \end{table}
 
-\subsubsection{HU-25 Consulta de la tecnica del ejercicio}
+\subsubsection{HU-25 Consulta de la técnica del ejercicio}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -960,23 +938,23 @@ Criterios de aceptacion & \storyitems{\item El historial debe listar las sesione
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-25 \\
-Titulo & Consulta de la tecnica del ejercicio \\
+Título & Consulta de la técnica del ejercicio \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 1 \\
 Prioridad & Baja \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero abrir una busqueda de video de la tecnica de un ejercicio para aprender a ejecutarlo correctamente. \\
-Tareas & \storyitems{\item Agregar la accion de ver tecnica en la pantalla de variantes.\item Construir la busqueda de video a partir del nombre del ejercicio.\item Abrir la busqueda en la aplicacion de video externa.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder abrir una busqueda de video desde el ejercicio.\item La busqueda debe corresponder al ejercicio consultado.\item La accion debe abrir el contenido en el servicio de video externo.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero abrir una busqueda de video de la técnica de un ejercicio para aprender a ejecutarlo correctamente. \\
+Tareas & \storyitems{\item Agregar la accion de ver técnica en la pantalla de variantes.\item Construir la busqueda de video a partir del nombre del ejercicio.\item Abrir la busqueda en la aplicación de video externa.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder abrir una busqueda de video desde el ejercicio.\item La busqueda debe corresponder al ejercicio consultado.\item La accion debe abrir el contenido en el servicio de video externo.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-25}
 \end{table}
 
-\subsubsection{HU-26 Funcionamiento sin conexion y sincronizacion}
+\subsubsection{HU-26 Funcionamiento sin conexion y sincronización}
 \begin{table}[H]
 \centering
 \rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
@@ -987,17 +965,17 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder abrir una busq
 \gymth{Campo} & \gymth{Detalle} \\
 \midrule
 Identificador & HU-26 \\
-Titulo & Funcionamiento sin conexion y sincronizacion \\
+Título & Funcionamiento sin conexion y sincronización \\
 Sprint & Sprint 4 \\
 Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 5 \\
 Prioridad & Alta \\
-Version & 1.0.0 \\
-Ultima edicion & 26 de mayo de 2026 \\
-Descripcion & Como usuario, quiero seguir consultando mis rutinas, ejercicios y la sesion del dia aunque no tenga internet en el gimnasio para no depender de la conexion. \\
-Tareas & \storyitems{\item Almacenar en cache local el catalogo, las rutinas y el calendario del usuario.\item Mostrar el contenido cacheado de inmediato al abrir la aplicacion.\item Indicar al usuario cuando esta sin conexion mediante un aviso.\item Sincronizar los datos con el servidor al recuperar la conexion.} \\
-Criterios de aceptacion & \storyitems{\item El usuario debe poder ver su informacion principal sin conexion a internet.\item El sistema debe advertir cuando no hay conexion disponible.\item Al recuperar la conexion, los datos deben sincronizarse con el servidor.} \\
+Versión & 1.0.0 \\
+Última edición & 26 de mayo de 2026 \\
+Descripción & Como usuario, quiero seguir consultando mis rutinas, ejercicios y la sesión del dia aunque no tenga internet en el gimnasio para no depender de la conexion. \\
+Tareas & \storyitems{\item Almacenar en cache local el catalogo, las rutinas y el calendario del usuario.\item Mostrar el contenido cacheado de inmediato al abrir la aplicación.\item Indicar al usuario cuando esta sin conexion mediante un aviso.\item Sincronizar los datos con el servidor al recuperar la conexion.} \\
+Criterios de aceptación & \storyitems{\item El usuario debe poder ver su información principal sin conexion a internet.\item El sistema debe advertir cuando no hay conexion disponible.\item Al recuperar la conexion, los datos deben sincronizarse con el servidor.} \\
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-26}

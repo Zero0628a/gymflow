@@ -7,15 +7,17 @@ Desarrollar una aplicación móvil denominada \textbf{GymFlow} que permita a los
 \subsection{Objetivos específicos}
 
 \begin{itemize}
-    \item Implementar un sistema de registro e inicio de sesión para los usuarios de la aplicación.
+    \item Implementar un sistema de registro e inicio de sesión para los usuarios de la aplicación, incluyendo el acceso con cuenta de Google.
+    \item Personalizar la experiencia del usuario mediante un proceso de configuración inicial que recoja su objetivo, nivel, días disponibles y equipamiento.
     \item Mostrar los principales grupos musculares que pueden ser entrenados dentro del gimnasio.
     \item Proporcionar ejercicios asociados a cada grupo muscular.
     \item Sugerir variantes de ejercicios que permitan entrenar el mismo músculo cuando una máquina se encuentre ocupada.
-    \item Permitir la creación de rutinas de entrenamiento personalizadas.
-    \item Permitir guardar y consultar rutinas de entrenamiento creadas por el usuario.
-    \item Ofrecer rutinas prediseñadas para facilitar el entrenamiento de los usuarios.
+    \item Permitir la creación, edición y gestión de rutinas de entrenamiento personalizadas.
+    \item Ofrecer rutinas prediseñadas que se ajusten al perfil del usuario.
+    \item Planificar y ejecutar las sesiones de entrenamiento dentro de un calendario semanal, registrando series, peso, repeticiones y esfuerzo percibido (RPE).
+    \item Registrar y consultar el historial detallado de entrenamientos realizados por el usuario.
+    \item Garantizar el funcionamiento de la aplicación sin conexión a internet, sincronizando la información al recuperar la red.
     \item Implementar un módulo de administración que permita gestionar ejercicios, músculos y rutinas prediseñadas.
-    \item Registrar el historial de entrenamientos realizados por el usuario.
 \end{itemize}
 
 \subsection{Problemas identificados}
@@ -110,8 +112,10 @@ El sistema deberá permitir las siguientes funcionalidades:
 \begin{itemize}
     \item El sistema deberá permitir el registro de nuevos usuarios mediante un formulario de creación de cuenta.
     
-    \item El sistema deberá permitir a los usuarios registrados iniciar sesión en la aplicación mediante un mecanismo de autenticación segura.
-    
+    \item El sistema deberá permitir a los usuarios registrados iniciar sesión en la aplicación mediante un mecanismo de autenticación segura, incluyendo el acceso con cuenta de Google.
+
+    \item El sistema deberá guiar al usuario nuevo a través de un proceso de configuración inicial que registre su objetivo, nivel, días disponibles y equipamiento, y le sugiera una rutina acorde.
+
     \item El sistema deberá mostrar los principales grupos musculares que pueden ser entrenados dentro del gimnasio.
     
     \item El sistema deberá permitir la consulta de ejercicios asociados a cada grupo muscular seleccionado por el usuario.
@@ -126,10 +130,16 @@ El sistema deberá permitir las siguientes funcionalidades:
     
     \item El sistema deberá permitir a los usuarios utilizar rutinas prediseñadas disponibles dentro de la aplicación.
     
-    \item El sistema deberá permitir registrar los entrenamientos realizados por el usuario durante sus sesiones de ejercicio.
-    
-    \item El sistema deberá permitir visualizar un historial básico de entrenamientos realizados por el usuario.
-    
+    \item El sistema deberá organizar las rutinas activas en un calendario semanal, distribuyendo las sesiones según los días disponibles del usuario y diferenciando los días de entrenamiento de los de descanso.
+
+    \item El sistema deberá permitir ejecutar la sesión del día marcando series y ejercicios, y registrar el peso, las repeticiones y el esfuerzo percibido (RPE) de cada serie.
+
+    \item El sistema deberá permitir adaptar la sesión en curso reemplazando un ejercicio por una alternativa o posponiendo el día de entrenamiento.
+
+    \item El sistema deberá permitir visualizar un historial detallado de los entrenamientos realizados, incluyendo el estado de cada sesión y las series registradas.
+
+    \item El sistema deberá mantener disponible la información principal del usuario sin conexión a internet y sincronizarla al recuperar la red.
+
     \item El sistema deberá proporcionar un panel de administración que permita gestionar los ejercicios, los grupos musculares y las rutinas prediseñadas disponibles en la aplicación.
 \end{itemize}
 

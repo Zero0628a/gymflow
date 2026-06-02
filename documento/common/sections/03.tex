@@ -2,15 +2,43 @@
 
 \subsection{Descripción General de la Arquitectura}
 
-La arquitectura de \textbf{GymFlow} se define a partir de tres bloques principales: la aplicación móvil, los servicios de Firebase y el almacenamiento de datos. El usuario interactúa directamente con la aplicación móvil desarrollada en React Native con Expo, desde donde puede registrarse, iniciar sesión, consultar ejercicios, visualizar variantes, crear rutinas y registrar entrenamientos.
+La arquitectura de \textbf{GymFlow} sigue un modelo \textbf{cliente-servidor} basado en servicios en la nube (\textit{Backend as a Service}). Se compone de tres bloques principales: la aplicación móvil (cliente), los servicios de Firebase (servidor) y una capa de almacenamiento local en el dispositivo. El usuario interactúa directamente con la aplicación móvil desarrollada en React Native con Expo, desde donde puede registrarse, iniciar sesión, consultar ejercicios, visualizar variantes, crear rutinas y registrar sus entrenamientos.
 
-La aplicación móvil se integra con \textit{Firebase Authentication} para la gestión de acceso de usuarios. La información principal del sistema se organiza mediante \textit{Cloud Firestore} y \textit{Realtime Database}, donde se almacenan los datos de músculos, ejercicios, rutinas prediseñadas, rutinas personalizadas e historial básico de entrenamiento. Por otra parte, \textit{Firebase Storage} permite almacenar archivos o recursos complementarios que puedan ser utilizados dentro de la aplicación.
+La aplicación móvil se integra con \textit{Firebase Authentication} para la gestión del acceso de usuarios, incluido el inicio de sesión con cuenta de Google. La información del sistema se organiza mediante \textit{Cloud Firestore}, donde se almacenan los datos del catálogo (músculos, ejercicios, variantes y rutinas prediseñadas) y la información personal de cada usuario (perfil, rutinas, días y sesiones de entrenamiento e historial). Adicionalmente, la aplicación mantiene una \textbf{caché local} sobre el almacenamiento del dispositivo (\textit{AsyncStorage}) que habilita el funcionamiento sin conexión y la sincronización posterior con Firestore.
 
 De manera general, el flujo de la arquitectura puede representarse así:
 
 \begin{center}
-Aplicación móvil $\rightarrow$ Firebase Authentication $\rightarrow$ Cloud Firestore / Realtime Database $\rightarrow$ Firebase Storage
+Aplicación móvil (cliente) $\leftrightarrow$ Caché local (AsyncStorage) \\[4pt]
+Aplicación móvil $\rightarrow$ Firebase Authentication $\rightarrow$ Cloud Firestore
 \end{center}
+
+\subsection{Tecnologías Utilizadas}
+
+El sistema se construyó con un conjunto de tecnologías orientadas al desarrollo móvil multiplataforma y a los servicios en la nube. La Tabla \ref{tab:tecnologias-arq} resume los componentes principales y la tecnología empleada en cada uno.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.92\textwidth}{L{4.2cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Componente} & \gymth{Tecnología utilizada} \\
+\midrule
+Lenguaje & TypeScript \\
+Frontend & React Native con Expo \\
+Navegación & Expo Router \\
+Servicios backend & Firebase (Backend as a Service) \\
+Autenticación & Firebase Authentication y Google Sign-In \\
+Base de datos principal & Cloud Firestore \\
+Persistencia local / offline & AsyncStorage \\
+Comunicación cliente-servidor & SDK de Firebase sobre HTTPS \\
+\bottomrule
+\end{tabularx}
+\caption{Tecnologías utilizadas en el sistema GymFlow}
+\label{tab:tecnologias-arq}
+\end{table}
 
 \subsection{Diagrama de Arquitectura}
 
