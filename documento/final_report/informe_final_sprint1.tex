@@ -30,6 +30,11 @@
 
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\gymtableheaderrow}{\rowcolor{gymblue}}
+\newcommand{\gymth}[1]{\textcolor{white}{\textbf{#1}}}
+\newcommand{\storycell}[1]{\begin{minipage}[t]{\linewidth}\vspace{2pt}#1\vspace{2pt}\end{minipage}}
+\newcommand{\storyitems}[1]{\storycell{\begin{enumerate}[leftmargin=1.4em,itemsep=2pt,topsep=2pt,parsep=0pt,partopsep=0pt]#1\end{enumerate}}}
+\renewcommand{\arraystretch}{1.25}
 \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
 \renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
 \addto\captionsspanish{
@@ -51,7 +56,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\textcolor{gymblueDark}{\textbf{GymFlow}}}
-\fancyhead[R]{\textcolor{gymblueDark}{Informe final hasta Sprint 1}}
+\fancyhead[R]{\textcolor{gymblueDark}{Informe final del proyecto}}
 \fancyfoot[C]{\thepage}
 \setlength{\headheight}{25pt}
 \renewcommand{\headrulewidth}{0.6pt}
@@ -69,34 +74,59 @@
 
 GymFlow es una aplicación móvil orientada a apoyar al usuario durante su sesión de entrenamiento en el gimnasio. Su propósito principal es permitir la consulta rápida de grupos musculares, ejercicios y variantes útiles cuando una máquina o implemento no se encuentra disponible, reduciendo así la improvisación y mejorando la continuidad de la rutina.
 
-El proyecto se desarrolla con React Native y Expo, utilizando servicios de Firebase para autenticación y almacenamiento de información. El presente documento corresponde al \textbf{informe final del proyecto con corte hasta Sprint 1}, por lo que concentra el contenido técnico y funcional del sistema, dejando la planificación y el seguimiento SCRUM en un reporte separado.
+El proyecto se desarrolla con React Native y Expo, utilizando servicios de Firebase para autenticación y almacenamiento de información. El presente documento constituye el \textbf{informe final del proyecto} y reúne, en un solo documento, el análisis del problema, el diseño de la solución, la arquitectura del sistema, la metodología de desarrollo, la planificación, las pruebas y las conclusiones.
+
+A diferencia de cortes anteriores limitados a la fase de acceso, esta versión refleja el \textbf{sistema efectivamente implementado}, que abarca la autenticación con correo y con Google, la configuración personalizada del perfil mediante un onboarding guiado, la consulta de músculos, ejercicios y variantes, la creación y gestión completa de rutinas, la planificación y ejecución de las sesiones de entrenamiento (con registro de series, peso, repeticiones y RPE), el historial detallado y el funcionamiento sin conexión. La trazabilidad de estas funcionalidades se documenta mediante las historias de usuario HU-01 a HU-26.
 
 \input{../common/sections/02.tex}
 \input{../common/sections/04.tex}
 \input{../common/sections/03.tex}
+\input{../common/sections/05.tex}
 
 \section{Pruebas y Resultados}
 
 \subsection{Plan de Pruebas}
 
-Hasta el cierre del Sprint 1 se considera como prioridad la validación del flujo base de acceso del sistema. En este sentido, las pruebas iniciales se enfocan en verificar la navegación entre registro, inicio de sesión y pantalla principal, así como la coherencia visual de las interfaces y la consistencia de los formularios definidos en los mockups.
+El plan de pruebas se orientó a validar de forma incremental cada bloque funcional del sistema, verificando tanto el comportamiento esperado como el manejo de casos límite. Las pruebas se realizaron de manera manual sobre la aplicación en ejecución, siguiendo los criterios de aceptación definidos en las historias de usuario. La Tabla \ref{tab:plan-pruebas} resume las áreas cubiertas.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4.2cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Área probada} & \gymth{Aspectos verificados} \\
+\midrule
+Autenticación & Registro, inicio de sesión con correo y con Google, manejo de credenciales inválidas y cierre de sesión. \\
+Onboarding y perfil & Recorrido completo de los cinco pasos, sugerencia de rutinas según el perfil y edición posterior de preferencias. \\
+Catálogo & Consulta de músculos, ejercicios por músculo y variantes, incluyendo alternativas cuando un ejercicio no tiene variantes propias. \\
+Gestión de rutinas & Creación, edición, activación, duplicado, archivado y eliminación de rutinas. \\
+Sesión de entrenamiento & Marcado de series y ejercicios, registro de peso/repeticiones/RPE, reemplazo de ejercicio y posponer el día. \\
+Calendario e historial & Distribución de sesiones en la semana, estados de cada día y detalle de las sesiones registradas. \\
+Funcionamiento sin conexión & Visualización de datos cacheados, aviso de ausencia de conexión y sincronización al recuperarla. \\
+\bottomrule
+\end{tabularx}
+\caption{Áreas cubiertas por el plan de pruebas}
+\label{tab:plan-pruebas}
+\end{table}
 
 \subsection{Resultados Obtenidos}
 
-Como resultado del trabajo acumulado hasta Sprint 1, el proyecto cuenta con una base conceptual y visual clara, una arquitectura definida y una estructura inicial de navegación alineada con el problema principal del dominio.
+Las pruebas confirmaron que las funcionalidades documentadas en las historias HU-01 a HU-26 se encuentran implementadas y operativas. El flujo principal del producto ---consultar músculos, ejercicios y variantes para mantener la continuidad del entrenamiento--- funciona de forma coherente con el problema del dominio. La ejecución de sesiones, el registro de series y el cálculo automático del estado de cada día (pendiente, parcial o completado) respondieron correctamente a los criterios de aceptación. Asimismo, la aplicación mantuvo disponible la información principal del usuario en condiciones de ausencia de conexión, sincronizando los datos al restablecerse la red.
 
 \subsection{Mejoras Propuestas}
 
-Para el siguiente incremento se propone continuar con la implementación del núcleo funcional del sistema, incorporando la consulta de músculos, ejercicios y variantes. También se recomienda mantener la trazabilidad entre mockups, código y backlog para que la transición desde la autenticación hacia la funcionalidad principal del producto sea consistente.
+Como mejoras para futuras iteraciones se propone: incorporar pruebas automatizadas que respalden la verificación manual; añadir métricas de progreso (volumen, evolución de cargas) a partir de los registros de series ya almacenados; permitir compartir rutinas entre usuarios; y desarrollar el panel de administración del catálogo previsto en los requerimientos para gestionar músculos, ejercicios y rutinas prediseñadas sin intervención directa sobre la base de datos.
 
 \section{Conclusiones y Recomendaciones}
 
 \subsection{Conclusiones}
 
-Hasta el Sprint 1, GymFlow cuenta con un avance documental sólido que cubre el problema del dominio, la propuesta de solución, el diseño de interfaces y la arquitectura tecnológica del sistema. Este corte deja establecida la base necesaria para continuar con el desarrollo funcional del proyecto.
+GymFlow alcanzó una versión funcional que cubre de extremo a extremo el problema planteado: ayudar al usuario a continuar su entrenamiento cuando una máquina o ejercicio no está disponible. El sistema integra autenticación, configuración personalizada del perfil, consulta de músculos, ejercicios y variantes, gestión completa de rutinas, planificación y ejecución de sesiones con registro detallado, historial y funcionamiento sin conexión. La documentación generada mantiene trazabilidad entre el problema, el diseño, la arquitectura y las historias de usuario efectivamente implementadas, lo que evidencia coherencia entre lo planificado y lo construido.
 
 \subsection{Recomendaciones}
 
-Se recomienda que los siguientes incrementos mantengan coherencia con el objetivo principal del proyecto: ayudar al usuario a continuar su entrenamiento cuando no dispone de una máquina específica. También conviene actualizar de forma continua la evidencia documental del avance real del sistema para evitar diferencias entre el informe y la implementación.
+Se recomienda mantener la documentación alineada con la evolución del código, priorizando la incorporación de pruebas automatizadas y del panel de administración del catálogo. También se aconseja aprovechar la información ya registrada por los usuarios (series, pesos y RPE) para ofrecer análisis de progreso, dado que constituye un valor diferencial respecto de aplicaciones de fitness genéricas y refuerza el objetivo central del proyecto.
 
 \end{document}

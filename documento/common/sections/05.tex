@@ -2,7 +2,7 @@
 
 Para el desarrollo del proyecto GymFlow se adopta la metodología ágil \textbf{SCRUM}. Esta metodología permite organizar el trabajo en ciclos cortos, priorizar funcionalidades y evaluar avances parciales de forma constante. En el contexto del proyecto, SCRUM resulta adecuado porque facilita ajustar el alcance del producto conforme se validan la interfaz, la navegación, la lógica de rutinas y la integración con Firebase.
 
-El trabajo del equipo se estructura en un \textbf{sprint 0 de planificación} y \textbf{tres sprints de desarrollo funcional}. A partir del \textbf{14 de abril de 2026} cada sprint funcional tiene una duración fija de \textbf{14 días calendario}. El \textbf{sprint 0} comenzó el \textbf{martes 7 de abril de 2026}, una semana antes del inicio del sprint 1, con el objetivo de dejar lista la base técnica, organizativa y documental del proyecto.
+El trabajo del equipo se estructura en un \textbf{sprint 0 de planificación} y \textbf{cuatro sprints de desarrollo funcional}. A partir del \textbf{14 de abril de 2026} cada sprint funcional tiene una duración fija de \textbf{14 días calendario}. El \textbf{sprint 0} comenzó el \textbf{martes 7 de abril de 2026}, una semana antes del inicio del sprint 1, con el objetivo de dejar lista la base técnica, organizativa y documental del proyecto. El \textbf{sprint 4} consolida las funcionalidades avanzadas efectivamente implementadas en el sistema (acceso con Google, configuración personalizada del perfil, planificación y ejecución de sesiones de entrenamiento, historial detallado y funcionamiento sin conexión).
 
 \subsection{Ciclo de vida del proyecto}
 
@@ -75,6 +75,22 @@ HU-07 & Sprint 3 & Alta & Creación de rutinas personalizadas. \\
 HU-08 & Sprint 3 & Alta & Guardado persistente de rutinas del usuario. \\
 HU-09 & Sprint 3 & Media & Gestión y consulta de rutinas guardadas. \\
 HU-10 & Sprint 3 & Media & Acceso a rutinas prediseñadas. \\
+HU-11 & Sprint 4 & Alta & Inicio de sesión con cuenta de Google. \\
+HU-12 & Sprint 4 & Alta & Configuración inicial del perfil mediante onboarding guiado. \\
+HU-13 & Sprint 4 & Media & Edición del perfil y preferencias de entrenamiento. \\
+HU-14 & Sprint 4 & Media & Cierre de sesión del usuario. \\
+HU-15 & Sprint 4 & Alta & Activación de una rutina y arranque del ciclo semanal. \\
+HU-16 & Sprint 4 & Media & Edición de rutinas existentes. \\
+HU-17 & Sprint 4 & Media & Duplicar, archivar y eliminar rutinas. \\
+HU-18 & Sprint 4 & Alta & Planificación automática de la rutina por días de la semana. \\
+HU-19 & Sprint 4 & Alta & Calendario semanal con días de sesión y descanso. \\
+HU-20 & Sprint 4 & Alta & Ejecución de la sesión marcando series y ejercicios. \\
+HU-21 & Sprint 4 & Alta & Registro de series con peso, repeticiones y RPE. \\
+HU-22 & Sprint 4 & Alta & Reemplazo de un ejercicio durante la sesión activa. \\
+HU-23 & Sprint 4 & Media & Posponer un día de entrenamiento. \\
+HU-24 & Sprint 4 & Media & Historial detallado de entrenamientos realizados. \\
+HU-25 & Sprint 4 & Baja & Consulta de la técnica del ejercicio mediante video. \\
+HU-26 & Sprint 4 & Alta & Funcionamiento sin conexión y sincronización de datos. \\
 \bottomrule
 \end{tabularx}
 \caption{Product Backlog del proyecto GymFlow}
@@ -96,6 +112,7 @@ El \textit{Sprint Backlog} se define al inicio de cada sprint y contiene las his
 Sprint 1 & HU-01, HU-02, HU-03 & Implementar autenticación, acceso al sistema y navegación inicial. \\
 Sprint 2 & HU-04, HU-05, HU-06 & Resolver la consulta de músculos, ejercicios y variantes como núcleo funcional de GymFlow. \\
 Sprint 3 & HU-07, HU-08, HU-09, HU-10 & Desarrollar la creación, almacenamiento, consulta y reutilización de rutinas. \\
+Sprint 4 & HU-11 a HU-26 & Consolidar el acceso con Google, el perfil personalizado, la planificación y ejecución de sesiones de entrenamiento, el historial detallado y el funcionamiento sin conexión. \\
 \bottomrule
 \end{tabularx}
 \caption{Sprint Backlog resumido del proyecto GymFlow}
@@ -224,6 +241,7 @@ Sprint 0 & 7 de abril de 2026 al 13 de abril de 2026 & Planificar el proyecto: d
 Sprint 1 & 14 de abril de 2026 al 27 de abril de 2026 & Implementar el acceso de usuarios y dejar operativa la estructura base de navegación de la aplicación. \\
 Sprint 2 & 28 de abril de 2026 al 11 de mayo de 2026 & Desarrollar la consulta de grupos musculares, ejercicios y variantes para resolver el problema principal del proyecto. \\
 Sprint 3 & 12 de mayo de 2026 al 25 de mayo de 2026 & Construir la gestión de rutinas personalizadas y la disponibilidad de rutinas prediseñadas para el usuario. \\
+Sprint 4 & 26 de mayo de 2026 al 8 de junio de 2026 & Incorporar el acceso con Google, el perfil personalizado mediante onboarding, la planificación y ejecución de sesiones de entrenamiento, el historial detallado y el funcionamiento sin conexión. \\
 \bottomrule
 \end{tabularx}
 \caption{Planificación de sprints del proyecto GymFlow}
@@ -246,12 +264,13 @@ Sprint 0 & No aplica & Planificación general, organización técnica, documenta
 Sprint 1 & HU-01 a HU-03 & Registro, inicio de sesión y acceso a la pantalla principal del sistema. \\
 Sprint 2 & HU-04 a HU-06 & Consulta de músculos, ejercicios y variantes para mantener la continuidad del entrenamiento. \\
 Sprint 3 & HU-07 a HU-10 & Creación, almacenamiento, consulta y reutilización de rutinas personalizadas o prediseñadas. \\
+Sprint 4 & HU-11 a HU-26 & Acceso con Google, perfil personalizado, planificación y ejecución de sesiones, historial detallado y funcionamiento sin conexión. \\
 \bottomrule
 \end{tabularx}
 \caption{Distribución continua de historias de usuario por sprint}
 \end{table}
 
-Esta organización permite que el proyecto avance de forma incremental, partiendo de una base técnica clara en el sprint 0 y cerrando el cronograma previsto el \textbf{25 de mayo de 2026} con una versión funcional centrada en autenticación, consulta de ejercicios, variantes y gestión de rutinas.
+Esta organización permite que el proyecto avance de forma incremental, partiendo de una base técnica clara en el sprint 0 y cerrando el cronograma previsto el \textbf{8 de junio de 2026} con una versión funcional que abarca la autenticación (incluido el acceso con Google), la consulta de músculos, ejercicios y variantes, la gestión completa de rutinas y la planificación, ejecución y registro de las sesiones de entrenamiento, todo ello con soporte de uso sin conexión.
 
 \subsection{Planificación operativa externa}
 
@@ -259,7 +278,7 @@ La planificación operativa detallada por sprint y por semana se gestiona fuera 
 
 \subsection{Especificación de historias de usuario}
 
-Con el fin de formalizar el backlog del proyecto, cada historia de usuario se documenta de manera individual con su identificador continuo, título descriptivo, sprint asignado, prioridad, descripción, tareas y criterios de aceptación. El sprint 0 no incluye historias de usuario, ya que corresponde únicamente a planificación del proyecto.
+Con el fin de formalizar el backlog del proyecto, cada historia de usuario se documenta de manera individual con su identificador continuo, título descriptivo, sprint asignado, prioridad, descripción, tareas y criterios de aceptación. El sprint 0 no incluye historias de usuario, ya que corresponde únicamente a planificación del proyecto. Las historias HU-01 a HU-10 corresponden al alcance inicial del producto, mientras que las historias HU-11 a HU-26 documentan las funcionalidades avanzadas efectivamente construidas en la aplicación; todas ellas se encuentran implementadas en la versión actual del sistema.
 
 \subsubsection{HU-01 Registro de usuarios}
 \begin{table}[H]
@@ -274,7 +293,7 @@ Con el fin de formalizar el backlog del proyecto, cada historia de usuario se do
 Identificador & HU-01 \\
 Titulo & Registro de usuarios \\
 Sprint & Sprint 1 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
@@ -290,7 +309,7 @@ Criterios de aceptacion & \storyitems{\item El sistema debe permitir ingresar lo
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{layouts/stitch/registro-usuario.png}
+\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{registro-usuario.png}
 \caption{Mockup asociado a la historia de usuario HU-01.}
 \label{fig:hu01-mockup}
 \end{figure}
@@ -308,7 +327,7 @@ Criterios de aceptacion & \storyitems{\item El sistema debe permitir ingresar lo
 Identificador & HU-02 \\
 Titulo & Inicio de sesion \\
 Sprint & Sprint 1 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
@@ -324,7 +343,7 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder iniciar sesion
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{layouts/stitch/bienvenida-login.png}
+\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{bienvenida-login.png}
 \caption{Mockup asociado a la historia de usuario HU-02.}
 \label{fig:hu02-mockup}
 \end{figure}
@@ -342,7 +361,7 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder iniciar sesion
 Identificador & HU-03 \\
 Titulo & Acceso a pantalla principal \\
 Sprint & Sprint 1 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 2 \\
 Prioridad & Media \\
@@ -358,7 +377,7 @@ Criterios de aceptacion & \storyitems{\item La pantalla posterior al acceso debe
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{layouts/stitch/dashboard-principal.png}
+\includegraphics[width=0.52\textwidth,height=0.68\textheight,keepaspectratio]{dashboard-principal.png}
 \caption{Mockup asociado a la historia de usuario HU-03.}
 \label{fig:hu03-mockup}
 \end{figure}
@@ -376,7 +395,7 @@ Criterios de aceptacion & \storyitems{\item La pantalla posterior al acceso debe
 Identificador & HU-04 \\
 Titulo & Consulta de grupos musculares \\
 Sprint & Sprint 2 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
@@ -403,7 +422,7 @@ Criterios de aceptacion & \storyitems{\item La aplicacion debe mostrar una lista
 Identificador & HU-05 \\
 Titulo & Consulta de ejercicios por musculo \\
 Sprint & Sprint 2 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
@@ -430,7 +449,7 @@ Criterios de aceptacion & \storyitems{\item Al seleccionar un musculo, el sistem
 Identificador & HU-06 \\
 Titulo & Consulta de variantes \\
 Sprint & Sprint 2 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 4 \\
 Prioridad & Alta \\
@@ -457,7 +476,7 @@ Criterios de aceptacion & \storyitems{\item Al seleccionar un ejercicio, el sist
 Identificador & HU-07 \\
 Titulo & Creacion de rutinas personalizadas \\
 Sprint & Sprint 3 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Chamaca Jimenez Cristhian \\
 Esfuerzo & 5 \\
 Prioridad & Alta \\
@@ -484,7 +503,7 @@ Criterios de aceptacion & \storyitems{\item El usuario debe poder seleccionar ej
 Identificador & HU-08 \\
 Titulo & Guardado de rutinas \\
 Sprint & Sprint 3 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 3 \\
 Prioridad & Alta \\
@@ -511,7 +530,7 @@ Criterios de aceptacion & \storyitems{\item El sistema debe almacenar la rutina 
 Identificador & HU-09 \\
 Titulo & Gestion de rutinas guardadas \\
 Sprint & Sprint 3 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Zeballos Valencia Reynaldo \\
 Esfuerzo & 3 \\
 Prioridad & Media \\
@@ -538,7 +557,7 @@ Criterios de aceptacion & \storyitems{\item El sistema debe mostrar la lista de 
 Identificador & HU-10 \\
 Titulo & Rutinas prediseñadas \\
 Sprint & Sprint 3 \\
-Estado & Planificado \\
+Estado & Implementado \\
 Asignado & Montaño Frías Andres \\
 Esfuerzo & 2 \\
 Prioridad & Media \\
@@ -550,5 +569,437 @@ Criterios de aceptacion & \storyitems{\item La aplicacion debe ofrecer un conjun
 \bottomrule
 \end{tabularx}
 \caption{Especificación de la historia de usuario HU-10}
+\end{table}
+
+\subsubsection{HU-11 Inicio de sesion con Google}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-11 \\
+Titulo & Inicio de sesion con Google \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 3 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero iniciar sesion con mi cuenta de Google para acceder a la aplicacion de forma rapida sin recordar otra contraseña. \\
+Tareas & \storyitems{\item Integrar el inicio de sesion de Google con Firebase Authentication.\item Configurar el cliente de Google Sign-In con el identificador web.\item Convertir el token de Google en una credencial valida para Firebase.\item Manejar la cancelacion del usuario y los errores de acceso.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder autenticarse seleccionando una cuenta de Google.\item La sesion con Google debe quedar asociada al mismo flujo de usuario que el acceso con correo.\item Si el usuario cancela el acceso, el sistema no debe mostrar un error inesperado.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-11}
+\end{table}
+
+\subsubsection{HU-12 Configuracion inicial del perfil (onboarding)}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-12 \\
+Titulo & Configuracion inicial del perfil (onboarding) \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 5 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario nuevo, quiero responder unas pocas preguntas sobre mi objetivo, nivel, dias disponibles y equipamiento para recibir rutinas que se ajusten a mi situacion. \\
+Tareas & \storyitems{\item Diseñar el flujo guiado de cinco pasos (objetivo, nivel, dias, equipamiento y eleccion de rutina).\item Guardar el perfil del usuario con sus preferencias.\item Sugerir rutinas prediseñadas acordes al perfil indicado.\item Activar la rutina elegida y marcar el onboarding como completado.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder avanzar y retroceder entre los pasos del onboarding.\item Las rutinas sugeridas deben corresponder al objetivo, nivel, dias y equipamiento elegidos.\item Al finalizar, el perfil debe quedar guardado y la rutina seleccionada debe quedar activa.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-12}
+\end{table}
+
+\subsubsection{HU-13 Edicion del perfil y preferencias}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-13 \\
+Titulo & Edicion del perfil y preferencias \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 3 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero modificar mi objetivo, nivel, dias disponibles y equipamiento desde la pantalla de perfil para mantener la aplicacion alineada con mis necesidades actuales. \\
+Tareas & \storyitems{\item Mostrar los datos del usuario (nombre, correo y foto) en la pantalla de perfil.\item Permitir editar objetivo, nivel, dias de entrenamiento y equipamiento.\item Guardar los cambios de forma automatica con retroalimentacion al usuario.\item Reflejar las preferencias actualizadas en la planificacion del entrenamiento.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder cambiar cualquiera de sus preferencias y verlas reflejadas.\item Los cambios deben guardarse sin requerir un boton de confirmacion explicito.\item Si el guardado falla, el sistema debe informarlo al usuario.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-13}
+\end{table}
+
+\subsubsection{HU-14 Cierre de sesion}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-14 \\
+Titulo & Cierre de sesion \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 1 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero cerrar mi sesion desde la pantalla de perfil para proteger mi cuenta cuando dejo de usar la aplicacion. \\
+Tareas & \storyitems{\item Agregar la accion de cierre de sesion en la pantalla de perfil.\item Cerrar la sesion de Firebase y de Google al salir.\item Redirigir al usuario al flujo de acceso tras cerrar sesion.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder cerrar sesion desde la pantalla de perfil.\item Tras cerrar sesion, no debe poder accederse a la informacion personal sin volver a autenticarse.\item El cierre de sesion debe cubrir tanto el acceso con correo como el acceso con Google.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-14}
+\end{table}
+
+\subsubsection{HU-15 Activacion de rutina y ciclo semanal}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-15 \\
+Titulo & Activacion de rutina y ciclo semanal \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 4 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero activar una rutina para que se convierta en mi plan vigente y se inicie un nuevo ciclo semanal de entrenamiento. \\
+Tareas & \storyitems{\item Permitir marcar una rutina como activa.\item Asegurar que solo exista una rutina activa a la vez.\item Registrar la fecha de inicio del ciclo de la rutina activa.\item Reiniciar el calendario de la semana al activar una nueva rutina.} \\
+Criterios de aceptacion & \storyitems{\item Al activar una rutina, cualquier otra rutina activa debe dejar de estarlo.\item El sistema debe registrar el inicio del ciclo para calcular las sesiones de la semana.\item El calendario de entrenamiento debe reflejar la rutina recien activada.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-15}
+\end{table}
+
+\subsubsection{HU-16 Edicion de rutinas}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-16 \\
+Titulo & Edicion de rutinas \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 3 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero editar una rutina existente para ajustar su nombre, ejercicios y dias de entrenamiento sin tener que crearla de nuevo. \\
+Tareas & \storyitems{\item Diseñar la pantalla de edicion de rutina.\item Permitir modificar nombre, ejercicios y dias por semana.\item Recalcular la planificacion semanal al guardar los cambios.\item Reiniciar el ciclo de la semana si la rutina editada estaba activa.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder modificar los datos de una rutina guardada.\item Los cambios deben persistir y reflejarse al volver a consultar la rutina.\item Si la rutina editada estaba activa, el calendario debe actualizarse en consecuencia.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-16}
+\end{table}
+
+\subsubsection{HU-17 Duplicar, archivar y eliminar rutinas}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-17 \\
+Titulo & Duplicar, archivar y eliminar rutinas \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 3 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero duplicar, archivar o eliminar mis rutinas para organizar mi coleccion de planes segun los uso. \\
+Tareas & \storyitems{\item Permitir duplicar una rutina como copia editable.\item Permitir archivar rutinas que ya no se usan de forma activa.\item Permitir eliminar definitivamente una rutina.\item Mantener la consistencia del estado de la rutina activa al realizar estas acciones.} \\
+Criterios de aceptacion & \storyitems{\item Al duplicar una rutina se debe crear una copia independiente del original.\item Las rutinas archivadas deben dejar de aparecer como opciones activas.\item La eliminacion debe quitar la rutina del listado del usuario.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-17}
+\end{table}
+
+\subsubsection{HU-18 Planificacion automatica de la rutina semanal}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-18 \\
+Titulo & Planificacion automatica de la rutina semanal \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 5 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero que la aplicacion distribuya automaticamente los ejercicios de mi rutina en sesiones segun los dias que puedo entrenar para no tener que organizarlas manualmente. \\
+Tareas & \storyitems{\item Generar un plan semanal a partir de los ejercicios y los dias de entrenamiento.\item Asignar series, repeticiones y enfoque muscular a cada sesion.\item Adaptar el plan a los dias de la semana realmente seleccionados por el usuario.\item Mantener coherencia entre la rutina activa y la distribucion de sesiones.} \\
+Criterios de aceptacion & \storyitems{\item La rutina activa debe distribuirse en la cantidad de sesiones correspondiente a los dias elegidos.\item Cada sesion debe presentar sus ejercicios con series y repeticiones definidas.\item El plan debe ajustarse cuando el usuario cambia sus dias disponibles.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-18}
+\end{table}
+
+\subsubsection{HU-19 Calendario semanal de entrenamiento}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-19 \\
+Titulo & Calendario semanal de entrenamiento \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 4 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero ver mi semana de entrenamiento con los dias de sesion y de descanso para saber que me toca entrenar cada dia. \\
+Tareas & \storyitems{\item Construir la vista semanal de lunes a domingo.\item Diferenciar dias de sesion, de descanso, completados, parciales y no realizados.\item Resaltar el dia actual y la sesion correspondiente.\item Derivar el estado de cada dia a partir del ciclo de la rutina activa.} \\
+Criterios de aceptacion & \storyitems{\item El calendario debe mostrar claramente que dias son de entrenamiento y cuales de descanso.\item El dia actual debe identificarse de forma destacada.\item El estado de cada dia debe reflejar el avance real de la sesion.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-19}
+\end{table}
+
+\subsubsection{HU-20 Ejecucion de la sesion: marcar series y ejercicios}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-20 \\
+Titulo & Ejecucion de la sesion: marcar series y ejercicios \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 5 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero marcar mis series y ejercicios como realizados durante la sesion del dia para llevar el control de mi avance en tiempo real. \\
+Tareas & \storyitems{\item Permitir marcar y desmarcar series individuales por ejercicio.\item Permitir marcar un ejercicio completo de una sola accion.\item Calcular el estado del dia (pendiente, parcial o completado) segun las series marcadas.\item Restringir el marcado al dia actual y a dias no cerrados.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder marcar series una a una y ver el progreso del ejercicio.\item Un dia debe quedar completado cuando todos sus ejercicios estan marcados.\item No debe permitirse marcar series en dias de descanso, pospuestos o no realizados.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-20}
+\end{table}
+
+\subsubsection{HU-21 Registro de series con peso, repeticiones y RPE}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-21 \\
+Titulo & Registro de series con peso, repeticiones y RPE \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 4 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero registrar el peso, las repeticiones y el esfuerzo (RPE) de cada serie para llevar un seguimiento detallado de mi rendimiento. \\
+Tareas & \storyitems{\item Permitir capturar peso, repeticiones y RPE por serie.\item Validar y filtrar los datos invalidos antes de guardarlos.\item Asociar el registro al ejercicio y al dia correspondiente.\item Marcar el ejercicio como cumplido al guardar sus series.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder registrar las series de un ejercicio con sus datos numericos.\item Solo deben guardarse las series con repeticiones validas.\item Al guardar las series, el ejercicio debe quedar marcado como realizado.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-21}
+\end{table}
+
+\subsubsection{HU-22 Reemplazo de un ejercicio durante la sesion}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-22 \\
+Titulo & Reemplazo de un ejercicio durante la sesion \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 4 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero reemplazar un ejercicio de la sesion del dia por una alternativa cuando la maquina esta ocupada para no detener mi entrenamiento, y poder revertir el cambio. \\
+Tareas & \storyitems{\item Permitir sustituir un ejercicio planificado por una variante o alternativa.\item Conservar el ejercicio original para poder revertir el reemplazo.\item Impedir el reemplazo cuando el ejercicio ya fue iniciado o el dia esta cerrado.\item Preservar las series marcadas al cambiar de ejercicio.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder cambiar un ejercicio de la sesion por una alternativa valida.\item El sistema debe permitir volver al ejercicio original.\item No debe permitirse reemplazar ejercicios ya iniciados o en dias cerrados.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-22}
+\end{table}
+
+\subsubsection{HU-23 Posponer un dia de entrenamiento}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-23 \\
+Titulo & Posponer un dia de entrenamiento \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 3 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero posponer la sesion del dia cuando no puedo entrenar para que mi planificacion semanal se reacomode sin perder la sesion. \\
+Tareas & \storyitems{\item Permitir marcar el dia actual como pospuesto.\item Desplazar las sesiones siguientes del ciclo al posponer un dia.\item Permitir deshacer la accion de posponer.\item Registrar el dia pospuesto en el seguimiento del usuario.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder posponer la sesion del dia actual.\item Al posponer, las sesiones posteriores deben reacomodarse en el ciclo.\item El usuario debe poder deshacer el posponer mientras corresponda.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-23}
+\end{table}
+
+\subsubsection{HU-24 Historial detallado de entrenamientos}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-24 \\
+Titulo & Historial detallado de entrenamientos \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Montaño Frías Andres \\
+Esfuerzo & 3 \\
+Prioridad & Media \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero consultar el historial de mis sesiones con su estado y las series registradas para revisar mi progreso a lo largo del tiempo. \\
+Tareas & \storyitems{\item Construir la lista de sesiones realizadas, pospuestas y no realizadas.\item Mostrar el estado y la fecha de cada sesion.\item Incluir las series registradas (peso, repeticiones y notas) de cada ejercicio.\item Presentar un resumen de sesiones completadas, pospuestas y perdidas.} \\
+Criterios de aceptacion & \storyitems{\item El historial debe listar las sesiones con su estado y fecha.\item El usuario debe poder ver el detalle de las series registradas en cada sesion.\item El resumen debe reflejar las sesiones completadas, pospuestas y no realizadas.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-24}
+\end{table}
+
+\subsubsection{HU-25 Consulta de la tecnica del ejercicio}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-25 \\
+Titulo & Consulta de la tecnica del ejercicio \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Zeballos Valencia Reynaldo \\
+Esfuerzo & 1 \\
+Prioridad & Baja \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero abrir una busqueda de video de la tecnica de un ejercicio para aprender a ejecutarlo correctamente. \\
+Tareas & \storyitems{\item Agregar la accion de ver tecnica en la pantalla de variantes.\item Construir la busqueda de video a partir del nombre del ejercicio.\item Abrir la busqueda en la aplicacion de video externa.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder abrir una busqueda de video desde el ejercicio.\item La busqueda debe corresponder al ejercicio consultado.\item La accion debe abrir el contenido en el servicio de video externo.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-25}
+\end{table}
+
+\subsubsection{HU-26 Funcionamiento sin conexion y sincronizacion}
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{4cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Campo} & \gymth{Detalle} \\
+\midrule
+Identificador & HU-26 \\
+Titulo & Funcionamiento sin conexion y sincronizacion \\
+Sprint & Sprint 4 \\
+Estado & Implementado \\
+Asignado & Chamaca Jimenez Cristhian \\
+Esfuerzo & 5 \\
+Prioridad & Alta \\
+Version & 1.0.0 \\
+Ultima edicion & 26 de mayo de 2026 \\
+Descripcion & Como usuario, quiero seguir consultando mis rutinas, ejercicios y la sesion del dia aunque no tenga internet en el gimnasio para no depender de la conexion. \\
+Tareas & \storyitems{\item Almacenar en cache local el catalogo, las rutinas y el calendario del usuario.\item Mostrar el contenido cacheado de inmediato al abrir la aplicacion.\item Indicar al usuario cuando esta sin conexion mediante un aviso.\item Sincronizar los datos con el servidor al recuperar la conexion.} \\
+Criterios de aceptacion & \storyitems{\item El usuario debe poder ver su informacion principal sin conexion a internet.\item El sistema debe advertir cuando no hay conexion disponible.\item Al recuperar la conexion, los datos deben sincronizarse con el servidor.} \\
+\bottomrule
+\end{tabularx}
+\caption{Especificación de la historia de usuario HU-26}
 \end{table}
 

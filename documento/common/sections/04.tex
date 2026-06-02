@@ -69,39 +69,115 @@ En conjunto, estas siete pantallas conforman una secuencia clara, consistente y 
 
 \subsection{Flujo de navegación del sistema}
 
-El flujo de navegación del sistema describe la manera en que los usuarios interactúan con la aplicación y cómo se conectan las diferentes pantallas dentro del sistema.
+El flujo de navegación del sistema describe la manera en que los usuarios interactúan con la aplicación y cómo se conectan las diferentes pantallas. La navegación se implementa con \textit{Expo Router} mediante una pila principal (\textit{Stack}) y una barra de pestañas inferior (\textit{Tabs}). El acceso a las distintas zonas está controlado por dos guardas: una de \textbf{autenticación}, que redirige a los usuarios no autenticados al inicio de sesión, y otra de \textbf{onboarding}, que obliga a completar la configuración inicial del perfil antes de ingresar a la aplicación principal.
 
-En términos generales, el flujo de interacción de la aplicación sigue la siguiente estructura:
+\subsubsection{Estructura de navegación}
+
+La aplicación se organiza en cuatro grupos de pantallas, descritos en la Tabla \ref{tab:nav-grupos}.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{3.6cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Grupo / Pantalla} & \gymth{Función dentro de la navegación} \\
+\midrule
+Acceso (\textit{auth}) & Inicio de sesión y registro, incluido el acceso con Google. \\
+Onboarding & Configuración inicial guiada del perfil (objetivo, nivel, días y equipamiento) y elección de la rutina inicial. \\
+Pestañas principales & Navegación central de la aplicación: \textit{Hoy}, \textit{Rutinas}, \textit{Historial} y \textit{Músculos}. \\
+Pantallas de detalle & Ejercicios por músculo, variantes, creación y edición de rutina, y configuración del perfil. \\
+\bottomrule
+\end{tabularx}
+\caption{Grupos de navegación de la aplicación GymFlow}
+\label{tab:nav-grupos}
+\end{table}
+
+\subsubsection{Recorrido principal del usuario}
+
+En términos generales, el flujo de interacción sigue la siguiente estructura:
 
 \begin{enumerate}
-    \item El usuario inicia sesión con correo y contraseña mediante la pantalla de acceso.
-    \item El usuario ingresa a \textit{home} y selecciona el músculo que desea entrenar.
-    \item El sistema muestra los ejercicios disponibles para el músculo seleccionado.
-    \item El usuario consulta variantes cuando un ejercicio o máquina no está disponible.
-    \item El usuario crea una rutina simple, selecciona ejercicios y la guarda por nombre.
-    \item El usuario ejecuta la rutina, marca ejercicios como realizados y revisa su historial.
+    \item El usuario inicia sesión con correo y contraseña, o con su cuenta de Google.
+    \item Si es la primera vez, completa el \textit{onboarding} y obtiene una rutina inicial activa.
+    \item En la pestaña \textit{Hoy} visualiza la sesión del día dentro de su calendario semanal.
+    \item Durante la sesión, marca series y ejercicios, registra peso, repeticiones y RPE, reemplaza ejercicios cuando una máquina está ocupada o pospone el día.
+    \item Desde la pestaña \textit{Músculos} selecciona un grupo muscular, consulta sus ejercicios y revisa variantes para mantener la continuidad del entrenamiento.
+    \item En la pestaña \textit{Rutinas} crea, edita, activa, duplica o archiva sus rutinas.
+    \item En la pestaña \textit{Historial} revisa las sesiones realizadas, pospuestas y no realizadas, con el detalle de las series registradas.
 \end{enumerate}
 
-Este flujo permite que el usuario continúe su entrenamiento incluso cuando ciertas máquinas o equipos del gimnasio no estén disponibles, ofreciendo alternativas para trabajar el mismo grupo muscular.
+Este flujo permite que el usuario continúe su entrenamiento incluso cuando ciertas máquinas o equipos del gimnasio no estén disponibles, ofreciendo alternativas para trabajar el mismo grupo muscular. El siguiente esquema resume la transición entre las zonas principales del sistema.
 
-El diagrama de flujo formal de navegación será incorporado en una siguiente revisión del documento. No obstante, la secuencia funcional ya se encuentra definida a partir de las pantallas presentadas y del recorrido descrito en esta subsección.
+\begin{figure}[H]
+\centering
+\footnotesize
+\setlength{\fboxsep}{6pt}
+\fbox{Inicio} $\rightarrow$ \fbox{Acceso / Registro} $\rightarrow$ \fbox{Onboarding} $\rightarrow$ \fbox{Hoy (sesión)} \\[8pt]
+\fbox{Hoy (sesión)} $\leftrightarrow$ \fbox{Rutinas} $\leftrightarrow$ \fbox{Historial} $\leftrightarrow$ \fbox{Músculos} \\[8pt]
+\fbox{Músculos} $\rightarrow$ \fbox{Ejercicios por músculo} $\rightarrow$ \fbox{Variantes} \\[8pt]
+\fbox{Rutinas} $\rightarrow$ \fbox{Crear / Editar rutina} \qquad \fbox{Perfil} $\rightarrow$ \fbox{Cerrar sesión}
+\caption{Esquema del flujo de navegación entre las zonas principales del sistema.}
+\label{fig:flujo-navegacion}
+\end{figure}
 
 \subsection{Modelo de datos del sistema}
 
-El modelo de datos del sistema organiza la información utilizada por la aplicación, incluyendo los usuarios, músculos, ejercicios, rutinas y entrenamientos registrados.
+El modelo de datos del sistema organiza la información utilizada por la aplicación. La persistencia se realiza sobre \textit{Cloud Firestore}, donde los datos se dividen en dos ámbitos: un \textbf{catálogo global} compartido por todos los usuarios (músculos, ejercicios, variantes y rutinas prediseñadas) y la \textbf{información personal} de cada usuario, almacenada bajo su identificador (\texttt{users/\{uid\}}). La autenticación y la identidad del usuario son gestionadas por \textit{Firebase Authentication}.
 
-De forma conceptual, el sistema considerará las siguientes entidades principales:
+\subsubsection{Entidades principales}
 
-\begin{itemize}
-    \item Usuario
-    \item Músculo
-    \item Ejercicio
-    \item Rutina
-    \item Entrenamiento
-\end{itemize}
+Las entidades del sistema y su contenido se resumen en la Tabla \ref{tab:entidades}.
 
-Las relaciones entre estas entidades permiten asociar ejercicios a grupos musculares, crear rutinas personalizadas para cada usuario y registrar los entrenamientos realizados durante cada sesión de ejercicio.
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{3.4cm} L{3.6cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Entidad} & \gymth{Ubicación (colección)} & \gymth{Atributos principales} \\
+\midrule
+Usuario & Firebase Authentication & Identificador, nombre, correo, foto y proveedor de acceso (correo o Google). \\
+Perfil & \texttt{users/\{uid\}/profile} & Objetivo, nivel, días de entrenamiento, equipamiento y estado del onboarding. \\
+Músculo & \texttt{muscles} & Nombre, ícono, color e imagen del grupo muscular. \\
+Ejercicio & \texttt{exercises} & Músculo asociado, nombre, descripción y equipamiento. \\
+Variante & \texttt{variants} & Ejercicio de origen, nombre, descripción y ejercicio sustituto. \\
+Rutina prediseñada & \texttt{routine\_templates} & Nombre, descripción, nivel, objetivo, días, equipamiento, división y plan semanal. \\
+Rutina & \texttt{users/\{uid\}/routines} & Nombre, ejercicios, estado, plan semanal, días por semana e inicio del ciclo. \\
+Día de entrenamiento & \texttt{users/\{uid\}/training\_days} & Fecha, estado del día, ejercicios y series completados. \\
+Sesión de entrenamiento & \texttt{users/\{uid\}/workout\_sessions} & Fecha, estado, ejercicios planificados y resultado de la sesión. \\
+Registro de ejercicio & \texttt{users/\{uid\}/exercise\_logs} & Fecha, ejercicio y series con peso, repeticiones y RPE. \\
+\bottomrule
+\end{tabularx}
+\caption{Entidades principales del modelo de datos de GymFlow}
+\label{tab:entidades}
+\end{table}
 
-El diagrama entidad-relación detallado será incorporado en una siguiente revisión del documento. Mientras tanto, la definición conceptual de las entidades principales deja establecida la base para la construcción de la base de datos.
+\subsubsection{Relaciones entre entidades}
 
-En la siguiente etapa del desarrollo del proyecto, estos diagramas permitirán precisar la organización de la información y facilitar la implementación de la base de datos dentro de los servicios de Firebase utilizados por la aplicación.
+Las principales relaciones del modelo se describen en la Tabla \ref{tab:relaciones}.
+
+\begin{table}[H]
+\centering
+\rowcolors{2}{gymblueSoft}{gymblueSoftAlt}
+\arrayrulecolor{gymblue}
+\begin{tabularx}{0.98\textwidth}{L{5.2cm} Y}
+\toprule
+\gymtableheaderrow
+\gymth{Relación} & \gymth{Descripción} \\
+\midrule
+Músculo --- Ejercicio & Un músculo agrupa varios ejercicios; cada ejercicio pertenece a un músculo. \\
+Ejercicio --- Variante & Un ejercicio puede tener varias variantes o alternativas para trabajar el mismo músculo. \\
+Usuario --- Perfil & Cada usuario posee un único perfil con sus preferencias de entrenamiento. \\
+Usuario --- Rutina & Un usuario puede tener varias rutinas, de las cuales como máximo una está activa. \\
+Rutina --- Ejercicio & Una rutina referencia un conjunto de ejercicios distribuidos en un plan semanal. \\
+Usuario --- Sesión / Registro & Cada usuario genera días y sesiones de entrenamiento, con registros de series por ejercicio y fecha. \\
+\bottomrule
+\end{tabularx}
+\caption{Relaciones entre las entidades del modelo de datos}
+\label{tab:relaciones}
+\end{table}
+
+Esta organización centraliza la información del catálogo y mantiene aislada la información personal de cada usuario bajo su propio identificador, lo que facilita la seguridad de los datos, la escalabilidad del sistema y la consistencia entre las rutinas, las sesiones y el historial de entrenamiento.
