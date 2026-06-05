@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# GymFlow
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para gestión de entrenamientos, construida con [Expo](https://expo.dev) (React Native) y Firebase.
 
-## Get started
+## Requisitos previos
 
-1. Install dependencies
+- [Node.js](https://nodejs.org/) 18 o superior
+- npm (incluido con Node.js)
+- App [Expo Go](https://expo.dev/go) en tu teléfono, o un emulador de Android / simulador de iOS
+
+## Instalación
+
+1. Clona el repositorio y entra en la carpeta:
+
+   ```bash
+   git clone <url-del-repositorio>
+   cd gymflow
+   ```
+
+2. Instala las dependencias:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+> La configuración de Firebase ya está incluida en [lib/firebase.ts](lib/firebase.ts), no necesitas crear archivos de entorno.
 
-   ```bash
-   npx expo start
-   ```
+## Inicialización
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Inicia el servidor de desarrollo:
 
 ```bash
-npm run reset-project
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+En la salida verás un código QR y opciones para abrir la app:
 
-## Learn more
+- **Expo Go**: escanea el código QR con tu teléfono
+- **Android**: presiona `a` para abrir en emulador
+- **iOS**: presiona `i` para abrir en simulador
+- **Web**: presiona `w` para abrir en el navegador
 
-To learn more about developing your project with Expo, look at the following resources:
+### Otros comandos
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run android   # Compila y abre en Android
+npm run ios       # Compila y abre en iOS
+npm run web       # Inicia en el navegador
+npm run lint      # Revisa el código con ESLint
+```
 
-## Join the community
+## Estructura del proyecto
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+El código de las pantallas vive en el directorio `app/`, que usa [enrutado por archivos](https://docs.expo.dev/router/introduction) de Expo Router.
